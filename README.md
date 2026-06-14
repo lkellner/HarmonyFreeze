@@ -92,7 +92,7 @@ Extract the files and copy the complete "HarmonyFreeze" folder. Open the package
 
 
 
-<img width="1703" height="542" alt="Screenshot 2026-06-12 at 10 03 49 am" src="https://github.com/user-attachments/assets/761cedfe-9bae-40c4-a165-4b8a5039af77" />
+![Mac install](docs/images/mac-install.png)
 
 
 
@@ -181,14 +181,14 @@ Once installed, the plugin will be loaded automatically the next time you start 
 ```Animation->HarmonyFreeze->Freeze Transformation``` : 
  
  
-<img width="1342" height="572" alt="ScreenshotAnimation" src="https://github.com/user-attachments/assets/c7a335cc-7090-415d-b0a0-bfde3a6ea10a" />
+![Animation menu](docs/images/animation-menu.jpg)
 
 
 Additionally, you can assign a shortcut in the keyboard shortcuts menu under 
 ```Edit->Keyboard Shortcuts->HarmonyFreeze->Freeze Transformation``` :
  
 
-<img width="1736" height="1272" alt="ScreenshotPreferences" src="https://github.com/user-attachments/assets/9ec867ea-f2bf-412f-b93a-436d647872de" />
+![Keyboard shortcuts](docs/images/keyboard-shortcuts.jpg)
 
 
 Select a peg and run HarmonyFreeze via the menu or shortcut. The peg’s transformation in the selected frame will be reset while its transformations are applied to the nodes below, preserving the original appearance of the scene.
@@ -404,7 +404,7 @@ Elements that have been created while using a value different from the default �
 
 
 
-<img width="442" height="580" alt="ScreenshotUnitOffset" src="https://github.com/user-attachments/assets/99df5da4-18c2-4193-9139-6151d58bd793" />
+![Unit offset setting](docs/images/unit-offset.jpg)
 
 
 
