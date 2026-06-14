@@ -175,8 +175,6 @@ libHarmonyFreeze.1.0.0.dylib
 
 Copy these into the newly created “macosx” folder, then copy the PluginInfo.xml file and the resources folder into the “HarmonyFreeze” folder.
 
-//TODO: trouble shooting AGL QT ?
-
 ## Usage
 
 Once installed, the plugin will be loaded automatically the next time you start Harmony and can be found under 
