@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<plugin sdk_version="1024" id="HarmonyFreeze" required="true" module="HarmonyFreeze" text="HarmonyFreeze" canUnload="false" type="Gui" category="Filter" visibility="visible">
+  <desc>Freeze Transformation</desc>
+  <dependencies>SDKExtension</dependencies>
+</plugin>

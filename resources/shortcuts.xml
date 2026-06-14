@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shortcuts>
+ <category condition="not hasBasicPluginsOnly" id="HarmonyFreeze" text="HarmonyFreeze">
+  <shortcut id="FREEZE_1" longDesc="Freeze Transformation" order="256" responder="FreezeResponder" slot="onActionFreezeTransformation()" text="Freeze Transformation" />
+
+ </category>
+</shortcuts>

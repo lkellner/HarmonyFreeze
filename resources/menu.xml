@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menu condition="not hasBasicPluginsOnly" id="HarmonyFreeze" text="HarmonyFreeze" >
+	<item id="Freeze 1"
+		shortcut="FREEZE_1"
+		slot="onActionFreezeTransformation" responder="FreezeResponder"
+		text="Freeze Transformation" />
+</menu>
