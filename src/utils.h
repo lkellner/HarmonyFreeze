@@ -34,6 +34,11 @@
 #include <SDKExtension/SDK_Drawing.h>
 #include <SDKExtension/SDK_Selection.h>
 
+#include <SceneCore/attribute/AT_EnumAttrTemplate.h>
+#include <SceneCore/attribute/AT_Enums.h>
+#include <SceneCore/attribute/AT_DoubleAttr.h>
+
+
 #include <vector>
 
 enum class MatrixComplexity : uint8_t
@@ -123,7 +128,6 @@ void updateFrameRange(FrameRange& range, int frame);
 void clampValues(MatrixParameters& params);
 void clampValues(Math::Point3d &point);
 void clampValue(double & value, const double reference);
-
 
 //Conversions
 

@@ -3,8 +3,8 @@
 #include <GraphicCore/GraphicLib/GR_ColorDict.h>
 #include <SceneCore/attribute/AT_BoolAttr.h>
 
-//Caution:  Math::Matrix4x4 uses the inverse matrix multiplication order of Math::Matrix3x2
 
+//Caution:  Math::Matrix4x4 uses the inverse matrix multiplication order of Math::Matrix3x2
 
 double matchFullRotations(const double referenceAngle, const double angle)
 {

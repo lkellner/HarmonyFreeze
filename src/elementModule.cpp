@@ -42,13 +42,19 @@ void ElementModule::modifyTimings()
 }
 
 
-void ElementModule::processBitmaps(GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
+void ElementModule::processBitmaps(const CA_CelPtr celPtr, GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
 {
 	//This part of the code is currently only available in experimental mode as there hasn't been found
 	//a way to undo bitmap transformations for now.
-
+	//Temporarily deactivated
+	/*
 	if (!getFreezeManagerPtr()->isExperimentalMode())
 		return;
+	*/
+
+	//Temporarily moved undo scope here to isolate bitmap tests
+	const QString s = QStringLiteral("Modify bitmaps");
+	SDK_Drawing::UndoScope undoScope(s);
 
 	for (int i = 0; i <= 3; i++)
 	{
@@ -57,9 +63,17 @@ void ElementModule::processBitmaps(GR_CompositeVectorDrawingObj* compDrawing,con
 		if (!drawingLayer->hasBitmapLayers())
 			continue;
 
-		GR_BitmapAccess bitmapAccess;
-		bitmapAccess.SetCurrentDrawing(drawingLayer);
-		bitmapAccess.beginOperations();
+		GR_BitmapAccess * bitmapAccess = new GR_BitmapAccess();
+		bitmapAccess->SetCurrentDrawing(drawingLayer);
+
+		GR_DrawingAccess* drawingAccess = reinterpret_cast<GR_DrawingAccess*>(bitmapAccess);
+		SDK_Drawing::ChangeScope bitmapScope;
+
+		//Custom GR_Listener to test if the cast GR_DrawingAccess is still working
+		BitmapListener listener = BitmapListener(*drawingAccess);
+
+		bitmapScope.listenForChanges(*drawingAccess, celPtr, i);
+		bitmapAccess->beginOperations();
 
 		GR_BitmapNode* curBitmapNode = drawingLayer->topBitmapNode();
 		GR_BitmapNode* prevBitmapNode = nullptr;
@@ -70,13 +84,13 @@ void ElementModule::processBitmaps(GR_CompositeVectorDrawingObj* compDrawing,con
 
 			GR_BitmapLayer& bitmapLayer = curBitmapNode->bitmapLayer();
 
-			bitmapAccess.transformBitmap(&bitmapLayer, matrix.getTransform2d());
-
+			bitmapAccess->transformBitmap(&bitmapLayer, matrix.getTransform2d());
 
 			curBitmapNode = prevBitmapNode;
 		}
 
-		bitmapAccess.endOperations();
+		bitmapAccess->endOperations();
+		bitmapScope.stopListeningForChanges(*drawingAccess);
 	}
 }
 
@@ -104,7 +118,7 @@ void ElementModule::applyChangeMatrix(CA_CelPtr celPtr, Math::Matrix4x4 matrix) 
 
 	processVectorData(celPtr, compDrawing, matrix);
 
-	processBitmaps(compDrawing, matrix);
+	processBitmaps(celPtr, compDrawing, matrix);
 }
 
 
@@ -168,6 +182,10 @@ void ElementModule::processVectorDrawingLayers(GR_DrawingAccess &drawingAccess,c
 
 void ElementModule::processVectorData(const CA_CelPtr celPtr, GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
 {
+	//Temporarily moved undo scope here to isolate bitmap tests
+	const QString s = QStringLiteral("Modify vector drawings");
+	SDK_Drawing::UndoScope undoScope(s);
+
 	GR_DrawingAccess drawingAccess;
 	GR_ColorDict dict;
 
