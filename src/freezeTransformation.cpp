@@ -95,9 +95,13 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 void FreezeResponder::onActionFreezeTransformation()
 {
 	printf("********Freeze Transformation Start********\n");
+	
+	//Temporarily deactivated undoScope to be able to isolate bitmap tests
+	/*
 	const QString s = QStringLiteral("Freeze Transformation");
 
 	SDK_Drawing::UndoScope undoScope(s);
+	*/
 
 	SDK_Selection::NodeCol_t nodes;
 	SDK_Selection::getSelectedNodes(nodes);
@@ -117,7 +121,6 @@ void FreezeResponder::onActionFreezeTransformation()
 
 	std::shared_ptr<FreezeManager> freezeManager = std::make_shared<FreezeManager>();
 
-	//TODO: catch constructor exceptions here
 	std::unique_ptr<PegModule> freezeModule;
 
 	try
