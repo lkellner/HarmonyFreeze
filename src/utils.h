@@ -211,6 +211,21 @@ T* findAttribute(const QString& keyword, MO_Node* node)
 	return it == attributes.end() ? nullptr : dynamic_cast<T*>(it->_pAttr);
 }
 
+template <typename T>
+T* findSubAttribute(const QString& parentKeyword, const QString& keyword, MO_Node* node)
+{
+	AT_ComplexAttr * parent = findAttribute<AT_ComplexAttr>(parentKeyword, node);
+
+	if (!parent)
+		return nullptr;
+
+	const AT_AttrList attributes = getAttributeList(node);
+
+	const auto it = std::find_if(parent->attrsBegin(), parent->attrsEnd(),
+		[&keyword](const AT_Attr* a) { return a->keyword() == keyword; });
+
+	return it == parent->attrsEnd() ? nullptr : dynamic_cast<T*>(*it);
+}
 
 int getElementId(MO_Module* modulePtr);
 void printAttributes(AT_AttrList attributes);
