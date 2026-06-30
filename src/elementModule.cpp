@@ -110,6 +110,8 @@ void ElementModule::applyChangeMatrix(CA_CelPtr celPtr, Math::Matrix4x4 matrix) 
 
 	matrix = getVectorModificationMatrix(getModulePtr()->sceneMetrics(), matrix, tbd);
 
+	auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
+	printf("field chart val: %f\n", fieldChart->localValue());
 
 	GR_CompositeVectorDrawingObj* compDrawing = tbd->getDrawingObject();
 
