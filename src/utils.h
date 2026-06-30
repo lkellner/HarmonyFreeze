@@ -219,8 +219,6 @@ T* findSubAttribute(const QString& parentKeyword, const QString& keyword, MO_Nod
 	if (!parent)
 		return nullptr;
 
-	const AT_AttrList attributes = getAttributeList(node);
-
 	const auto it = std::find_if(parent->attrsBegin(), parent->attrsEnd(),
 		[&keyword](const AT_Attr* a) { return a->keyword() == keyword; });
 
