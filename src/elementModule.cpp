@@ -46,15 +46,11 @@ void ElementModule::processBitmaps(const CA_CelPtr celPtr, GR_CompositeVectorDra
 {
 	//This part of the code is currently only available in experimental mode as there hasn't been found
 	//a way to undo bitmap transformations for now.
-	//Temporarily deactivated
-	/*
+
 	if (!getFreezeManagerPtr()->isExperimentalMode())
 		return;
-	*/
 
-	//Temporarily moved undo scope here to isolate bitmap tests
 	const QString s = QStringLiteral("Modify bitmaps");
-	SDK_Drawing::UndoScope undoScope(s);
 
 	for (int i = 0; i <= 3; i++)
 	{
