@@ -334,8 +334,9 @@ void FreezeManager::setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* s
 
 	const double defaultXRatio = 4;
 	const double defaultYRatio = 3;
-	const double currentRatio = sceneMetrics->toOGLX(1) / sceneMetrics->toOGLY(1);
-	const double aspectOffset = defaultXRatio - (currentRatio * defaultYRatio);
+	const double designAspectRatio = sceneMetrics->designAspectRatio();
+
+	const double aspectOffset = defaultXRatio - (designAspectRatio * defaultYRatio);
 
 	const double defaultXUnits = 12;
 	const double defaultYUnits = 12;
