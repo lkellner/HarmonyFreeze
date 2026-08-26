@@ -244,7 +244,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 
 	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
 
-	const bool isTurnBefore = true; //TODO: get proper value
+	const bool isTurnBefore = findAttribute<AT_BoolAttr>(QLatin1String("TURN_BEFORE_ALIGNMENT"))->localValue();
 
 	const double imageAspectRatio = (isTurnBefore ? 4.0 / 3.0 : 3.0 /4.0);
 	const double aspectRatioDifference = imageAspectRatio - designAspectRatio;
@@ -272,7 +272,6 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 		if (base)
 		{
 			alignment = AT_Enums::AlignmentRule(base->localValueInt());
-
 		}
 	}
 
@@ -286,81 +285,131 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 	{
 		alignmentMatrix.translate(aspectRatioDifference, 0.0, 0.0);
 		alignmentMatrix.translate(-(1 - fieldChartRatio) * imageAspectRatio, 0.0, 0.0);
-		//compensate for a smaller FC in image
+
+		if(isTurnBefore)
+			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
+
 		break;
 	}
 	case(AT_Enums::RIGHT):
 	{
 		alignmentMatrix.translate(-aspectRatioDifference, 0.0, 0.0);
 		alignmentMatrix.translate((1 - fieldChartRatio) * imageAspectRatio, 0.0, 0.0);
-		//compensate for a smaller FC in image
+
+		if(isTurnBefore)
+			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
+
 		break;
 	}
 	case(AT_Enums::TOP):
 	{
 		alignmentMatrix.translate(0.0, 1 - aspectRatioQuotient, 0.0);
 		alignmentMatrix.translate(0.0, (1 - fieldChartRatio) * aspectRatioQuotient, 0.0);
-		//compensate for a smaller FC in image
-		alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+
+		if (isTurnBefore)
+			alignmentMatrix.scale(designAspectRatio, designAspectRatio);
+		else
+			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+
 		break;
 	}
 	case(AT_Enums::BOTTOM):
 	{
 		alignmentMatrix.translate(0.0, -1 + aspectRatioQuotient, 0.0);
 		alignmentMatrix.translate(0.0, -(1 - fieldChartRatio) * aspectRatioQuotient, 0.0);
-		//compensate for a smaller FC in image
-		alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+
+		if(isTurnBefore)
+			alignmentMatrix.scale(designAspectRatio, designAspectRatio);
+		else
+			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+
 		break;
 	}
 	case(AT_Enums::CENTER_FILL):
 	{
 		if (imageAspectRatio < designAspectRatio)
 		{
-			//Only need to adjust for narrow cases
-			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+			//Narrow
+			if(isTurnBefore)
+				alignmentMatrix.scale(designAspectRatio, designAspectRatio);
+			else
+				alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
 		}
+		else if (isTurnBefore)
+		{
+			//Wide
+			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
+		}
+		
 		break;
 	}
 	case(AT_Enums::CENTER_FIT):
 	{
-		if (imageAspectRatio > designAspectRatio)
+		if (imageAspectRatio < designAspectRatio && isTurnBefore)
 		{
-			//Only need to adjust for wide cases
-			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+			//Narrow
+			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
 		}
+		else
+		{
+			//Wide
+			if(!isTurnBefore)
+				alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+			else
+				alignmentMatrix.scale(designAspectRatio, designAspectRatio);
+		}
+
 		break;
 	}
 	case(AT_Enums::CENTER_LR):
 	{
-		//Do nothing, it's already "CENTER_LR"
+		if(isTurnBefore)
+			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
+		//Only needs to be adjusted in case of "isTurnBefore". Otherwise it's already "CENTER_LR"
 		break;
 	}
 	case(AT_Enums::CENTER_TB):
 	{
-		alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+		if (isTurnBefore)
+			alignmentMatrix.scale(designAspectRatio, designAspectRatio);
+		else
+			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+
 		break;
 	}
 	case(AT_Enums::STRETCH):
 	{
-		alignmentMatrix.scale(aspectRatioQuotient, 1.0);
+		if(isTurnBefore)
+			alignmentMatrix.scale(designAspectRatio, imageAspectRatio);
+		else
+			alignmentMatrix.scale(aspectRatioQuotient, 1.0);
+
 		break;
 	}
 	case(AT_Enums::CENTER_FIRST_PAGE):
 	{
 		if (imageAspectRatio < designAspectRatio && !forTvg)
 		{
-			// bottom align.
+			// Bottom align.
 			alignmentMatrix.translate(0.0, -1 + aspectRatioQuotient, 0.0);
 			alignmentMatrix.translate(0.0, -(1 - fieldChartRatio) * (aspectRatioQuotient - 1), 0.0);
-			//compensate for a smaller FC in image
+
 			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+
+			if(isTurnBefore)
+				alignmentMatrix.scale(designAspectRatio, designAspectRatio);
 		}
 		else
 		{
-			// left align.
+			// Left align.
 			alignmentMatrix.translate(aspectRatioDifference, 0, 0);
 			alignmentMatrix.translate(-(1 - fieldChartRatio) * aspectRatioDifference, 0, 0);
+
+			if (isTurnBefore)
+				alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
 		}
+
+		break;
 	}
 	default:
 	;
