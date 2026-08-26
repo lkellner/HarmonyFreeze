@@ -239,6 +239,7 @@ void ElementModule::updateDrawingPivotConversionStatus()
 Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 {
 	Math::Matrix4x4 flipMatrix = getElementFlipMatrix(getModulePtr());
+	flipMatrix.print("flip matrix!");
 
 	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
 	const double fieldChartVal = fieldChart->localValue();
@@ -247,11 +248,17 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
 	const double imageAspectRatio = 4.0 / 3.0;
 
+	printf("field chart Ratio %f\n", fieldChartRatio);
+	printf("designAspectRatio %f\n", designAspectRatio);
+	printf("imageAspectRatio %f\n", imageAspectRatio);
+	printf("ratio differences %f\n", imageAspectRatio - designAspectRatio);
+
+
 	Math::Matrix4x4 alignmentMatrix = Math::Matrix4x4().translate(imageAspectRatio - designAspectRatio, 0, 0);
 	alignmentMatrix.translate(-(1 - fieldChartRatio) * (imageAspectRatio - designAspectRatio), 0, 0);
 	alignmentMatrix.scale(fieldChartRatio, fieldChartRatio);
 
-	return alignmentMatrix * flipMatrix;
+	return flipMatrix * alignmentMatrix;
 }
 
 void ElementModule::readjustSecondary()
