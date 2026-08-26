@@ -42,6 +42,8 @@ public:
 	void setChangeMatrix(const Math::Matrix4x4 matrix) { m_changeMatrix = matrix; };
 
 private:
+	Math::Matrix4x4 getAlignmentMatrix();
+
 	void saveDrawingPivots();
 	void recalculateDrawingPivots(const Math::Matrix4x4& matrix);
 	void updateDrawingPivotConversionStatus();

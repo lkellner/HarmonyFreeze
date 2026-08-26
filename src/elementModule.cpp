@@ -236,6 +236,24 @@ void ElementModule::updateDrawingPivotConversionStatus()
 }
 
 
+Math::Matrix4x4 ElementModule::getAlignmentMatrix()
+{
+	Math::Matrix4x4 flipMatrix = getElementFlipMatrix(getModulePtr());
+
+	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
+	const double fieldChartVal = fieldChart->localValue();
+	const double fieldChartRatio = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();
+
+	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
+	const double imageAspectRatio = 4.0 / 3.0;
+
+	Math::Matrix4x4 alignmentMatrix = Math::Matrix4x4().translate(imageAspectRatio - designAspectRatio, 0, 0);
+	alignmentMatrix.translate(-(1 - fieldChartRatio) * (imageAspectRatio - designAspectRatio), 0, 0);
+	alignmentMatrix.scale(fieldChartRatio, fieldChartRatio);
+
+	return alignmentMatrix * flipMatrix;
+}
+
 void ElementModule::readjustSecondary()
 {
 	updateDrawingPivotConversionStatus();
@@ -243,24 +261,9 @@ void ElementModule::readjustSecondary()
 	FreezeManager* fm = getFreezeManagerPtr();
 	m_changeMatrix = fm->getFreezeMatrix();
 
-	Math::Matrix4x4 flipMatrix = getElementFlipMatrix(getModulePtr());
 
-	auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
-	printf("field chart val: %f\n", fieldChart->localValue());
-	const double fieldChartVal = fieldChart->localValue();
-	const double fieldChartRatio = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();
+	const Math::Matrix4x4 alignmentMatrix = getAlignmentMatrix();
 
-	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
-	double imageAspectRatio = 4.0 / 3.0;
-
-	Math::Matrix4x4 alignmentMatrix = Math::Matrix4x4().translate(imageAspectRatio - designAspectRatio, 0, 0);
-	alignmentMatrix.translate(-(1 - fieldChartRatio) * (imageAspectRatio - designAspectRatio), 0, 0);
-	alignmentMatrix.scale(fieldChartRatio, fieldChartRatio);
-
-
-	//Usually one would be flipMatrix.getInverse() however this one is inverse to itself
-	m_changeMatrix = flipMatrix * m_changeMatrix * flipMatrix;
-	//m_changeMatrix = fm->getSceneSettingsMatrix().getInverse() * m_changeMatrix * fm->getSceneSettingsMatrix();
 	m_changeMatrix = alignmentMatrix.getInverse() * m_changeMatrix * alignmentMatrix;
 
 	if (m_isConvertDrawingPivots)
