@@ -350,6 +350,13 @@ void FreezeManager::setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* s
 	m_unitOffsetScaleMatrix = Math::Matrix4x4().scale(1, unitOffsetScaleFactor,1);
 	m_ratioMatrix = Math::Matrix4x4().translate(sceneMetrics->toOGLY(aspectOffset * (defaultXRatio)), 0, 0);
 
+	printf("aspect offset %f\n", aspectOffset);
+	printf("ratio matrix translate %f\n", sceneMetrics->toOGLY(aspectOffset * (defaultXRatio)));
+
+	double imageAspectRatio = 4.0 / 3.0;
+	printf("imageAspectRatio %f\n", imageAspectRatio);
+	printf("imageAspectRatio - designAspectRatio %f\n", imageAspectRatio - designAspectRatio);
+
 	m_sceneSettingsMatrix = m_ratioMatrix * m_zoomMatrix * m_unitOffsetMatrix;
 }
 
