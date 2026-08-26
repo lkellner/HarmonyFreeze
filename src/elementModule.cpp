@@ -238,27 +238,141 @@ void ElementModule::updateDrawingPivotConversionStatus()
 
 Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 {
-	Math::Matrix4x4 flipMatrix = getElementFlipMatrix(getModulePtr());
-	flipMatrix.print("flip matrix!");
-
 	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
 	const double fieldChartVal = fieldChart->localValue();
 	const double fieldChartRatio = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();
 
 	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
-	const double imageAspectRatio = 4.0 / 3.0;
+
+	const bool isTurnBefore = true; //TODO: get proper value
+
+	const double imageAspectRatio = (isTurnBefore ? 4.0 / 3.0 : 3.0 /4.0);
+	const double aspectRatioDifference = imageAspectRatio - designAspectRatio;
+	const double aspectRatioQuotient = designAspectRatio / imageAspectRatio;
 
 	printf("field chart Ratio %f\n", fieldChartRatio);
 	printf("designAspectRatio %f\n", designAspectRatio);
 	printf("imageAspectRatio %f\n", imageAspectRatio);
-	printf("ratio differences %f\n", imageAspectRatio - designAspectRatio);
+	printf("ratio differences %f\n", aspectRatioDifference);
+
+	bool forTvg = true; //TODO: implement for false, might have to go image by image?
+	/*
+	if (!forTvg)
+		sf *= scaleFactor;
+		*/
 
 
-	Math::Matrix4x4 alignmentMatrix = Math::Matrix4x4().translate(imageAspectRatio - designAspectRatio, 0, 0);
-	alignmentMatrix.translate(-(1 - fieldChartRatio) * (imageAspectRatio - designAspectRatio), 0, 0);
-	alignmentMatrix.scale(fieldChartRatio, fieldChartRatio);
+	//TODO: can probably simplify this
+	AT_Enums::AlignmentRule alignment = AT_Enums::ASIS;
+	
+	AT_Attr* att = getModulePtr()->findAttributeByKeyword(QStringLiteral("ALIGNMENT_RULE"));
+	if (att)
+	{
+		AT_EnumAttrBase* base = dynamic_cast<AT_EnumAttrBase*>(att);
+		if (base)
+		{
+			alignment = AT_Enums::AlignmentRule(base->localValueInt());
 
-	return flipMatrix * alignmentMatrix;
+		}
+	}
+
+	Math::Matrix4x4 alignmentMatrix = Math::Matrix4x4();
+
+
+
+	switch (alignment)
+	{
+	case(AT_Enums::LEFT):
+	{
+		alignmentMatrix.translate(aspectRatioDifference, 0.0, 0.0);
+		alignmentMatrix.translate(-(1 - fieldChartRatio) * imageAspectRatio, 0.0, 0.0);
+		//compensate for a smaller FC in image
+		break;
+	}
+	case(AT_Enums::RIGHT):
+	{
+		alignmentMatrix.translate(-aspectRatioDifference, 0.0, 0.0);
+		alignmentMatrix.translate((1 - fieldChartRatio) * imageAspectRatio, 0.0, 0.0);
+		//compensate for a smaller FC in image
+		break;
+	}
+	case(AT_Enums::TOP):
+	{
+		alignmentMatrix.translate(0.0, 1 - aspectRatioQuotient, 0.0);
+		alignmentMatrix.translate(0.0, (1 - fieldChartRatio) * aspectRatioQuotient, 0.0);
+		//compensate for a smaller FC in image
+		alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+		break;
+	}
+	case(AT_Enums::BOTTOM):
+	{
+		alignmentMatrix.translate(0.0, -1 + aspectRatioQuotient, 0.0);
+		alignmentMatrix.translate(0.0, -(1 - fieldChartRatio) * aspectRatioQuotient, 0.0);
+		//compensate for a smaller FC in image
+		alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+		break;
+	}
+	case(AT_Enums::CENTER_FILL):
+	{
+		if (imageAspectRatio < designAspectRatio)
+		{
+			//Only need to adjust for narrow cases
+			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+		}
+		break;
+	}
+	case(AT_Enums::CENTER_FIT):
+	{
+		if (imageAspectRatio > designAspectRatio)
+		{
+			//Only need to adjust for wide cases
+			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+		}
+		break;
+	}
+	case(AT_Enums::CENTER_LR):
+	{
+		//Do nothing, it's already "CENTER_LR"
+		break;
+	}
+	case(AT_Enums::CENTER_TB):
+	{
+		alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+		break;
+	}
+	case(AT_Enums::STRETCH):
+	{
+		alignmentMatrix.scale(aspectRatioQuotient, 1.0);
+		break;
+	}
+	case(AT_Enums::CENTER_FIRST_PAGE):
+	{
+		if (imageAspectRatio < designAspectRatio && !forTvg)
+		{
+			// bottom align.
+			alignmentMatrix.translate(0.0, -1 + aspectRatioQuotient, 0.0);
+			alignmentMatrix.translate(0.0, -(1 - fieldChartRatio) * (aspectRatioQuotient - 1), 0.0);
+			//compensate for a smaller FC in image
+			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
+		}
+		else
+		{
+			// left align.
+			alignmentMatrix.translate(aspectRatioDifference, 0, 0);
+			alignmentMatrix.translate(-(1 - fieldChartRatio) * aspectRatioDifference, 0, 0);
+		}
+	}
+	default:
+	;
+	}
+	
+
+	if (forTvg)
+		alignmentMatrix.scale(fieldChartRatio, fieldChartRatio);
+	else
+		alignmentMatrix.scale(fieldChartRatio, fieldChartRatio, fieldChartRatio);
+
+	return getElementFlipMatrix(getModulePtr()) * alignmentMatrix;
 }
 
 void ElementModule::readjustSecondary()
