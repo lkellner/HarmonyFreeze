@@ -250,11 +250,6 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 	const double aspectRatioDifference = imageAspectRatio - designAspectRatio;
 	const double aspectRatioQuotient = designAspectRatio / imageAspectRatio;
 
-	printf("field chart Ratio %f\n", fieldChartRatio);
-	printf("designAspectRatio %f\n", designAspectRatio);
-	printf("imageAspectRatio %f\n", imageAspectRatio);
-	printf("ratio differences %f\n", aspectRatioDifference);
-
 	bool forTvg = true; //TODO: implement for false, might have to go image by image?
 	/*
 	if (!forTvg)
@@ -403,7 +398,6 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 			// Left align.
 			alignmentMatrix.translate(aspectRatioDifference, 0, 0);
 			alignmentMatrix.translate(-(1 - fieldChartRatio) * aspectRatioDifference, 0, 0);
-			printf("here\n");
 			
 			if (isTurnBefore)
 				alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
