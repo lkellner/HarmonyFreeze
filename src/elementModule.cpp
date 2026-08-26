@@ -415,6 +415,11 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 	;
 	}
 	
+	if (isTurnBefore)
+	{
+		alignmentMatrix.rotateDegrees(90);
+	}
+
 
 	if (forTvg)
 		alignmentMatrix.scale(fieldChartRatio, fieldChartRatio);
