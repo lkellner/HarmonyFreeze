@@ -246,7 +246,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 
 	const bool isTurnBefore = findAttribute<AT_BoolAttr>(QLatin1String("TURN_BEFORE_ALIGNMENT"))->localValue();
 
-	const double imageAspectRatio = (isTurnBefore ? 4.0 / 3.0 : 3.0 /4.0);
+	const double imageAspectRatio = (isTurnBefore ? 3.0 / 4.0 : 4.0 / 3.0);
 	const double aspectRatioDifference = imageAspectRatio - designAspectRatio;
 	const double aspectRatioQuotient = designAspectRatio / imageAspectRatio;
 
@@ -275,8 +275,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 		}
 	}
 
-	Math::Matrix4x4 alignmentMatrix = Math::Matrix4x4();
-
+	Math::Matrix4x4 alignmentMatrix;
 
 
 	switch (alignment)
@@ -404,7 +403,8 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 			// Left align.
 			alignmentMatrix.translate(aspectRatioDifference, 0, 0);
 			alignmentMatrix.translate(-(1 - fieldChartRatio) * aspectRatioDifference, 0, 0);
-
+			printf("here\n");
+			
 			if (isTurnBefore)
 				alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
 		}
@@ -423,6 +423,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 
 	return getElementFlipMatrix(getModulePtr()) * alignmentMatrix;
 }
+
 
 void ElementModule::readjustSecondary()
 {
