@@ -624,8 +624,10 @@ void printAttributes(AT_AttrList attributes)
 	for (const AT_AttrDesc & attribute : attributes)
 	{
 		const QString keyword = attribute._pAttr->keyword();
+		const QString type = attribute._pAttr->typeName();
 
 		printf("Attribute name: %s\n", keyword.toUtf8().data());
+		printf("Attribute type name: %s\n", type.toUtf8().data());
 	}
 }
 

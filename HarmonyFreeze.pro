@@ -69,6 +69,7 @@ HEADERS += \
 	src/oglControllerModule.h\
 	src/drawingTransformationModule.h\
 	src/pegModule.h\
+	src/pkoModule.h\
 
 
 # Input
@@ -85,6 +86,8 @@ SOURCES += src/freezeTransformation.cpp\
 	src/oglControllerModule.cpp\
 	src/drawingTransformationModule.cpp\
 	src/pegModule.cpp\
+	src/pkoModule.cpp\
+
 
 win32 {
 	LIBS += \
