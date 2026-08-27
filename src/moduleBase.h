@@ -23,6 +23,7 @@ enum class ModuleType
 	OGL_CONTROLLER,
 	CURVE_OFFSET,
 	CURVE,
+	PKO,
 };
 
 class ModuleBase
