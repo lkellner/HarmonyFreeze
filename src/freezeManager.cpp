@@ -326,31 +326,16 @@ void FreezeManager::setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* s
 	m_offsetMatrix = Math::Matrix4x4().translate(OffsetX, OffsetY, 0);
 	m_freezeMatrix = m_offsetMatrix * m_freezeMatrix;
 
-
 	//These conversions seem to be necessary for whenever there is a different aspect ratio or
-	//number of units. In this case the vector drawings coordinate system does not seem to have
-	//the same origin as the peg coordinate system. It is quite likely that the hereafter calculated
-	//cornversion matrices can alreay readily be obtained elsewhere and just haven't been found
-
-	const double defaultXRatio = 4;
-	const double defaultYRatio = 3;
-	const double designAspectRatio = sceneMetrics->designAspectRatio();
-
-	const double aspectOffset = defaultXRatio - (designAspectRatio * defaultYRatio);
+	//number of units. Only the matrix for the Curve Module is being calculated here as matrices
+	//to adjust the drawings need to take factors into account that differ depending on the node
+	//settings
 
 	const double defaultXUnits = 12;
 	const double defaultYUnits = 12;
-	const double unitOffset = defaultXUnits - sceneMetrics->designFieldChartX() - (defaultYUnits - sceneMetrics->designFieldChartY());
 	const double unitOffsetScaleFactor = defaultXUnits  * sceneMetrics->designFieldChartY() / sceneMetrics->designFieldChartX() / defaultYUnits;
 
-	const double zoomFactor = defaultYUnits / sceneMetrics->designFieldChartY();
-
-	m_zoomMatrix = Math::Matrix4x4().scale(zoomFactor, zoomFactor, 1);
-	m_unitOffsetMatrix = Math::Matrix4x4().translate(sceneMetrics->toOGLX(unitOffset), 0, 0);
 	m_unitOffsetScaleMatrix = Math::Matrix4x4().scale(1, unitOffsetScaleFactor,1);
-	m_ratioMatrix = Math::Matrix4x4().translate(sceneMetrics->toOGLY(aspectOffset * (defaultXRatio)), 0, 0);
-
-	m_sceneSettingsMatrix = m_ratioMatrix * m_zoomMatrix * m_unitOffsetMatrix;
 }
 
 

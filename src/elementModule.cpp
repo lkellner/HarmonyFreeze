@@ -238,6 +238,10 @@ void ElementModule::updateDrawingPivotConversionStatus()
 
 Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 {
+	//The aligmentMatrix depends on a variety of factors: Scene settings, 
+	//settings on the element modules, as well as the scene settings (Number of Units) that were
+	//in effect during the time, the element module was being created (saved as the "FIELD_CHART" sub attribute
+
 	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
 	const double fieldChartVal = fieldChart->localValue();
 	const double fieldChartRatio = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();

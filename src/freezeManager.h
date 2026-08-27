@@ -48,7 +48,6 @@ public:
 	void setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* sceneMetrics);
 	Math::Matrix4x4 getFreezeMatrix() { return m_freezeMatrix; };
 	Math::Matrix4x4 getOffsetMatrix() { return m_offsetMatrix; };
-	Math::Matrix4x4 getSceneSettingsMatrix() { return m_sceneSettingsMatrix; };
 	Math::Matrix4x4 getUnitOffsetScaleMatrix() { return m_unitOffsetScaleMatrix; };
 
 
@@ -114,11 +113,7 @@ private:
 
 	Math::Matrix4x4 m_freezeMatrix;
 	Math::Matrix4x4 m_offsetMatrix;
-	Math::Matrix4x4 m_zoomMatrix;
-	Math::Matrix4x4 m_unitOffsetMatrix;
 	Math::Matrix4x4 m_unitOffsetScaleMatrix;
-	Math::Matrix4x4 m_ratioMatrix;
-	Math::Matrix4x4 m_sceneSettingsMatrix;
 
 	QFile m_file;
 	QTemporaryFile m_tempFile;

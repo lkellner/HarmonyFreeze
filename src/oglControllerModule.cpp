@@ -266,15 +266,14 @@ void OglControllerModule::modifyInputModules(Math::Matrix4x4 inputChangeMatrix)
 		QString layerAttr = getLayerAttr(inputModule);
 
 		Math::Matrix4x4 inputMatrix = inputModule->getModelMatrix(MO_FrameKey(fm->getSelFrame()));
-		Math::Matrix4x4 flipMatrix = getElementFlipMatrix(inputModule);
-
-		inputMatrix = inputMatrix * flipMatrix * fm->getSceneSettingsMatrix();
-
-		inputChangeMatrix = inputMatrix.getInverse() * inputChangeMatrix * inputMatrix;
 
 		fm->addElement(curId, layerAttr, hasUsedDrawingPivots(inputModule));
 
 		std::shared_ptr<ElementModule> elementModule = std::make_shared<ElementModule>(fm, inputModule, ModuleType::ELEMENT);
+
+		inputMatrix = inputMatrix * elementModule->getAlignmentMatrix();
+
+		inputChangeMatrix = inputMatrix.getInverse() * inputChangeMatrix * inputMatrix;
 
 		elementModule->setChangeMatrix(inputChangeMatrix);
 		elementModule->modifyTimings();
