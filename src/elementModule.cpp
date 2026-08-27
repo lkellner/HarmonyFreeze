@@ -234,11 +234,11 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 {
 	//The aligmentMatrix depends on a variety of factors: Alignment Scene Settings, 
 	//ALignment Settings on the element modules themselves, as well as the Scene Settings (Number of Units) that
-	//were in effect during the time, the element module was being created (saved as the "FIELD_CHART" sub attribute
+	//were in effect during the time, the element module was being created (saved as the "FIELD_CHART" sub attribute)
 
 	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
 	const double fieldChartVal = fieldChart->localValue();
-	const double fieldChartRatio = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();
+	const double  = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();
 
 	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
 
@@ -252,11 +252,19 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 	const double aspectRatioDifference = imageAspectRatio - designAspectRatio;
 	const double aspectRatioQuotient = designAspectRatio / imageAspectRatio;
 
-	bool forTvg = true; //TODO: implement for false, might have to go image by image?
-	/*
+	const bool forTvg = true; 
+	const double scaleFactor = 1.0;
+
+	//Currently only tvg drawings are being supported. 
+	//If support for non-tvg drawings ends up being included, 
+	//the following changes need to be made:
+	//-Identify whether the drawing is a tvg (and tvgo?) or not (e.g. via AT_ElementAttr -> CA_CelKey)
+	//-Get individual imageAspectRatio instead of the tvg default 3:4 (e.g. via CEL_Cel)
+	//	(might need to recalculate the aligmentMatrix for each drawing)
+	//-Retrieve the scaleFactor, potentially via AT_ElementAttr
+
 	if (!forTvg)
-		sf *= scaleFactor;
-		*/
+		fieldChartRatio *= scaleFactor;
 
 	AT_EnumAttrBase* alignmentAttr = findAttribute<AT_EnumAttrBase>(QLatin1String("ALIGNMENT_RULE"));
 
