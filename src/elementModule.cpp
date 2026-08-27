@@ -238,9 +238,9 @@ void ElementModule::updateDrawingPivotConversionStatus()
 
 Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 {
-	//The aligmentMatrix depends on a variety of factors: Scene settings, 
-	//settings on the element modules, as well as the scene settings (Number of Units) that were
-	//in effect during the time, the element module was being created (saved as the "FIELD_CHART" sub attribute
+	//The aligmentMatrix depends on a variety of factors: Alignment Scene Settings, 
+	//ALignment Settings on the element modules themselves, as well as the Scene Settings (Number of Units) that
+	//were in effect during the time, the element module was being created (saved as the "FIELD_CHART" sub attribute
 
 	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
 	const double fieldChartVal = fieldChart->localValue();
@@ -248,7 +248,11 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 
 	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
 
-	const bool isTurnBefore = findAttribute<AT_BoolAttr>(QLatin1String("TURN_BEFORE_ALIGNMENT"))->localValue();
+	AT_BoolAttr* turnBeforeAttr = findAttribute<AT_BoolAttr>(QLatin1String("TURN_BEFORE_ALIGNMENT"));
+	if (!turnBeforeAttr)
+		return {};
+
+	const bool isTurnBefore = turnBeforeAttr->localValue();
 
 	const double imageAspectRatio = (isTurnBefore ? 3.0 / 4.0 : 4.0 / 3.0);
 	const double aspectRatioDifference = imageAspectRatio - designAspectRatio;
@@ -260,19 +264,12 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 		sf *= scaleFactor;
 		*/
 
+	AT_EnumAttrBase* alignmentAttr = findAttribute<AT_EnumAttrBase>(QLatin1String("ALIGNMENT_RULE"));
 
-	//TODO: can probably simplify this
-	AT_Enums::AlignmentRule alignment = AT_Enums::ASIS;
-	
-	AT_Attr* att = getModulePtr()->findAttributeByKeyword(QStringLiteral("ALIGNMENT_RULE"));
-	if (att)
-	{
-		AT_EnumAttrBase* base = dynamic_cast<AT_EnumAttrBase*>(att);
-		if (base)
-		{
-			alignment = AT_Enums::AlignmentRule(base->localValueInt());
-		}
-	}
+	if (!alignmentAttr)
+		return {};
+
+	AT_Enums::AlignmentRule alignment = AT_Enums::AlignmentRule(alignmentAttr->localValueInt());
 
 	Math::Matrix4x4 alignmentMatrix;
 
@@ -388,7 +385,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 	{
 		if (imageAspectRatio < designAspectRatio && !forTvg)
 		{
-			// Bottom align.
+			//Bottom align
 			alignmentMatrix.translate(0.0, -1 + aspectRatioQuotient, 0.0);
 			alignmentMatrix.translate(0.0, -(1 - fieldChartRatio) * (aspectRatioQuotient - 1), 0.0);
 
@@ -399,7 +396,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 		}
 		else
 		{
-			// Left align.
+			//Left align
 			alignmentMatrix.translate(aspectRatioDifference, 0, 0);
 			alignmentMatrix.translate(-(1 - fieldChartRatio) * aspectRatioDifference, 0, 0);
 			
@@ -414,9 +411,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 	}
 	
 	if (isTurnBefore)
-	{
 		alignmentMatrix.rotateDegrees(90);
-	}
 
 
 	if (forTvg)
