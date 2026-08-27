@@ -179,9 +179,6 @@ void ElementModule::processVectorDrawingLayers(GR_DrawingAccess &drawingAccess,c
 
 void ElementModule::processVectorData(const CA_CelPtr celPtr, GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
 {
-	const QString s = QStringLiteral("Modify vector drawings");
-	SDK_Drawing::UndoScope undoScope(s);
-
 	GR_DrawingAccess drawingAccess;
 	GR_ColorDict dict;
 
@@ -218,7 +215,6 @@ void ElementModule::processVectorData(const CA_CelPtr celPtr, GR_CompositeVector
 		}
 
 		drawingAccess.EndOperations();
-		changeScope.stopListeningForChanges(drawingAccess);
 	}
 }
 
