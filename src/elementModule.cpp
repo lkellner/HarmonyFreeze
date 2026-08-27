@@ -50,8 +50,6 @@ void ElementModule::processBitmaps(const CA_CelPtr celPtr, GR_CompositeVectorDra
 	if (!getFreezeManagerPtr()->isExperimentalMode())
 		return;
 
-	const QString s = QStringLiteral("Modify bitmaps");
-
 	for (int i = 0; i <= 3; i++)
 	{
 		GR_VectorDrawingObj* drawingLayer = compDrawing->GetArt(i);
