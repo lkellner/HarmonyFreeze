@@ -238,7 +238,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 
 	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
 	const double fieldChartVal = fieldChart->localValue();
-	const double  = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();
+	double fieldChartRatio = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();
 
 	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
 
