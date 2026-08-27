@@ -30,13 +30,14 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 	ModuleWrappers moduleWrappers;
 	moduleWrappers.reserve(nodes.size());
 
-
 	for (MO_Node* node : nodes)
 	{
 		if (!node->toModule())
 		{
 			continue;
 		}
+
+		printf("node type: %s\n", qPrintable(node->keyword()));
 
 		if (node->keyword() == QLatin1String("READ"))
 		{
@@ -81,6 +82,11 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 		if (node->keyword() == QLatin1String("OglController"))
 		{
 			moduleWrappers.push_back(std::make_unique <OglControllerModule>(freezeManager, node->toModule(), ModuleType::OGL_CONTROLLER));
+		}
+
+		if (node->keyword() == QLatin1String("DeformTransformOut"))
+		{
+			moduleWrappers.push_back(std::make_unique <PkoModule>(freezeManager, node->toModule(), ModuleType::PKO));
 		}
 
 		if (!moduleWrappers.empty())

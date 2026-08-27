@@ -14,6 +14,7 @@
 #include "oglControllerModule.h"
 #include "pegModule.h"
 #include "staticTransformationModule.h"
+#include "pkoModule.h"
 #include "utils.h"
 
 #include <Util/pluginmanager/PLUG_Services.h>
