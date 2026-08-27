@@ -179,7 +179,6 @@ void ElementModule::processVectorDrawingLayers(GR_DrawingAccess &drawingAccess,c
 
 void ElementModule::processVectorData(const CA_CelPtr celPtr, GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
 {
-	//Temporarily moved undo scope here to isolate bitmap tests
 	const QString s = QStringLiteral("Modify vector drawings");
 	SDK_Drawing::UndoScope undoScope(s);
 
