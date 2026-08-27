@@ -215,6 +215,7 @@ void ElementModule::processVectorData(const CA_CelPtr celPtr, GR_CompositeVector
 		}
 
 		drawingAccess.EndOperations();
+		changeScope.stopListeningForChanges(drawingAccess);
 	}
 }
 
