@@ -36,6 +36,12 @@ public:
 			ModuleType moduleType);
 
 	void readjustSecondary();
+
+
+private:
+	AT_Position2dAttr* m_pivot01Attr;
+	AT_Position2dAttr* m_pivot02Attr;
+	AT_Position2dAttr* m_pivot03Attr;
 };
 
 #endif
