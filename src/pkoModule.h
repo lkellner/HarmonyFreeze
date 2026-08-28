@@ -41,6 +41,7 @@ public:
 private:
 	void processPivot(Math::Matrix4x4 changeMatrix, AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro);
 	void setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro);
+	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, double frameNo);
 
 	AT_Position2dAttr* m_pivot01Attr;
 	AT_Position2dAttr* m_pivot02Attr;

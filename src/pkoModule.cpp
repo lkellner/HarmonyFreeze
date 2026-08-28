@@ -50,6 +50,18 @@ void PkoModule::processPivot(Math::Matrix4x4 changeMatrix, AT_Position2dAttr* pi
 	pos3d = changeMatrix * pos3d;
 
 	setStaticAttributes(pos3d, pivotAttr, pivotKeyword, curMacro);
+
+	FrameRange range = getFrameRange();
+
+	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
+	{
+		pivotAttr->getValue(curFrame, position);
+		pos3d = Math::Point3d(position);
+
+		pos3d = changeMatrix * pos3d;
+
+		setAttributes(pos3d, pivotAttr, pivotKeyword, curMacro, curFrame);
+	}
 }
 
 void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro)
@@ -73,5 +85,43 @@ void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* a
 			StaticAttrData{ attributeKeyword + QLatin1String(".x"), position.x() },
 			StaticAttrData{ attributeKeyword + QLatin1String(".y"), position.y() });
 	}
+}
 
+
+void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, double frameNo)
+{
+	clampValues(position);
+
+	Math::Point2d tempPoint;
+
+	bool isPosCtrlPnt = false;
+	bool isConstSeg = false;
+
+
+	attr->getValue(frameNo, tempPoint, &isPosCtrlPnt, &isConstSeg); //FIXME interface change
+
+	//Similar to transformation module, can't set local value of combined paths
+
+	FreezeManager* fm = getFreezeManagerPtr();
+
+	if (fm->isExperimentalMode())
+	{
+		//C++
+		if (isPosCtrlPnt)
+			curMacro.add(Attr::Position2d::createSetValueCmd(attr, frameNo, position.x(), position.y()));
+	}
+	else
+	{
+		//JS
+
+		fm->applyAttributes(getModulePtr()->qualifiedName(),
+			StaticAttrData{ attributeKeyword + QLatin1String(".x"), position.x() },
+			StaticAttrData{ attributeKeyword + QLatin1String(".y"), position.y() });
+
+		fm->applyAttributes(getModulePtr()->qualifiedName(),
+			TextAttrData{ attributeKeyword + QLatin1String(".3DPATH.X"), position.x(), frameNo, isPosCtrlPnt },
+			TextAttrData{ attributeKeyword + QLatin1String(".3DPATH.Y"), position.y(), frameNo, isPosCtrlPnt },
+			AttrData{ attributeKeyword + QLatin1String(".x"), position.x(), frameNo, isPosCtrlPnt },
+			AttrData{ attributeKeyword + QLatin1String(".y"), position.y(), frameNo, isPosCtrlPnt });
+	}
 }
