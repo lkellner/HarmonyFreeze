@@ -37,8 +37,6 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 			continue;
 		}
 
-		printf("node type: %s\n", qPrintable(node->keyword()));
-
 		if (node->keyword() == QLatin1String("READ"))
 		{
 			moduleWrappers.push_back(std::make_unique <DrawingTransformationModule>(freezeManager, node->toModule(),
