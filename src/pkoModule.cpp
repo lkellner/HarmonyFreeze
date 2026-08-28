@@ -20,8 +20,6 @@ PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 		throw std::runtime_error("missing attribute: 'm_pivot02Attr' for " + modulePtr->qualifiedName().toStdString());
 	if (!m_pivot03Attr)
 		throw std::runtime_error("missing attribute: 'm_pivot03Attr' for " + modulePtr->qualifiedName().toStdString());
-
-	printf("attributes found\n");
 }
 
 void PkoModule::readjustSecondary()
@@ -31,17 +29,27 @@ void PkoModule::readjustSecondary()
 	Math::Matrix4x4 oglChangeMatrix = fm->getFreezeMatrix();
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
 
-	Math::Point2d position;
-	m_pivot01Attr->getLocalValue(position);
-	Math::Point3d pos3d = Math::Point3d(position);
-
-	pos3d = fieldsChangeMatrix * pos3d;
+	
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
-	setStaticAttributes(pos3d, m_pivot01Attr, QLatin1String("pivot1"), *curMacro);
+	processPivot(fieldsChangeMatrix, m_pivot01Attr, QLatin1String("pivot1"), *curMacro);
+	processPivot(fieldsChangeMatrix, m_pivot02Attr, QLatin1String("pivot2"), *curMacro);
+	processPivot(fieldsChangeMatrix, m_pivot03Attr, QLatin1String("pivot3"), *curMacro);
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
+}
+
+
+void PkoModule::processPivot(Math::Matrix4x4 changeMatrix, AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro)
+{
+	Math::Point2d position;
+	pivotAttr->getLocalValue(position);
+	Math::Point3d pos3d = Math::Point3d(position);
+
+	pos3d = changeMatrix * pos3d;
+
+	setStaticAttributes(pos3d, pivotAttr, pivotKeyword, curMacro);
 }
 
 void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro)
