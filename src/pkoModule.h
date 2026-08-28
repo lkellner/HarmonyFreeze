@@ -39,6 +39,8 @@ public:
 
 
 private:
+	void setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro);
+
 	AT_Position2dAttr* m_pivot01Attr;
 	AT_Position2dAttr* m_pivot02Attr;
 	AT_Position2dAttr* m_pivot03Attr;
