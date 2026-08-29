@@ -64,6 +64,14 @@ struct AttrData
 };
 
 
+struct Point2dAttrData
+{
+	QString name;
+	Math::Point2d value;
+	double frameNo;
+	bool isKeyframe;
+};
+
 struct QuaternionAttrData
 {
 	QString name;

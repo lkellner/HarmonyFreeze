@@ -108,6 +108,7 @@ private:
 	void writeAttr(QTextStream& out, const QString& moduleName, const AttrData& attr);
 	void writeAttr(QTextStream& out, const QString& moduleName, const QuaternionAttrData& attr);
 	void writeAttr(QTextStream& out, const QString& moduleName, const std::vector<CelInfo>& pivots);
+	void writeAttr(QTextStream& out, const QString& moduleName, const Point2dAttrData& attr);
 
 	QMutex m_writeMutex;
 
