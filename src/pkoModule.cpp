@@ -2,6 +2,8 @@
 
 #include <SceneCore/module/MO_PortTransform.h>
 #include <GraphicCore/CinematicChain/CC_Transformation.h>
+#include <SceneCore/attribute/AT_Position2dAttr.h>
+
 
 #include <limits>
 #include <stdexcept>
@@ -113,15 +115,74 @@ void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, Q
 	else
 	{
 		//JS
-
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ attributeKeyword + QLatin1String(".x"), position.x() },
-			StaticAttrData{ attributeKeyword + QLatin1String(".y"), position.y() });
-
-		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			TextAttrData{ attributeKeyword + QLatin1String(".3DPATH.X"), position.x(), frameNo, isPosCtrlPnt },
-			TextAttrData{ attributeKeyword + QLatin1String(".3DPATH.Y"), position.y(), frameNo, isPosCtrlPnt },
+			Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, isPosCtrlPnt },
 			AttrData{ attributeKeyword + QLatin1String(".x"), position.x(), frameNo, isPosCtrlPnt },
 			AttrData{ attributeKeyword + QLatin1String(".y"), position.y(), frameNo, isPosCtrlPnt });
 	}
+}
+
+
+FrameRange PkoModule::getFrameRange() const
+{
+	FrameRange range;
+
+	int key;
+
+	//Main attribute only detects point2d keyframes
+	if (m_pivot01Attr->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot01Attr->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot01Attr->separateX()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot01Attr->separateX()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot01Attr->separateY()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot01Attr->separateY()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+	
+	if (m_pivot02Attr->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot02Attr->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot02Attr->separateX()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot02Attr->separateX()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot02Attr->separateY()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot02Attr->separateY()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+	
+	if (m_pivot03Attr->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot03Attr->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot03Attr->separateX()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot03Attr->separateX()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot03Attr->separateY()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_pivot03Attr->separateY()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	return range;
 }
