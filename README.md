@@ -409,7 +409,7 @@ Elements that have been created while using a value different from the default â
 ![Unit offset setting](docs/images/unit-offset.jpg)
 
 
-
+Similarly, only Elements with the default alignment settings ("Alignment Rule" : "Centre First Page") and "Turn Before Alignment" switched off are supported.
 
 ## Curve and Envelope Deformers
 
