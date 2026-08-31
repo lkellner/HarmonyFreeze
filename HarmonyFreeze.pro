@@ -6,6 +6,8 @@ INCLUDEPATH += .
 
 CONFIG += c++2a
 
+QMAKE_CXXFLAGS += -Wswitch
+
 QT += core gui xml widgets
 
 greaterThan(QT_MAJOR_VERSION, 5) {
