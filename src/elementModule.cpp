@@ -8,6 +8,10 @@
 #include <GraphicCore/GraphicLib/GR_BitmapAccess.h>
 #include <GraphicCore/GraphicLib/GR_ColorTransform.h>
 
+#include <SceneCore/attribute/AT_Enums.h>
+
+#include <optional>
+
 // workaround for 24.1 SDK
 namespace Assertion
 {
@@ -230,198 +234,238 @@ void ElementModule::updateDrawingPivotConversionStatus()
 }
 
 
-Math::Matrix4x4 ElementModule::getAlignmentMatrix()
+struct AlignmentContext
 {
-	//The aligmentMatrix depends on a variety of factors: Alignment Scene Settings, 
-	//ALignment Settings on the element modules themselves, as well as the Scene Settings (Number of Units) that
-	//were in effect during the time, the element module was being created (saved as the "FIELD_CHART" sub attribute)
+	Math::Matrix4x4 alignmentMatrix;
+	double aspectRatioDifference;
+	double fieldChartRatio;
+	double imageAspectRatio;
+	double aspectRatioQuotient;
+	double designAspectRatio;
+	bool isTurnBefore;
+	bool forTvg;
+};
 
-	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), getModulePtr());
-	const double fieldChartVal = fieldChart->localValue();
-	double fieldChartRatio = fieldChartVal / getModulePtr()->sceneMetrics()->designFieldChartY();
+static std::optional<AlignmentContext> buildAlignmentContext(MO_Module* modulePtr)
+{
+	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), modulePtr);
+	AT_BoolAttr* turnBeforeAttr = findAttribute<AT_BoolAttr>(QLatin1String("TURN_BEFORE_ALIGNMENT"), modulePtr);
 
-	const double designAspectRatio = getModulePtr()->sceneMetrics()->designAspectRatio();
+	if (!fieldChart || !turnBeforeAttr)
+		return std::nullopt;
 
-	AT_BoolAttr* turnBeforeAttr = findAttribute<AT_BoolAttr>(QLatin1String("TURN_BEFORE_ALIGNMENT"));
-	if (!turnBeforeAttr)
-		return {};
-
-	const bool isTurnBefore = turnBeforeAttr->localValue();
-
-	const double imageAspectRatio = (isTurnBefore ? 3.0 / 4.0 : 4.0 / 3.0);
-	const double aspectRatioDifference = imageAspectRatio - designAspectRatio;
-	const double aspectRatioQuotient = designAspectRatio / imageAspectRatio;
-
-	const bool forTvg = true; 
-	const double scaleFactor = 1.0;
-
-	//Currently only tvg drawings are being supported. 
-	//If support for non-tvg drawings ends up being included, 
+	//Currently only tvg drawings are being supported.
+	//If support for non-tvg drawings ends up being included,
 	//the following changes need to be made:
 	//-Identify whether the drawing is a tvg (and tvgo?) or not (e.g. via AT_ElementAttr -> CA_CelKey)
 	//-Get individual imageAspectRatio instead of the tvg default 3:4 (e.g. via CEL_Cel)
 	//	(might need to recalculate the aligmentMatrix for each drawing)
 	//-Retrieve the scaleFactor, potentially via AT_ElementAttr
+	const bool forTvg = true;
+	const double scaleFactor = 1.0;
+
+	double fieldChartRatio = fieldChart->localValue() / modulePtr->sceneMetrics()->designFieldChartY();
 
 	if (!forTvg)
 		fieldChartRatio *= scaleFactor;
+
+	const double designAspectRatio = modulePtr->sceneMetrics()->designAspectRatio();
+	const bool isTurnBefore = turnBeforeAttr->localValue();
+	const double imageAspectRatio = (isTurnBefore ? 3.0 / 4.0 : 4.0 / 3.0);
+	const double aspectRatioDifference = imageAspectRatio - designAspectRatio;
+	const double aspectRatioQuotient = designAspectRatio / imageAspectRatio;
+
+	return AlignmentContext{ Math::Matrix4x4{}, aspectRatioDifference, fieldChartRatio, imageAspectRatio,
+		aspectRatioQuotient, designAspectRatio, isTurnBefore, forTvg };
+}
+
+static void alignLeft(AlignmentContext& ctx)
+{
+	ctx.alignmentMatrix.translate(ctx.aspectRatioDifference, 0.0, 0.0);
+	ctx.alignmentMatrix.translate(-(1 - ctx.fieldChartRatio) * ctx.imageAspectRatio, 0.0, 0.0);
+
+	if(ctx.isTurnBefore)
+		ctx.alignmentMatrix.scale(ctx.imageAspectRatio, ctx.imageAspectRatio);
+}
+
+static void alignRight(AlignmentContext& ctx)
+{
+	ctx.alignmentMatrix.translate(-ctx.aspectRatioDifference, 0.0, 0.0);
+	ctx.alignmentMatrix.translate((1 - ctx.fieldChartRatio) * ctx.imageAspectRatio, 0.0, 0.0);
+
+	if(ctx.isTurnBefore)
+		ctx.alignmentMatrix.scale(ctx.imageAspectRatio, ctx.imageAspectRatio);
+}
+
+static void alignTop(AlignmentContext& ctx)
+{
+	ctx.alignmentMatrix.translate(0.0, 1 - ctx.aspectRatioQuotient, 0.0);
+	ctx.alignmentMatrix.translate(0.0, (1 - ctx.fieldChartRatio) * ctx.aspectRatioQuotient, 0.0);
+
+	if (ctx.isTurnBefore)
+		ctx.alignmentMatrix.scale(ctx.designAspectRatio, ctx.designAspectRatio);
+	else
+		ctx.alignmentMatrix.scale(ctx.aspectRatioQuotient, ctx.aspectRatioQuotient);
+}
+
+static void alignBottom(AlignmentContext& ctx)
+{
+	ctx.alignmentMatrix.translate(0.0, -1 + ctx.aspectRatioQuotient, 0.0);
+	ctx.alignmentMatrix.translate(0.0, -(1 - ctx.fieldChartRatio) * ctx.aspectRatioQuotient, 0.0);
+
+	if(ctx.isTurnBefore)
+		ctx.alignmentMatrix.scale(ctx.designAspectRatio, ctx.designAspectRatio);
+	else
+		ctx.alignmentMatrix.scale(ctx.aspectRatioQuotient, ctx.aspectRatioQuotient);
+}
+
+static void centerFill(AlignmentContext& ctx)
+{
+	if (ctx.imageAspectRatio < ctx.designAspectRatio)
+	{
+		//Narrow
+		if(ctx.isTurnBefore)
+			ctx.alignmentMatrix.scale(ctx.designAspectRatio, ctx.designAspectRatio);
+		else
+			ctx.alignmentMatrix.scale(ctx.aspectRatioQuotient, ctx.aspectRatioQuotient);
+	}
+	else if (ctx.isTurnBefore)
+	{
+		//Wide
+		ctx.alignmentMatrix.scale(ctx.imageAspectRatio, ctx.imageAspectRatio);
+	}
+}
+
+static void centerFit(AlignmentContext& ctx)
+{
+	if (ctx.imageAspectRatio < ctx.designAspectRatio && ctx.isTurnBefore)
+	{
+		//Narrow
+		ctx.alignmentMatrix.scale(ctx.imageAspectRatio, ctx.imageAspectRatio);
+	}
+	else
+	{
+		//Wide
+		if(!ctx.isTurnBefore)
+			ctx.alignmentMatrix.scale(ctx.aspectRatioQuotient, ctx.aspectRatioQuotient);
+		else
+			ctx.alignmentMatrix.scale(ctx.designAspectRatio, ctx.designAspectRatio);
+	}
+}
+
+static void centerLR(AlignmentContext& ctx)
+{
+	if(ctx.isTurnBefore)
+		ctx.alignmentMatrix.scale(ctx.imageAspectRatio, ctx.imageAspectRatio);
+	//Only needs to be adjusted in case of "isTurnBefore". Otherwise it's already "CENTER_LR"
+}
+
+static void centerTB(AlignmentContext& ctx)
+{
+	if (ctx.isTurnBefore)
+		ctx.alignmentMatrix.scale(ctx.designAspectRatio, ctx.designAspectRatio);
+	else
+		ctx.alignmentMatrix.scale(ctx.aspectRatioQuotient, ctx.aspectRatioQuotient);
+}
+
+static void stretch(AlignmentContext& ctx)
+{
+	if(ctx.isTurnBefore)
+		ctx.alignmentMatrix.scale(ctx.designAspectRatio, ctx.imageAspectRatio);
+	else
+		ctx.alignmentMatrix.scale(ctx.aspectRatioQuotient, 1.0);
+}
+
+static void centerFirstPage(AlignmentContext& ctx)
+{
+	if (ctx.imageAspectRatio < ctx.designAspectRatio && !ctx.forTvg)
+	{
+		//Bottom align
+		ctx.alignmentMatrix.translate(0.0, -1 + ctx.aspectRatioQuotient, 0.0);
+		ctx.alignmentMatrix.translate(0.0, -(1 - ctx.fieldChartRatio) * (ctx.aspectRatioQuotient - 1), 0.0);
+
+		ctx.alignmentMatrix.scale(ctx.aspectRatioQuotient, ctx.aspectRatioQuotient);
+
+		if(ctx.isTurnBefore)
+			ctx.alignmentMatrix.scale(ctx.designAspectRatio, ctx.designAspectRatio);
+	}
+	else
+	{
+		//Left align
+		ctx.alignmentMatrix.translate(ctx.aspectRatioDifference, 0, 0);
+		ctx.alignmentMatrix.translate(-(1 - ctx.fieldChartRatio) * ctx.aspectRatioDifference, 0, 0);
+
+		if (ctx.isTurnBefore)
+			ctx.alignmentMatrix.scale(ctx.imageAspectRatio, ctx.imageAspectRatio);
+	}
+}
+
+
+Math::Matrix4x4 ElementModule::getAlignmentMatrix()
+{
+	//The aligmentMatrix depends on a variety of factors: Alignment Scene Settings, 
+	//Alignment Settings on the element modules themselves, as well as the Scene Settings (Number of Units) that
+	//were in effect during the time, the element module was being created (saved as the "FIELD_CHART" sub attribute)
 
 	AT_EnumAttrBase* alignmentAttr = findAttribute<AT_EnumAttrBase>(QLatin1String("ALIGNMENT_RULE"));
 
 	if (!alignmentAttr)
 		return {};
 
-	AT_Enums::AlignmentRule alignment = AT_Enums::AlignmentRule(alignmentAttr->localValueInt());
+	std::optional<AlignmentContext> alignmentContext = buildAlignmentContext(getModulePtr());
 
-	Math::Matrix4x4 alignmentMatrix;
+	if (!alignmentContext)
+		return {};
 
+	const AT_Enums::AlignmentRule alignment = AT_Enums::AlignmentRule(alignmentAttr->localValueInt());
+
+	AlignmentContext& ctx = *alignmentContext;
 
 	switch (alignment)
 	{
 	case(AT_Enums::LEFT):
-	{
-		alignmentMatrix.translate(aspectRatioDifference, 0.0, 0.0);
-		alignmentMatrix.translate(-(1 - fieldChartRatio) * imageAspectRatio, 0.0, 0.0);
-
-		if(isTurnBefore)
-			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
-
+		alignLeft(ctx);
 		break;
-	}
 	case(AT_Enums::RIGHT):
-	{
-		alignmentMatrix.translate(-aspectRatioDifference, 0.0, 0.0);
-		alignmentMatrix.translate((1 - fieldChartRatio) * imageAspectRatio, 0.0, 0.0);
-
-		if(isTurnBefore)
-			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
-
+		alignRight(ctx);
 		break;
-	}
 	case(AT_Enums::TOP):
-	{
-		alignmentMatrix.translate(0.0, 1 - aspectRatioQuotient, 0.0);
-		alignmentMatrix.translate(0.0, (1 - fieldChartRatio) * aspectRatioQuotient, 0.0);
-
-		if (isTurnBefore)
-			alignmentMatrix.scale(designAspectRatio, designAspectRatio);
-		else
-			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
-
+		alignTop(ctx);
 		break;
-	}
 	case(AT_Enums::BOTTOM):
-	{
-		alignmentMatrix.translate(0.0, -1 + aspectRatioQuotient, 0.0);
-		alignmentMatrix.translate(0.0, -(1 - fieldChartRatio) * aspectRatioQuotient, 0.0);
-
-		if(isTurnBefore)
-			alignmentMatrix.scale(designAspectRatio, designAspectRatio);
-		else
-			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
-
+		alignBottom(ctx);
 		break;
-	}
 	case(AT_Enums::CENTER_FILL):
-	{
-		if (imageAspectRatio < designAspectRatio)
-		{
-			//Narrow
-			if(isTurnBefore)
-				alignmentMatrix.scale(designAspectRatio, designAspectRatio);
-			else
-				alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
-		}
-		else if (isTurnBefore)
-		{
-			//Wide
-			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
-		}
-		
+		centerFill(ctx);
 		break;
-	}
 	case(AT_Enums::CENTER_FIT):
-	{
-		if (imageAspectRatio < designAspectRatio && isTurnBefore)
-		{
-			//Narrow
-			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
-		}
-		else
-		{
-			//Wide
-			if(!isTurnBefore)
-				alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
-			else
-				alignmentMatrix.scale(designAspectRatio, designAspectRatio);
-		}
-
+		centerFit(ctx);
 		break;
-	}
 	case(AT_Enums::CENTER_LR):
-	{
-		if(isTurnBefore)
-			alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
-		//Only needs to be adjusted in case of "isTurnBefore". Otherwise it's already "CENTER_LR"
+		centerLR(ctx);
 		break;
-	}
 	case(AT_Enums::CENTER_TB):
-	{
-		if (isTurnBefore)
-			alignmentMatrix.scale(designAspectRatio, designAspectRatio);
-		else
-			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
-
+		centerTB(ctx);
 		break;
-	}
 	case(AT_Enums::STRETCH):
-	{
-		if(isTurnBefore)
-			alignmentMatrix.scale(designAspectRatio, imageAspectRatio);
-		else
-			alignmentMatrix.scale(aspectRatioQuotient, 1.0);
-
+		stretch(ctx);
 		break;
-	}
 	case(AT_Enums::CENTER_FIRST_PAGE):
-	{
-		if (imageAspectRatio < designAspectRatio && !forTvg)
-		{
-			//Bottom align
-			alignmentMatrix.translate(0.0, -1 + aspectRatioQuotient, 0.0);
-			alignmentMatrix.translate(0.0, -(1 - fieldChartRatio) * (aspectRatioQuotient - 1), 0.0);
-
-			alignmentMatrix.scale(aspectRatioQuotient, aspectRatioQuotient);
-
-			if(isTurnBefore)
-				alignmentMatrix.scale(designAspectRatio, designAspectRatio);
-		}
-		else
-		{
-			//Left align
-			alignmentMatrix.translate(aspectRatioDifference, 0, 0);
-			alignmentMatrix.translate(-(1 - fieldChartRatio) * aspectRatioDifference, 0, 0);
-			
-			if (isTurnBefore)
-				alignmentMatrix.scale(imageAspectRatio, imageAspectRatio);
-		}
-
+		centerFirstPage(ctx);
 		break;
-	}
-	default:
-	;
+	case(AT_Enums::ASIS):
+		break;
 	}
 	
-	if (isTurnBefore)
-		alignmentMatrix.rotateDegrees(90);
+	if (ctx.isTurnBefore)
+		ctx.alignmentMatrix.rotateDegrees(90);
 
-
-	if (forTvg)
-		alignmentMatrix.scale(fieldChartRatio, fieldChartRatio);
+	if (ctx.forTvg)
+		ctx.alignmentMatrix.scale(ctx.fieldChartRatio, ctx.fieldChartRatio);
 	else
-		alignmentMatrix.scale(fieldChartRatio, fieldChartRatio, fieldChartRatio);
+		ctx.alignmentMatrix.scale(ctx.fieldChartRatio, ctx.fieldChartRatio, ctx.fieldChartRatio);
 
-	return getElementFlipMatrix(getModulePtr()) * alignmentMatrix;
+	return getElementFlipMatrix(getModulePtr()) * ctx.alignmentMatrix;
 }
 
 
