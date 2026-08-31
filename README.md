@@ -69,7 +69,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Changes since last release
 
-+ Different element alignment settings ("Alignment Rule" and "Turn Before Alignment") are now supported by the plugin.
++ Different Element alignment settings ("Alignment Rule" and "Turn Before Alignment") are now supported by the plugin.
 
 + Elements created with non-default "Scene Settings" can now be processed properly.
 
