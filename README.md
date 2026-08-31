@@ -399,6 +399,8 @@ True bitmaps can currently only be transformed in Experimental Mode (no undo/red
 
 This only applies to bitmap drawings in a sublayer set to bitmap. Bitmap drawings encapsulated as vector drawings, such as brush strokes or bitmaps copied into vector sublayers, work as usual.
 
+Currently only .tvg drawings (Toon Boom Vector Drawings and Toon Boom Bitmap Drawings) can be processed.
+
 Elements that have been created while using a value different from the default “24” as the second parameter in “Scene Settings” > “Number of Units” won’t transform correctly. HarmonyFreeze can, however, properly transform Elements when the “Number of Units” value has been changed only after their creation.
 
 
