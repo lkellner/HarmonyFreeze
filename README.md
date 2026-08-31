@@ -8,6 +8,7 @@ HarmonyFreeze is a Toon Boom Harmony plugin that lets you transform rigs or part
 
 ## Table of Contents
 - [Disclaimer](#disclaimer)
+- - [Change Log](#change-log)
 - [Installation](#installation)
   - [Windows](#windows)
   - [Mac](#mac)
@@ -64,7 +65,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </details>
 
 
+# Change Log
 
+## Changes since last release
+
++ Different element alignment settings ("Alignment Rule" and "Turn Before Alignment") are now supported by the plugin.
+
++ Elements created with non-default "Scene Settings" can now be processed properly.
 
 
 # Installation
@@ -87,7 +94,7 @@ Follow the installer’s directions to complete the installation.
 
 Download the Mac binaries for your version of Harmony.
 
-Extract the files and copy the complete "HarmonyFreeze" folder. Open the package contents of your Toon Boom Harmony installation, go to `Contents -> tba -> Plugins`, and paste the folder there.
+Extract the files and copy the complete "HarmonyFreeze" folder. Open the package contents of your Toon Boom Harmony installation, go to `Contents -> tba -> s`, and paste the folder there.
 
 
 
@@ -100,7 +107,7 @@ Extract the files and copy the complete "HarmonyFreeze" folder. Open the package
 
 # Optional: Building HarmonyFreeze from Scratch
 
-This plugin can only be built using a Toon Boom Harmony C++ SDK that matches your version of Harmony and your operating system. To obtain a copy, please contact Toon Boom directly.
+This  can only be built using a Toon Boom Harmony C++ SDK that matches your version of Harmony and your operating system. To obtain a copy, please contact Toon Boom directly.
 
 Depending on your SDK version, it may already include a copy of Qt. For SDK versions that don’t, consult the SDK’s README for the required Qt version. Use the [Qt Online Installer](https://download.qt.io/official_releases/online_installers/) and select the version specified there.
 
@@ -123,7 +130,7 @@ nmake
 
  
 
-Navigate to the plugin folder of your Toon Boom Harmony installation and, if it doesn’t exist already, create a new folder called “HarmonyFreeze” and inside it a subfolder called “win64”.
+Navigate to the  folder of your Toon Boom Harmony installation and, if it doesn’t exist already, create a new folder called “HarmonyFreeze” and inside it a subfolder called “win64”.
 
 In the HarmonyFreeze source directory, you should now find a folder called “Release”. Copy the .dll file from there into the newly created “win64” folder.
 Then copy the PluginInfo.xml file and the resources folder into the “HarmonyFreeze” folder.
@@ -401,15 +408,6 @@ This only applies to bitmap drawings in a sublayer set to bitmap. Bitmap drawing
 
 Currently only .tvg drawings (Toon Boom Vector Drawings and Toon Boom Bitmap Drawings) can be processed.
 
-Elements that have been created while using a value different from the default “24” as the second parameter in “Scene Settings” > “Number of Units” won’t transform correctly. HarmonyFreeze can, however, properly transform Elements when the “Number of Units” value has been changed only after their creation.
-
-
-
-
-![Unit offset setting](docs/images/unit-offset.jpg)
-
-
-
 
 ## Curve and Envelope Deformers
 
@@ -478,7 +476,7 @@ as well as creating a UI for the settings.
  
 # Acknowledgements
 
-Special thanks to my partner for bouncing ideas off, helping with the build systems, and being a second pair of eyes on the code, as well as everyone else who has supported this project and earlier attempts.
+Special thanks to my partner for bouncing ideas off, helping with the build systems, and being a second pair of eyes on the code, Toon Boom for helping me tie up a few loose ends, as well as everyone else who has supported this project and earlier attempts.
 
 
 
