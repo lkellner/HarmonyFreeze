@@ -21,8 +21,6 @@
 #include <SceneCore/module/MO_Port.h>
 #include <SceneCore/module/MO_PortTransform.h>
 
-#include <cstdio>
-
 class BitmapListener : public GR_Listener
 {
 public:
