@@ -97,10 +97,11 @@ void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, Q
 	Math::Point2d tempPoint;
 
 	bool isPosCtrlPnt = false;
-	bool isConstSeg = false;
 
+	//There have been changes to the getValue function between H24 and H27.
+	//When making changes here, all supported versions need to be taken into account
 
-	attr->getValue(frameNo, tempPoint, &isPosCtrlPnt, &isConstSeg); //FIXME interface change
+	attr->getValue(frameNo, tempPoint, &isPosCtrlPnt); 
 
 	//Similar to transformation module, can't set local value of combined paths
 
