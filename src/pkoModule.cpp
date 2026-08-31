@@ -115,10 +115,18 @@ void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, Q
 	else
 	{
 		//JS
-		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, isPosCtrlPnt },
-			AttrData{ attributeKeyword + QLatin1String(".x"), position.x(), frameNo, isPosCtrlPnt },
-			AttrData{ attributeKeyword + QLatin1String(".y"), position.y(), frameNo, isPosCtrlPnt });
+
+		if (attr->useSeparate())
+		{
+			fm->applyAttributes(getModulePtr()->qualifiedName(),
+				AttrData{ attributeKeyword + QLatin1String(".x"), position.x(), frameNo, isPosCtrlPnt },
+				AttrData{ attributeKeyword + QLatin1String(".y"), position.y(), frameNo, isPosCtrlPnt });
+		}
+		else
+		{
+			fm->applyAttributes(getModulePtr()->qualifiedName(),
+				Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, isPosCtrlPnt });
+		}
 	}
 }
 
