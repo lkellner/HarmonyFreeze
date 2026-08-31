@@ -103,3 +103,12 @@ macx {
 	QMAKE_POST_LINK += \
 		/bin/sh "$$PWD/fix_install_names.sh" "$$DYLIB";
 }
+
+# `make compile_commands` regenerates compile_commands.json at the project
+# root from this build directory, for clangd / VS Code C++ navigation.
+compile_commands.target = compile_commands
+compile_commands.commands = python3 $$shell_quote($$PWD/tools/generate_compile_commands.py) \
+	--build-dir $$shell_quote($$OUT_PWD) \
+	--pro-file $$shell_quote($$PWD/HarmonyFreeze.pro) \
+	--output $$shell_quote($$PWD/compile_commands.json)
+QMAKE_EXTRA_TARGETS += compile_commands
