@@ -3,6 +3,7 @@
 #include <SceneCore/module/MO_PortTransform.h>
 #include <GraphicCore/CinematicChain/CC_Transformation.h>
 #include <SceneCore/attribute/AT_Position2dAttr.h>
+#include <BaseCore/maths/MT_Point4d.h>
 
 
 #include <limits>
@@ -28,10 +29,42 @@ void PkoModule::readjustSecondary()
 {
 	FreezeManager* fm = getFreezeManagerPtr();
 
-	Math::Matrix4x4 oglChangeMatrix = fm->getFreezeMatrix();
+	Math::Matrix4x4 matrix0True = getIncomingMatrix(0, 1, true);
+	Math::Matrix4x4 matrix0False = getIncomingMatrix(0, 1, false);
+	Math::Matrix4x4 matrix1True = getIncomingMatrix(1, 1, true);
+	Math::Matrix4x4 matrix1False = getIncomingMatrix(1, 1, false);
+
+	matrix0True.print("Matrix 00, true");
+	matrix0False.print("Matrix 00, false");
+	matrix1True.print("Matrix 01, true");
+	matrix1False.print("Matrix 01, false");
+
+	Math::Matrix4x4 outMatrixTrue = getOutgoingMatrix(0, 1, true);
+	Math::Matrix4x4 outMatrixFalse = getOutgoingMatrix(0, 1, false);
+
+	outMatrixTrue.print("Outmatrix true");
+	outMatrixFalse.print("Outmatrix false");
+
+	Math::Point3d point3d = Math::Point3d(getModulePtr()->sceneMetrics()->toOGLX(1), 0, 0);
+	Math::Point4d point4d = Math::Point4d(getModulePtr()->sceneMetrics()->toOGLX(1), 0, 0, 1);
+
+	point3d = outMatrixTrue * matrix1True * point3d;
+	point4d = outMatrixTrue * matrix1True * point4d;
+
+	point3d.toVector().debugPrint("point 3d after applying matrix");
+	point4d.toPoint3d().toVector().debugPrint("point 4d after applying matrix");
+
+	getModulePtr()->sceneMetrics()->fromOGL(point3d).toVector().debugPrint("fields point 3d after applying matrix");
+
+
+	//Case 01: left input peg is not connected to the freezeMatrix:
+
+	Math::Matrix4x4 oglChangeMatrix = matrix1False.getInverse()*fm->getFreezeMatrix()* matrix1False;
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
 
 	
+
+
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
@@ -40,6 +73,9 @@ void PkoModule::readjustSecondary()
 	processPivot(fieldsChangeMatrix, m_pivot03Attr, QLatin1String("pivot3"), *curMacro);
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
+
+
+	
 }
 
 
