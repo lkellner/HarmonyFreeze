@@ -23,6 +23,54 @@ PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 		throw std::runtime_error("missing attribute: 'm_pivot02Attr' for " + modulePtr->qualifiedName().toStdString());
 	if (!m_pivot03Attr)
 		throw std::runtime_error("missing attribute: 'm_pivot03Attr' for " + modulePtr->qualifiedName().toStdString());
+
+	identifyTransformationType();
+}
+
+
+
+void PkoModule::identifyTransformationType()
+{
+	const MO_Node::InPorts inPorts = getModulePtr()->getInPorts();
+
+	if (inPorts.size() < 2)
+	{
+		printf("invalid port for incoming matrix\n");
+		return;
+	}
+
+	MO_Module* port1srcModule = inPorts[1]->realSrcNode();
+
+	if (!port1srcModule)
+	{
+		//Port 1 has no input
+		m_transformationType = TransformationType::Simple;
+		return;
+	}
+
+	MO_Module* freezeModule = getFreezeManagerPtr()->getFreezePegPtr();
+	if (!freezeModule)
+		return;
+
+	if (!freezeModule->isLinkedTo(port1srcModule)) //Order matters
+	{
+		//Port 1 has an input but is not connected to the freezePeg
+		m_transformationType = TransformationType::SingleFreeze;
+		return;
+	}
+
+	MO_Module* port0srcModule = inPorts[1]->realSrcNode();
+
+	if (port0srcModule && freezeModule->isLinkedTo(port0srcModule))
+	{
+		//Both ports are connected to the freezePeg
+		m_transformationType = TransformationType::DoubleFreeze;
+		return;
+	}
+
+	//Only port 1's input is connected to the freezePeg
+	//In the case of port 0 not having any input at all the point kinematic output is disregarded by Harmony
+	m_transformationType = TransformationType::Simple;
 }
 
 void PkoModule::readjustSecondary()
@@ -85,17 +133,28 @@ void PkoModule::readjustSecondary()
 	matrix1True.print("Matrix 01, true");
 	matrix1False.print("Matrix 01, false");
 
-	//Case 0: Either there is no left input OR the left input is connected to the freeze peg and the right one isn't
+	Math::Matrix4x4 oglChangeMatrix;
 
-	//Math::Matrix4x4 oglChangeMatrix = fm->getFreezeMatrix();
+	switch (m_transformationType)
+	{
+	case TransformationType::Simple:
+		//Either there is no port 1 input OR port 1 is connected to the freeze peg and port 0 isn't
+		printf("case simple\n");
+		oglChangeMatrix = fm->getFreezeMatrix();
+		break;
 
-	//Case 01: left input peg is not connected to the freeze peg:
+	case TransformationType::SingleFreeze:
+		//There is a port 1 input but it's not connected to the freeze peg
+		oglChangeMatrix = matrix1False.getInverse() * fm->getFreezeMatrix() * matrix1False;
+		printf("case single freeze\n");
+		break;
 
-	Math::Matrix4x4 oglChangeMatrix = matrix1False.getInverse()*fm->getFreezeMatrix()* matrix1False;
-
-	//Case 02: both inputs are connected to the freeze peg:
-
-	//Math::Matrix4x4 oglChangeMatrix = fm->getFreezeMatrix()*matrix1False.getInverse()*fm->getFreezeMatrix()* matrix1False;
+	case TransformationType::DoubleFreeze:
+		//Both in ports are connected to the freeze peg
+		oglChangeMatrix = fm->getFreezeMatrix() * matrix1False.getInverse() * fm->getFreezeMatrix() * matrix1False;
+		printf("case double freeze\n");
+		break;
+	}
 
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
 

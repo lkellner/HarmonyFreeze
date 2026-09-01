@@ -133,6 +133,7 @@ void FreezeResponder::onActionFreezeTransformation()
 		std::cerr << e.what() << std::endl;
 		return;
 	}
+	freezeManager->setFreezePegPtr(freezeModule->getModulePtr());
 
 	const std::vector<MO_Node*> children = getAllChildren(freezeModule->getModulePtr());
 
