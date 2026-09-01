@@ -27,6 +27,52 @@ PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 
 void PkoModule::readjustSecondary()
 {
+	/*
+	How point kinematic outputs work:
+	O := port 1 matrix (offset)
+	D := port 0 matrix (only one in case of a quadmap, 
+		for other deformers consider it the transformation matrix that will be applied to the pivot to be transformed)
+	pOgl := any pivot of the point kinematic output in ogl coordinates
+	pWorld := the pivot's world ogl coordinates, position on screen
+
+	pWorld = D*O*pOgl
+
+	After applying the freeze peg, the pivots world position is supposed to be the identical with its prior position.
+	C := Change matrix that needs to be applied to the pivot
+	Onew := the offset matrix after applying the freeze
+	Dnew := the deformation matrix after applying the freeze
+	F := the freeze matrix
+
+	Case 0: There is no port 1
+		Onew = O * F.getInverse();
+		pWorld = O * pOgl = O * F.getInverse() * C * pOgl;
+		C = F;
+
+	Case 1: There is a port 1 but only port 0 is connected to the freeze peg
+		Onew = O;
+		Dnew = D * F.getInverse();
+
+		pWorld = D * O * pOgl = D * F.getInverse() * O * C * pOgl;
+		C = O.getInverse() * F * O;
+
+	Case 2: There is a port 1 and both ports are connected to the freeze peg
+
+		Onew = O * F.getInverse();
+		Dnew = D * F.getInverse();
+
+		pWorld = D * O * pOgl = D * F.getInverse() * O * F.getInverse() * C * pOgl;
+		C = O.getInverse() * F * O;
+
+	Case 3: There is a port 1 and it's the only port connected to the freeze peg
+
+		Onew = O * F.getInverse();
+		Dnew = D;
+
+		pWorld = D * O * pOgl = D * O * F.getInverse() * C * pOgl;
+		C = F;
+
+	*/
+
 	FreezeManager* fm = getFreezeManagerPtr();
 
 	Math::Matrix4x4 matrix0True = getIncomingMatrix(0, 1, true);
@@ -39,32 +85,19 @@ void PkoModule::readjustSecondary()
 	matrix1True.print("Matrix 01, true");
 	matrix1False.print("Matrix 01, false");
 
-	Math::Matrix4x4 outMatrixTrue = getOutgoingMatrix(0, 1, true);
-	Math::Matrix4x4 outMatrixFalse = getOutgoingMatrix(0, 1, false);
+	//Case 0: Either there is no left input OR the left input is connected to the freeze peg and the right one isn't
 
-	outMatrixTrue.print("Outmatrix true");
-	outMatrixFalse.print("Outmatrix false");
+	//Math::Matrix4x4 oglChangeMatrix = fm->getFreezeMatrix();
 
-	Math::Point3d point3d = Math::Point3d(getModulePtr()->sceneMetrics()->toOGLX(1), 0, 0);
-	Math::Point4d point4d = Math::Point4d(getModulePtr()->sceneMetrics()->toOGLX(1), 0, 0, 1);
-
-	point3d = outMatrixTrue * matrix1True * point3d;
-	point4d = outMatrixTrue * matrix1True * point4d;
-
-	point3d.toVector().debugPrint("point 3d after applying matrix");
-	point4d.toPoint3d().toVector().debugPrint("point 4d after applying matrix");
-
-	getModulePtr()->sceneMetrics()->fromOGL(point3d).toVector().debugPrint("fields point 3d after applying matrix");
-
-
-	//Case 01: left input peg is not connected to the freezeMatrix:
+	//Case 01: left input peg is not connected to the freeze peg:
 
 	Math::Matrix4x4 oglChangeMatrix = matrix1False.getInverse()*fm->getFreezeMatrix()* matrix1False;
+
+	//Case 02: both inputs are connected to the freeze peg:
+
+	//Math::Matrix4x4 oglChangeMatrix = fm->getFreezeMatrix()*matrix1False.getInverse()*fm->getFreezeMatrix()* matrix1False;
+
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
-
-	
-
-
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
@@ -73,9 +106,6 @@ void PkoModule::readjustSecondary()
 	processPivot(fieldsChangeMatrix, m_pivot03Attr, QLatin1String("pivot3"), *curMacro);
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
-
-
-	
 }
 
 
