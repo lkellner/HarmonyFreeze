@@ -123,36 +123,27 @@ void PkoModule::readjustSecondary()
 
 	FreezeManager* fm = getFreezeManagerPtr();
 
-	Math::Matrix4x4 matrix0True = getIncomingMatrix(0, 1, true);
-	Math::Matrix4x4 matrix0False = getIncomingMatrix(0, 1, false);
-	Math::Matrix4x4 matrix1True = getIncomingMatrix(1, 1, true);
-	Math::Matrix4x4 matrix1False = getIncomingMatrix(1, 1, false);
-
-	matrix0True.print("Matrix 00, true");
-	matrix0False.print("Matrix 00, false");
-	matrix1True.print("Matrix 01, true");
-	matrix1False.print("Matrix 01, false");
-
+	//TODO: Will need to check if "true" is the correct parameter to pass here 
+	//after quadmaps have been implemented. (It doesn't seem to matter with 
+	//curve deformers
+	Math::Matrix4x4 offsetMatrix = getIncomingMatrix(1, 1, true);
 	Math::Matrix4x4 oglChangeMatrix;
 
 	switch (m_transformationType)
 	{
 	case TransformationType::Simple:
 		//Either there is no port 1 input OR port 1 is connected to the freeze peg and port 0 isn't
-		printf("case simple\n");
 		oglChangeMatrix = fm->getFreezeMatrix();
 		break;
 
 	case TransformationType::SingleFreeze:
 		//There is a port 1 input but it's not connected to the freeze peg
-		oglChangeMatrix = matrix1False.getInverse() * fm->getFreezeMatrix() * matrix1False;
-		printf("case single freeze\n");
+		oglChangeMatrix = offsetMatrix.getInverse() * fm->getFreezeMatrix() * offsetMatrix;
 		break;
 
 	case TransformationType::DoubleFreeze:
 		//Both in ports are connected to the freeze peg
-		oglChangeMatrix = fm->getFreezeMatrix() * matrix1False.getInverse() * fm->getFreezeMatrix() * matrix1False;
-		printf("case double freeze\n");
+		oglChangeMatrix = fm->getFreezeMatrix() * offsetMatrix.getInverse() * fm->getFreezeMatrix() * offsetMatrix;
 		break;
 	}
 
