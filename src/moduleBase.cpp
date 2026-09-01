@@ -77,3 +77,47 @@ Math::Matrix4x4 ModuleBase::getIncomingMatrix(unsigned int port, double frameNo,
 	ccTransform.finalizeDeformation();
 	return ccTransform.matrix(useDeformation);
 }
+
+Math::Matrix4x4 ModuleBase::getOutgoingMatrix(unsigned int port, double frameNo, bool useDeformation) const
+{
+	if (port < 0)
+	{
+		printf("invalid port for outgoing matrix\n");
+		return {};
+	}
+
+	const MO_Node::OutPorts outPorts = m_modulePtr->getOutPorts();
+
+	if (outPorts.size() + 1 < port)
+	{
+		printf("invalid port for outgoing matrix\n");
+		return {};
+	}
+
+	const MO_BaseContext context{ MO_FrameKey(frameNo) };
+	const MO_PortTransform* portTransform = m_modulePtr->computeTransformationParent(context, port);
+
+	if (!portTransform)
+	{
+		return {};
+	}
+
+	CC_Transformation ccTransform = portTransform->transformation();
+	ccTransform.print("cc transform");
+
+	const std::vector< CC_DeformationConstPtr_t > deformations = ccTransform.allDeformations();
+
+	Math::Matrix4x4 inMatrix;
+	inMatrix.translate(1, 0, 0);
+	Math::Matrix4x4 outMatrix;
+
+	for (auto& def : deformations)
+	{
+		//def->setEnabled(true);
+		def->deform(inMatrix, outMatrix);
+		outMatrix.print("deformation out matrix");
+	}
+
+	ccTransform.finalizeDeformation();
+	return ccTransform.matrix(useDeformation);
+}

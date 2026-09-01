@@ -151,12 +151,13 @@ void FreezeResponder::onActionFreezeTransformation()
 	const Math::Matrix4x4 freezeMatrix = freezeModule->getLocalMatrix(freezeManager->getSelFrame());
 
 	//Need to check the original matrix, before being converted to 2d inside freezeManager
+	/*
 	if (isScaleZero(freezeMatrix) || freezeMatrix.isIdentity())
 	{
 		//Either won't be able to invert freeze matrix, everything underneath is invisible,
 		//or the freeze matrix is the identity matrix. In either case, there is nothing to process
 		return;
-	}
+	}*/
 
 	//It is important to use the freeze Modules actual matrix into account here, not the one without pivot values
 	freezeManager->setMatrices(freezeMatrix, freezeModule->getModulePtr()->sceneMetrics());
