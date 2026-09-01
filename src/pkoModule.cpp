@@ -59,7 +59,7 @@ void PkoModule::identifyTransformationType()
 		return;
 	}
 
-	MO_Module* port0srcModule = inPorts[1]->realSrcNode();
+	MO_Module* port0srcModule = inPorts[0]->realSrcNode();
 
 	if (port0srcModule && freezeModule->isLinkedTo(port0srcModule))
 	{
@@ -126,6 +126,10 @@ void PkoModule::readjustSecondary()
 	//TODO: Will need to check if "true" is the correct parameter to pass here 
 	//after quadmaps have been implemented. (It doesn't seem to matter with 
 	//curve deformers
+
+	//This module depends on all the attributes being set at once in the end
+	//if this is no longer true, the offsetMatrix would need to be saved in the
+	//constructor
 	Math::Matrix4x4 offsetMatrix = getIncomingMatrix(1, 1, true);
 	Math::Matrix4x4 oglChangeMatrix;
 
