@@ -45,6 +45,8 @@ public:
 
 	void readSettings();
 
+	void setFreezePegPtr(MO_Module* freezePegPtr);
+	MO_Module* getFreezePegPtr() { return m_freezePegPtr; };
 	void setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* sceneMetrics);
 	Math::Matrix4x4 getFreezeMatrix() { return m_freezeMatrix; };
 	Math::Matrix4x4 getOffsetMatrix() { return m_offsetMatrix; };
@@ -115,6 +117,8 @@ private:
 	Math::Matrix4x4 m_freezeMatrix;
 	Math::Matrix4x4 m_offsetMatrix;
 	Math::Matrix4x4 m_unitOffsetScaleMatrix;
+
+	MO_Module* m_freezePegPtr;
 
 	QFile m_file;
 	QTemporaryFile m_tempFile;

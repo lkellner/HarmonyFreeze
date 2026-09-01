@@ -344,6 +344,10 @@ void FreezeManager::setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* s
 	m_unitOffsetScaleMatrix = Math::Matrix4x4().scale(1, unitOffsetScaleFactor,1);
 }
 
+void FreezeManager::setFreezePegPtr(MO_Module* freezePegPtr)
+{
+	m_freezePegPtr = freezePegPtr;
+}
 
 FrameRange FreezeManager::getFrameRange() const
 {

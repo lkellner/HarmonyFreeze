@@ -27,6 +27,12 @@
 #include "moduleBase.h"
 #include "utils.h"
 
+enum class TransformationType : uint8_t
+{
+	Simple,
+	SingleFreeze,
+	DoubleFreeze
+};
 
 class PkoModule : public ModuleBase
 {
@@ -44,10 +50,13 @@ private:
 	void processPivot(Math::Matrix4x4 changeMatrix, AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro);
 	void setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro);
 	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, double frameNo);
+	void identifyTransformationType();
 
 	AT_Position2dAttr* m_pivot01Attr;
 	AT_Position2dAttr* m_pivot02Attr;
 	AT_Position2dAttr* m_pivot03Attr;
+
+	TransformationType m_transformationType = TransformationType::Simple;
 };
 
 #endif
