@@ -226,7 +226,7 @@ void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, Q
 	FreezeManager* fm = getFreezeManagerPtr();
 
 
-	if (keyframeState == KeyframeState::NoKeyframe || (keyframeState == KeyframeState::PossibleKeyframe && m_prevPos != position))
+	if (keyframeState == KeyframeState::NoKeyframe || (keyframeState == KeyframeState::PossibleKeyframe && m_prevPos == position))
 		return;
 
 	m_prevPos = position;
