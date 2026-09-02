@@ -134,6 +134,7 @@ void FreezeResponder::onActionFreezeTransformation()
 		return;
 	}
 	freezeManager->setFreezePegPtr(freezeModule->getModulePtr());
+	freezeManager->updateFrameRange(freezeModule->getFrameRange());
 
 	const std::vector<MO_Node*> children = getAllChildren(freezeModule->getModulePtr());
 
@@ -160,7 +161,7 @@ void FreezeResponder::onActionFreezeTransformation()
 		return;
 	}
 
-	//It is important to use the freeze Modules actual matrix into account here, not the one without pivot values
+	//It is important to use the freeze Modules actual matrix here, not the one without pivot values
 	freezeManager->setMatrices(freezeMatrix, freezeModule->getModulePtr()->sceneMetrics());
 
 	if (!freezeManager->isExperimentalMode())
