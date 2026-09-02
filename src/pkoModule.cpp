@@ -180,8 +180,13 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword,
 
 	setStaticAttributes(pos3d, pivotAttr, pivotKeyword, curMacro);
 
-	FrameRange range = getFrameRange();
-	//TODO: in case of non simple transformtype use freeze managers range~!
+	FrameRange range;
+	
+	//A larger range of keyframes needs to be considered when there is an offset matrix
+	if(m_transformationType == TransformationType::Simple)
+		range = getFrameRange();
+	else
+		range = getFreezeManagerPtr()->getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
@@ -265,29 +270,17 @@ KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double fr
 	attr->getValue(frameNo, tempPoint, &isPosCtrlPnt);
 
 	if (isPosCtrlPnt)
-	{
-		printf("isPosCtrlPnt %f\n", frameNo);
 		return KeyframeState::Keyframe;
-	}
-		
 
 
 	//Values don't depend on port 1 input
 	if (!isComplexTransform() || m_transformationType == TransformationType::Simple)
-	{
-		printf("early no keyframe %f\n", frameNo);
 		return KeyframeState::NoKeyframe;
-	}
-		
 
 	//The cases below are either TransformationType::DoubleFreeze or TransformationType::SingleFreeze
 	// as well as isComplexTransform()
 	if (isFirst)
-	{
-		printf("is first %f\n", frameNo);
 		return KeyframeState::Keyframe;
-	}
-		
 
 	//Keyframes will be set if the value changes compared to the previous frame
 	if (hasComplexPort1Parent() || !hasNoParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
