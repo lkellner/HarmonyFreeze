@@ -40,6 +40,7 @@ enum class MatrixComplexity : uint8_t
 {
 	Simple,
 	ScaleTranslationOnly,
+	UniformScaleTranslationOnly,
 	Complex
 };
 

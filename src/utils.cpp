@@ -76,10 +76,10 @@ MatrixComplexity defineMatrixComplexity(const Math::Matrix4x4& matrix, bool is3D
 	constexpr double threshold = 0.0001;
 
 	if (std::abs(scale.x() - scale.y()) < threshold && std::abs(scale.y() - scale.z()) < threshold)
-		return MatrixComplexity::Simple;
+		return MatrixComplexity::UniformScaleTranslationOnly;
 
 	if (!is3D && std::abs(scale.x() - scale.y()) < threshold)
-		return MatrixComplexity::Simple;
+		return MatrixComplexity::UniformScaleTranslationOnly;
 
 	return MatrixComplexity::ScaleTranslationOnly;
 }
