@@ -660,13 +660,13 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 
 	m_skewAttr->value(frameNo, &isSkewCtrlPnt, &isConstSeg);
 	bool isForceKeyframe = isFirst && (m_freezeMatrixComplexity == MatrixComplexity::Complex 
-		|| m_freezeMatrixComplexity == MatrixComplexity::CompScaleTranslationOnlylex);
+		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly);
 
 	bool isAdjustKeyframe = isKeyframeX || isKeyframeY || isKeyframeZ || isRotCtrlPnt
 		|| isRotXCtrlPnt || isRotYCtrlPnt || isRotZCtrlPnt || isSkewCtrlPnt || fm->isSetInbetweenKfMode();
 
 	isAdjustKeyframe = isAdjustKeyframe && (m_freezeMatrixComplexity == MatrixComplexity::Complex
-		|| m_freezeMatrixComplexity == MatrixComplexity::CompScaleTranslationOnlylex);
+		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly);
 
 	kfData.sx = isKeyframeX || (m_prevFrameParams.sx != params.sx && isAdjustKeyframe) || isForceKeyframe;
 	kfData.sy = isKeyframeY || (m_prevFrameParams.sy != params.sy && isAdjustKeyframe) || isForceKeyframe;
