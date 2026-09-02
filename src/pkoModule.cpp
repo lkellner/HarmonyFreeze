@@ -291,21 +291,7 @@ KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double fr
 
 	//Keyframes will be set if the value changes compared to the previous frame
 	if (hasComplexPort1Parent() || !hasNoParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
-	{
-		if (hasComplexPort1Parent())
-			printf("has complex parent\n");
-		else
-			printf("doesn't have complex parent\n");
-
-		if (hasNoParentKeyframe(frameNo))
-			printf("has no parent keyframe\n");
-		else
-			printf("doesn't have parentkeyframe\n");
-
-		printf("possible keyframe %f\n", frameNo);
 		return KeyframeState::PossibleKeyframe;
-	}
-		
 
 	//The point kinematic output doesn't have a complex parent chain, neither the port 1 parent nor the ptk itself have keyframes
 	//InbetweenKfMode is turned off
