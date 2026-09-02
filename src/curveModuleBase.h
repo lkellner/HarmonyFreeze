@@ -120,8 +120,8 @@ public:
 protected:
 	void readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix);
 	bool isParentKeyframe(double frameNo);
-	bool isComplexTransform() { return m_freezeMatrixComplexity != MatrixComplexity::Simple 
-		|| m_freezeMatrixComplexity != MatrixComplexity::UniformScaleTranslationOnly; }
+	bool isComplexTransform() { return m_freezeMatrixComplexity == MatrixComplexity::Complex 
+		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly; }
 	void setComplexTransform(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 
 private:
