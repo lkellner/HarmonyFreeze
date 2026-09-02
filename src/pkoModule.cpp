@@ -1,14 +1,13 @@
 #include "pkoModule.h"
 
-#include <SceneCore/module/MO_PortTransform.h>
+#include <BaseCore/maths/MT_Point4d.h>
+
 #include <GraphicCore/CinematicChain/CC_Transformation.h>
 #include <SceneCore/attribute/AT_Position2dAttr.h>
 #include <SceneCore/attribute/AT_Position3dAttr.h>
 #include <SceneCore/attribute/AT_Rotation3dAttr.h>
 #include <SceneCore/attribute/AT_Scale3dAttr.h>
-
-#include <BaseCore/maths/MT_Point4d.h>
-
+#include <SceneCore/module/MO_PortTransform.h>
 
 #include <limits>
 #include <stdexcept>
@@ -359,7 +358,6 @@ bool PkoModule::hasNoParentKeyframe(double frameNo)
 
 
 	//SCALE
-
 
 	bool isConstSegX = false;
 	bool isConstSegY = false;
