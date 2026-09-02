@@ -33,12 +33,6 @@
  * Curve modules' attributes are set in fields coordinates when indepentent. However when used in curve mode, they are using 4:4 field
 */
 
-enum class KeyframeState : uint8_t
-{
-	Keyframe,
-	PossibleKeyframe,
-	NoKeyframe
-};
 
 //TODO: is it possible to make this an inner class?
 struct BezKeyframeData

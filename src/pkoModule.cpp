@@ -3,6 +3,10 @@
 #include <SceneCore/module/MO_PortTransform.h>
 #include <GraphicCore/CinematicChain/CC_Transformation.h>
 #include <SceneCore/attribute/AT_Position2dAttr.h>
+#include <SceneCore/attribute/AT_Position3dAttr.h>
+#include <SceneCore/attribute/AT_Rotation3dAttr.h>
+#include <SceneCore/attribute/AT_Scale3dAttr.h>
+
 #include <BaseCore/maths/MT_Point4d.h>
 
 
@@ -31,15 +35,7 @@ PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 
 void PkoModule::identifyTransformationType()
 {
-	const MO_Node::InPorts inPorts = getModulePtr()->getInPorts();
-
-	if (inPorts.size() < 2)
-	{
-		printf("invalid port for incoming matrix\n");
-		return;
-	}
-
-	MO_Module* port1srcModule = inPorts[1]->realSrcNode();
+	MO_Module* port1srcModule = getSourceModule(getModulePtr(), 1);
 
 	if (!port1srcModule)
 	{
@@ -59,7 +55,7 @@ void PkoModule::identifyTransformationType()
 		return;
 	}
 
-	MO_Module* port0srcModule = inPorts[0]->realSrcNode();
+	MO_Module* port0srcModule = getSourceModule(getModulePtr(), 0);
 
 	if (port0srcModule && freezeModule->isLinkedTo(port0srcModule))
 	{
@@ -125,7 +121,7 @@ void PkoModule::readjustSecondary()
 
 	//TODO: Will need to check if "true" is the correct parameter to pass here 
 	//after quadmaps have been implemented. (It doesn't seem to matter with 
-	//curve deformers
+	//curve deformers)
 
 	//This module depends on all the attributes being set at once in the end
 	//if this is no longer true, the offsetMatrix would need to be saved in the
@@ -150,6 +146,8 @@ void PkoModule::readjustSecondary()
 		oglChangeMatrix = fm->getFreezeMatrix() * offsetMatrix.getInverse() * fm->getFreezeMatrix() * offsetMatrix;
 		break;
 	}
+
+	setComplexTransform(defineMatrixComplexity(oglChangeMatrix, false));
 
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
 
@@ -182,15 +180,14 @@ void PkoModule::processPivot(Math::Matrix4x4 changeMatrix, AT_Position2dAttr* pi
 
 		pos3d = changeMatrix * pos3d;
 
-		setAttributes(pos3d, pivotAttr, pivotKeyword, curMacro, curFrame);
+		KeyframeState keyframeState = generateKeyframeData(pivotAttr, curFrame, curFrame == range.start);
+		setAttributes(pos3d, pivotAttr, pivotKeyword, curMacro, keyframeState, curFrame);
 	}
 }
 
 void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro)
 {
 	clampValues(position);
-
-	//Similar to transformation module, can't set local value of combined paths
 
 	FreezeManager* fm = getFreezeManagerPtr();
 
@@ -202,7 +199,7 @@ void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* a
 	else
 	{
 		//JS
-
+		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
 			StaticAttrData{ attributeKeyword + QLatin1String(".x"), position.x() },
 			StaticAttrData{ attributeKeyword + QLatin1String(".y"), position.y() });
@@ -210,28 +207,23 @@ void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* a
 }
 
 
-void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, double frameNo)
+void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, 
+	KeyframeState keyframeState, double frameNo)
 {
 	clampValues(position);
 
-	Math::Point2d tempPoint;
-
-	bool isPosCtrlPnt = false;
-
-	//There have been changes to the getValue function between H24 and H27.
-	//When making changes here, all supported versions need to be taken into account
-
-	attr->getValue(frameNo, tempPoint, &isPosCtrlPnt); 
-
-	//Similar to transformation module, can't set local value of combined paths
-
 	FreezeManager* fm = getFreezeManagerPtr();
+
+
+	if (keyframeState == KeyframeState::NoKeyframe || (keyframeState == KeyframeState::PossibleKeyframe && m_prevPos != position))
+		return;
+
+	m_prevPos = position;
 
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		if (isPosCtrlPnt)
-			curMacro.add(Attr::Position2d::createSetValueCmd(attr, frameNo, position.x(), position.y()));
+		curMacro.add(Attr::Position2d::createSetValueCmd(attr, frameNo, position.x(), position.y()));
 	}
 	else
 	{
@@ -240,15 +232,166 @@ void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, Q
 		if (attr->useSeparate())
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ attributeKeyword + QLatin1String(".x"), position.x(), frameNo, isPosCtrlPnt },
-				AttrData{ attributeKeyword + QLatin1String(".y"), position.y(), frameNo, isPosCtrlPnt });
+				AttrData{ attributeKeyword + QLatin1String(".x"), position.x(), frameNo, true },
+				AttrData{ attributeKeyword + QLatin1String(".y"), position.y(), frameNo, true });
 		}
 		else
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, isPosCtrlPnt });
+				Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, true });
 		}
 	}
+}
+
+
+KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double frameNo, bool isFirst)
+{
+	Math::Point2d tempPoint; 
+	bool isPosCtrlPnt = false;
+
+	//There have been changes to the getValue function between H24 and H27.
+	//When making changes here, all supported versions need to be taken into account
+	attr->getValue(frameNo, tempPoint, &isPosCtrlPnt);
+
+	if (isPosCtrlPnt)
+	{
+		printf("isPosCtrlPnt %f\n", frameNo);
+		return KeyframeState::Keyframe;
+	}
+		
+
+
+	//Values don't depend on port 1 input
+	if (!isComplexTransform() || m_transformationType == TransformationType::Simple)
+	{
+		printf("early no keyframe %f\n", frameNo);
+		return KeyframeState::NoKeyframe;
+	}
+		
+
+	//The cases below are either TransformationType::DoubleFreeze or TransformationType::SingleFreeze
+	// as well as isComplexTransform()
+	if (isFirst)
+	{
+		printf("is first %f\n", frameNo);
+		return KeyframeState::Keyframe;
+	}
+		
+
+	//Keyframes will be set if the value changes compared to the previous frame
+	if (hasComplexPort1Parent() || !hasNoParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
+	{
+		printf("possible keyframe %f\n", frameNo);
+		return KeyframeState::PossibleKeyframe;
+	}
+		
+
+	//The point kinematic output doesn't have a complex parent chain, neither the port 1 parent nor the ptk itself have keyframes
+	//InbetweenKfMode is turned off
+	return KeyframeState::NoKeyframe;
+}
+
+bool PkoModule::hasComplexPort1Parent()
+{
+	MO_Module* port1srcModule = getSourceModule(getModulePtr(), 1);
+
+	if (!port1srcModule)
+	{
+		//There is no parent on port 1
+		return false;
+	}
+
+	if (port1srcModule->keyword() != QLatin1String("PEG"))
+	{
+		//Only pegs are considered simple for now
+		//Might be changed in the future
+		return true;
+	}
+
+	const MO_Node::InPorts parentInPorts = port1srcModule->getInPorts();
+
+	return (parentInPorts.size() == 0 ? false : true);
+}
+
+bool PkoModule::hasNoParentKeyframe(double frameNo)
+{
+	//TODO: there is quite a bit of intersection with transformationModule's generateKeyframeData
+	//It might be worth consolidating the two
+
+	MO_Module* parent = getSourceModule(getModulePtr(), 1);
+
+		if (!parent)
+		{
+			//There is no parent on port 1
+			return true;
+		}
+
+	if (parent->keyword() != QLatin1String("PEG"))
+	{
+		//Only pegs will be checked for now
+		//Might be changed in the future
+		return false;
+	}
+
+	bool isConstSeg;
+
+
+	//POSITION
+
+	Math::Point3d tempPos;
+	bool isPosCtrlPnt;
+
+	AT_Position3dAttr* posAttr = ::findAttribute<AT_Position3dAttr>(QLatin1String("POSITION"), parent);
+
+	if(posAttr)
+		posAttr->getValue(frameNo, tempPos, &isPosCtrlPnt, &isConstSeg);
+
+
+	//ROTATION
+
+	Math::Angle3d tempAngle;
+	double tempV;
+	bool isRotCtrlPnt;
+
+	AT_Rotation3dAttr*  rotAttr = ::findAttribute<AT_Rotation3dAttr>(QLatin1String("ROTATION"), parent);
+
+	if(rotAttr)
+		rotAttr->getValue(frameNo, tempAngle, &tempV, &isRotCtrlPnt, &isConstSeg);
+
+
+	//SCALE
+
+
+	bool isConstSegX = false;
+	bool isConstSegY = false;
+	bool isConstSegZ = false;
+
+	bool isKeyframeX = false;
+	bool isKeyframeY = false;
+	bool isKeyframeZ = false;
+
+	double tempScaleX;
+	double tempScaleY;
+	double tempScaleZ;
+
+	AT_Scale3dAttr* scaleAttr = ::findAttribute<AT_Scale3dAttr>(QLatin1String("SCALE"), parent);
+
+	if(scaleAttr)
+		scaleAttr->getValue(frameNo, tempScaleX, tempScaleY, tempScaleZ, &isKeyframeX, &isKeyframeY, &isKeyframeZ,
+			&isConstSegX, &isConstSegY, &isConstSegZ);
+
+
+	//SKEW
+	
+	bool isSkewCtrlPnt = false;
+
+	AT_DoubleAttr* skewAttr = ::findAttribute<AT_DoubleAttr>(QLatin1String("SKEW"), parent);
+	
+	if(skewAttr)
+		skewAttr->value(frameNo, &isSkewCtrlPnt, &isConstSeg);
+
+
+	return isPosCtrlPnt || isRotCtrlPnt || isKeyframeX || isKeyframeY || isKeyframeZ || isSkewCtrlPnt;
 }
 
 

@@ -34,6 +34,7 @@ enum class TransformationType : uint8_t
 	DoubleFreeze
 };
 
+
 class PkoModule : public ModuleBase
 {
 public:
@@ -49,14 +50,22 @@ private:
 
 	void processPivot(Math::Matrix4x4 changeMatrix, AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro);
 	void setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro);
-	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, double frameNo);
+	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, 
+		KeyframeState keyframeState, double frameNo);
 	void identifyTransformationType();
+	KeyframeState generateKeyframeData(AT_Position2dAttr* attr, double frameNo, bool isFirst);
+	bool hasComplexPort1Parent();
+	bool hasNoParentKeyframe(double frameNo);
+	bool isComplexTransform() { return m_freezeMatrixComplexity != MatrixComplexity::Simple; }
+	void setComplexTransform(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 
 	AT_Position2dAttr* m_pivot01Attr;
 	AT_Position2dAttr* m_pivot02Attr;
 	AT_Position2dAttr* m_pivot03Attr;
 
 	TransformationType m_transformationType = TransformationType::Simple;
+	MatrixComplexity m_freezeMatrixComplexity;
+	Math::Point3d m_prevPos;
 };
 
 #endif
