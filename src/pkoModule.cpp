@@ -69,12 +69,12 @@ void PkoModule::identifyTransformationType()
 	m_transformationType = TransformationType::Simple;
 }
 
-void PkoModule::readjustSecondary()
+Math::Matrix4x4 PkoModule::calculateChangeMatrix(double frameNo)
 {
 	/*
 	How point kinematic outputs work:
 	O := port 1 matrix (offset)
-	D := port 0 matrix (only one in case of a quadmap, 
+	D := port 0 matrix (only one in case of a quadmap,
 		for other deformers consider it the transformation matrix that will be applied to the pivot to be transformed)
 	pOgl := any pivot of the point kinematic output in ogl coordinates
 	pWorld := the pivot's world ogl coordinates, position on screen
@@ -117,6 +117,7 @@ void PkoModule::readjustSecondary()
 
 	*/
 
+
 	FreezeManager* fm = getFreezeManagerPtr();
 
 	//TODO: Will need to check if "true" is the correct parameter to pass here 
@@ -126,7 +127,7 @@ void PkoModule::readjustSecondary()
 	//This module depends on all the attributes being set at once in the end
 	//if this is no longer true, the offsetMatrix would need to be saved in the
 	//constructor
-	Math::Matrix4x4 offsetMatrix = getIncomingMatrix(1, 1, true);
+	Math::Matrix4x4 offsetMatrix = getIncomingMatrix(1, frameNo, true);
 	Math::Matrix4x4 oglChangeMatrix;
 
 	switch (m_transformationType)
@@ -147,22 +148,30 @@ void PkoModule::readjustSecondary()
 		break;
 	}
 
-	setComplexTransform(defineMatrixComplexity(oglChangeMatrix, false));
+	return getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
+}
 
-	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
+
+void PkoModule::readjustSecondary()
+{
+	setComplexTransform(defineMatrixComplexity(getFreezeManagerPtr()->getFreezeMatrix(), false));
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
-	processPivot(fieldsChangeMatrix, m_pivot01Attr, QLatin1String("pivot1"), *curMacro);
-	processPivot(fieldsChangeMatrix, m_pivot02Attr, QLatin1String("pivot2"), *curMacro);
-	processPivot(fieldsChangeMatrix, m_pivot03Attr, QLatin1String("pivot3"), *curMacro);
+	processPivot(m_pivot01Attr, QLatin1String("pivot1"), *curMacro);
+	processPivot(m_pivot02Attr, QLatin1String("pivot2"), *curMacro);
+	processPivot(m_pivot03Attr, QLatin1String("pivot3"), *curMacro);
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
 
-void PkoModule::processPivot(Math::Matrix4x4 changeMatrix, AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro)
+void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro)
 {
+	//In the case of DoubleFreeze or SingleFreeze this might not be accurate for the static values. 
+	//However in those cases frame 1 will have a forced keyframe
+	Math::Matrix4x4 changeMatrix = calculateChangeMatrix(1);
+
 	Math::Point2d position;
 	pivotAttr->getLocalValue(position);
 	Math::Point3d pos3d = Math::Point3d(position);
@@ -172,9 +181,11 @@ void PkoModule::processPivot(Math::Matrix4x4 changeMatrix, AT_Position2dAttr* pi
 	setStaticAttributes(pos3d, pivotAttr, pivotKeyword, curMacro);
 
 	FrameRange range = getFrameRange();
+	//TODO: in case of non simple transformtype use freeze managers range~!
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
+		changeMatrix = calculateChangeMatrix(curFrame);
 		pivotAttr->getValue(curFrame, position);
 		pos3d = Math::Point3d(position);
 
