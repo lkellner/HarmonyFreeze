@@ -182,6 +182,7 @@ bool isTransform2d(const Math::Matrix4x4& matrix);
 
 //Node Tree
 
+MO_Module* getSourceModule(MO_Node* node, int portIndex);
 std::vector<MO_Node*> getAllChildren(MO_Node* node);
 std::vector<MO_Module*> getAllInputModules(MO_Module* modulePtr);
 
