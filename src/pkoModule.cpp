@@ -292,6 +292,16 @@ KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double fr
 	//Keyframes will be set if the value changes compared to the previous frame
 	if (hasComplexPort1Parent() || !hasNoParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
 	{
+		if (hasComplexPort1Parent())
+			printf("has complex parent\n");
+		else
+			printf("doesn't have complex parent\n");
+
+		if (hasNoParentKeyframe(frameNo))
+			printf("has no parent keyframe\n");
+		else
+			printf("doesn't have parentkeyframe\n");
+
 		printf("possible keyframe %f\n", frameNo);
 		return KeyframeState::PossibleKeyframe;
 	}
@@ -319,9 +329,8 @@ bool PkoModule::hasComplexPort1Parent()
 		return true;
 	}
 
-	const MO_Node::InPorts parentInPorts = port1srcModule->getInPorts();
 
-	return (parentInPorts.size() == 0 ? false : true);
+	return (port1srcModule->getParentNode() ? true : false);
 }
 
 bool PkoModule::hasNoParentKeyframe(double frameNo)
@@ -350,7 +359,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo)
 	//POSITION
 
 	Math::Point3d tempPos;
-	bool isPosCtrlPnt;
+	bool isPosCtrlPnt = false;
 
 	AT_Position3dAttr* posAttr = ::findAttribute<AT_Position3dAttr>(QLatin1String("POSITION"), parent);
 
@@ -362,7 +371,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo)
 
 	Math::Angle3d tempAngle;
 	double tempV;
-	bool isRotCtrlPnt;
+	bool isRotCtrlPnt = false;
 
 	AT_Rotation3dAttr*  rotAttr = ::findAttribute<AT_Rotation3dAttr>(QLatin1String("ROTATION"), parent);
 
@@ -402,7 +411,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo)
 		skewAttr->value(frameNo, &isSkewCtrlPnt, &isConstSeg);
 
 
-	return isPosCtrlPnt || isRotCtrlPnt || isKeyframeX || isKeyframeY || isKeyframeZ || isSkewCtrlPnt;
+	return !(isPosCtrlPnt || isRotCtrlPnt || isKeyframeX || isKeyframeY || isKeyframeZ || isSkewCtrlPnt);
 }
 
 
