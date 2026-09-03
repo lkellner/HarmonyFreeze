@@ -320,11 +320,11 @@ bool PkoModule::hasNoParentKeyframe(double frameNo)
 
 	MO_Module* parent = getSourceModule(getModulePtr(), 1);
 
-		if (!parent)
-		{
-			//There is no parent on port 1
-			return true;
-		}
+	if (!parent)
+	{
+		//There is no parent on port 1
+		return true;
+	}
 
 	if (parent->keyword() != QLatin1String("PEG"))
 	{
@@ -343,20 +343,38 @@ bool PkoModule::hasNoParentKeyframe(double frameNo)
 
 	AT_Position3dAttr* posAttr = ::findAttribute<AT_Position3dAttr>(QLatin1String("POSITION"), parent);
 
-	if(posAttr)
+	if (posAttr)
 		posAttr->getValue(frameNo, tempPos, &isPosCtrlPnt, &isConstSeg);
 
 
 	//ROTATION
 
 	Math::Angle3d tempAngle;
-	double tempV;
 	bool isRotCtrlPnt = false;
+	bool isRotXCtrlPnt = false;
+	bool isRotYCtrlPnt = false;
+	bool isRotZCtrlPnt = false;
 
-	AT_Rotation3dAttr*  rotAttr = ::findAttribute<AT_Rotation3dAttr>(QLatin1String("ROTATION"), parent);
+	AT_Rotation3dAttr* rotAttr = ::findAttribute<AT_Rotation3dAttr>(QLatin1String("ROTATION"), parent);
 
-	if(rotAttr)
-		rotAttr->getValue(frameNo, tempAngle, &tempV, &isRotCtrlPnt, &isConstSeg);
+	if (rotAttr)
+	{
+		if (rotAttr->useSeparate())
+		{
+			if (rotAttr->separateX())
+				rotAttr->separateX()->value(frameNo, &isRotXCtrlPnt, &isConstSeg);
+
+			if (rotAttr->separateY())
+				rotAttr->separateY()->value(frameNo, &isRotYCtrlPnt, &isConstSeg);
+
+			if (rotAttr->separateZ())
+				rotAttr->separateZ()->value(frameNo, &isRotZCtrlPnt, &isConstSeg);
+		}
+		else
+		{
+			isRotCtrlPnt = isQuarternionKeyframe(*rotAttr, frameNo, tempAngle);
+		}
+	}
 
 
 	//SCALE
@@ -390,7 +408,8 @@ bool PkoModule::hasNoParentKeyframe(double frameNo)
 		skewAttr->value(frameNo, &isSkewCtrlPnt, &isConstSeg);
 
 
-	return !(isPosCtrlPnt || isRotCtrlPnt || isKeyframeX || isKeyframeY || isKeyframeZ || isSkewCtrlPnt);
+	return !(isPosCtrlPnt || isRotCtrlPnt || isRotXCtrlPnt || isRotYCtrlPnt || isRotZCtrlPnt 
+		|| isKeyframeX || isKeyframeY || isKeyframeZ || isSkewCtrlPnt);
 }
 
 
