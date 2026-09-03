@@ -221,4 +221,23 @@ T* findAttribute(const QString& keyword, MO_Node* node)
 int getElementId(MO_Module* modulePtr);
 void printAttributes(AT_AttrList attributes);
 
+
+template <typename T = AT_Rotation3dAttr>
+bool isQuarternionKeyframe(const T& t, double frame, Math::Angle3d& angle)
+{
+	bool isCtrlPnt = false;
+	bool isConstSeg = false;
+
+	if constexpr (requires { t.getValue(frame, angle, (double*)nullptr, &isCtrlPnt, &isConstSeg); })
+	{
+		t.getValue(frame, angle, static_cast<double*>(nullptr), &isCtrlPnt, &isConstSeg);
+	}
+	else
+	{
+		// older SDK
+		t.getValue(frame, angle, &isCtrlPnt, &isConstSeg);
+	}
+
+	return isCtrlPnt;
+}
 #endif
