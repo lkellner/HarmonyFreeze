@@ -6,6 +6,8 @@
 #include <SceneCore/attribute/AT_DoubleAttr.h>
 #include <SceneCore/attribute/AT_Rotation3dAttrCmds.h>
 #include <SceneCore/module/MO_FrameKey.h>
+#include <SceneCore/module/MO_DeformationInformation.h>
+#include <BaseCore/maths/MT_Box2d.h>
 
 #include <stdexcept>
 
@@ -63,7 +65,7 @@ Math::Matrix4x4 ModuleBase::getIncomingMatrix(unsigned int port, double frameNo,
 		printf("invalid port for incoming matrix\n");
 		return {};
 	}
-
+	//TODO: replace with get source node function from utils
 	const MO_BaseContext context{MO_FrameKey(frameNo)};
 	const MO_PortTransform * portTransform = m_modulePtr->computeTransformationParent(context, port);
 
@@ -73,52 +75,6 @@ Math::Matrix4x4 ModuleBase::getIncomingMatrix(unsigned int port, double frameNo,
 	}
 
 	CC_Transformation ccTransform = portTransform->transformation();
-
-	ccTransform.finalizeDeformation();
-	return ccTransform.matrix(useDeformation);
-}
-
-
-Math::Matrix4x4 ModuleBase::getIncomingMatrixTest(unsigned int port, double frameNo, bool useDeformation) const
-{
-	if (port < 0)
-	{
-		printf("invalid port for incoming matrix\n");
-		return {};
-	}
-
-	const MO_Node::InPorts inPorts = m_modulePtr->getInPorts();
-
-	if (inPorts.size() + 1 < port)
-	{
-		printf("invalid port for incoming matrix\n");
-		return {};
-	}
-
-	const MO_BaseContext context{ MO_FrameKey(frameNo) };
-	const MO_PortTransform* portTransform = m_modulePtr->computeTransformationParent(context, port);
-
-	if (!portTransform)
-	{
-		return {};
-	}
-
-	CC_Transformation ccTransform = portTransform->transformation();
-
-	ccTransform.print("cc transform");
-
-	const std::vector< CC_DeformationConstPtr_t > deformations = ccTransform.allDeformations();
-
-	Math::Matrix4x4 inMatrix;
-	inMatrix.translate(1, 0, 0);
-	Math::Matrix4x4 outMatrix;
-
-	for (auto& def : deformations)
-	{
-		//def->setEnabled(true);
-		def->deform(inMatrix, outMatrix);
-		outMatrix.print("deformation out matrix");
-	}
 
 	ccTransform.finalizeDeformation();
 	return ccTransform.matrix(useDeformation);

@@ -63,7 +63,6 @@ protected:
 	FreezeManager* getFreezeManagerPtr() const;
 
 	virtual Math::Matrix4x4 getIncomingMatrix(unsigned int port, double frameNo, bool useDeformation) const;
-	virtual Math::Matrix4x4 getIncomingMatrixTest(unsigned int port, double frameNo, bool useDeformation) const;
 
 private:
 	std::shared_ptr<FreezeManager> m_freezeManager;
