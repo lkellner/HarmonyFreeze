@@ -181,11 +181,13 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword,
 
 	FrameRange range;
 	
+
+	range = getFrameRange();
+	
 	//A larger range of keyframes needs to be considered when there is an offset matrix
-	if(m_transformationType == TransformationType::Simple)
-		range = getFrameRange();
-	else
-		getIncomingFrameRange(getSourceModule(getModulePtr(), 1), range)
+	if (m_transformationType != TransformationType::Simple)
+		getIncomingFrameRange(getSourceModule(getModulePtr(), 1), range);
+
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
