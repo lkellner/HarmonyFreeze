@@ -185,9 +185,7 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword,
 	if(m_transformationType == TransformationType::Simple)
 		range = getFrameRange();
 	else
-		range = getFreezeManagerPtr()->getFrameRange();
-	//FIXME: the freezeManagers frameRange is not really correct if port 1 is not connected
-	//to the freeze peg
+		getIncomingFrameRange(getSourceModule(getModulePtr(), 1), range)
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{

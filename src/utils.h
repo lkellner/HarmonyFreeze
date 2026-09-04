@@ -133,6 +133,7 @@ struct Exposure
 
 //General
 
+void getIncomingFrameRange(const MO_Node* node, FrameRange& frameRange);
 void updateFrameRange(FrameRange& range, int frame);
 void clampValues(MatrixParameters& params);
 void clampValues(Math::Point3d &point);
