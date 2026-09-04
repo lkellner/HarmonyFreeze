@@ -4,6 +4,39 @@
 #include <SceneCore/attribute/AT_BoolAttr.h>
 
 //Caution:  Math::Matrix4x4 uses the inverse matrix multiplication order of Math::Matrix3x2
+void getIncomingFrameRange(const MO_Node * node, FrameRange& frameRange)
+{
+	//Rough way of getting upstream frameRange
+	//Not all keys might necessarily be detected, if there is only one frame with a keyframe set
+	//Wrapping it inside a try/catch block as there have been problems when functions were linked 
+	//to expressions
+	int start;
+	int end;
+	
+	if (!node)
+		return;
+
+	try
+	{
+		node->getKeysRange(&start, &end);
+	}
+	catch (...)
+	{
+		printf("Couldn't get keyframes for %s\n", qPrintable(node->instanceName()));
+	}
+
+	updateFrameRange(frameRange, start);
+	updateFrameRange(frameRange, end);
+
+
+	const MO_Node::InPorts inPorts = node->getInPorts();
+
+	for (const auto& port : inPorts)
+	{
+		if (port && port->realSrcNode())
+			getIncomingFrameRange(port->realSrcNode(), frameRange);
+	}
+}
 
 MO_Module* getSourceModule(MO_Node* node, int portIndex)
 {
