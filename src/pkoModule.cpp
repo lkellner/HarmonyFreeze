@@ -186,7 +186,14 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword,
 	
 	//A larger range of keyframes needs to be considered when there is an offset matrix
 	if (m_transformationType != TransformationType::Simple)
+
+		//getIncomingFrameRange() can only be used with H27 and higher
+#if SDK_MAJOR_VERSION > 25
 		getIncomingFrameRange(getSourceModule(getModulePtr(), 1), range);
+#else
+		//This might not detect all keyframes if port 1 not connected to the Freeze Peg
+		range = getFreezeManagerPtr()->getFrameRange();
+#endif
 
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
