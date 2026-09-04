@@ -4,12 +4,15 @@
 #include <SceneCore/attribute/AT_BoolAttr.h>
 
 //Caution:  Math::Matrix4x4 uses the inverse matrix multiplication order of Math::Matrix3x2
+
 void getIncomingFrameRange(const MO_Node * node, FrameRange& frameRange)
 {
 	//Rough way of getting upstream frameRange
-	//Not all keys might necessarily be detected, if there is only one frame with a keyframe set
-	//Wrapping it inside a try/catch block as there have been problems when functions were linked 
-	//to expressions
+	//Not all keys might necessarily be detected, if keyframes are only on a single frame
+	//This function is disabled for H24 as there are crashes when an attriubute is connected to an
+	// expression, that can't be caught in a try catch/block
+	
+#if SDK_MAJOR_VERSION > 25
 	int start;
 	int end;
 	
@@ -36,7 +39,12 @@ void getIncomingFrameRange(const MO_Node * node, FrameRange& frameRange)
 		if (port && port->realSrcNode())
 			getIncomingFrameRange(port->realSrcNode(), frameRange);
 	}
+#else
+
+	printf("Can't define frameRange\n");
+#endif
 }
+
 
 MO_Module* getSourceModule(MO_Node* node, int portIndex)
 {
