@@ -179,10 +179,7 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword,
 
 	setStaticAttributes(pos3d, pivotAttr, pivotKeyword, curMacro);
 
-	FrameRange range;
-	
-
-	range = getFrameRange();
+	FrameRange range = getFrameRange();
 	
 	//A larger range of keyframes needs to be considered when there is an offset matrix
 	if (m_transformationType != TransformationType::Simple)
