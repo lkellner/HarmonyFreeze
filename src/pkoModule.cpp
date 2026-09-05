@@ -10,7 +10,6 @@
 #include <SceneCore/attribute/AT_Scale3dAttr.h>
 #include <SceneCore/module/MO_PortTransform.h>
 
-#include <limits>
 #include <stdexcept>
 
 PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
