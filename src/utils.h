@@ -258,4 +258,14 @@ bool isQuarternionKeyframe(const T& t, double frame, Math::Angle3d& angle)
 
 	return isCtrlPnt;
 }
+
+constexpr bool supportsKeysRange()
+{
+#if SDK_MAJOR_VERSION > 25
+return true;
+#else
+return false;
+#endif
+
+}
 #endif

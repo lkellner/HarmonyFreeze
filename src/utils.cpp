@@ -10,39 +10,41 @@ void getIncomingFrameRange(const MO_Node * node, FrameRange& frameRange)
 	//Rough way of getting upstream frameRange
 	//Not all keys might necessarily be detected, if keyframes are only on a single frame
 	//This function is disabled for H24 as there are crashes when an attriubute is connected to an
-	// expression, that can't be caught in a try catch/block
+	// expression, that can't be caught in a try/catch block
 	
-#if SDK_MAJOR_VERSION > 25
-	int start;
-	int end;
-	
-	if (!node)
-		return;
-
-	try
+	if constexpr (supportsKeysRange())
 	{
-		node->getKeysRange(&start, &end);
+		int start;
+		int end;
+		
+		if (!node)
+			return;
+
+		try
+		{
+			node->getKeysRange(&start, &end);
+		}
+		catch (...)
+		{
+			printf("Couldn't get keyframes for %s\n", qPrintable(node->instanceName()));
+		}
+
+		updateFrameRange(frameRange, start);
+		updateFrameRange(frameRange, end);
+
+
+		const MO_Node::InPorts inPorts = node->getInPorts();
+
+		for (const auto& port : inPorts)
+		{
+			if (port && port->realSrcNode())
+				getIncomingFrameRange(port->realSrcNode(), frameRange);
+		}
 	}
-	catch (...)
+	else
 	{
-		printf("Couldn't get keyframes for %s\n", qPrintable(node->instanceName()));
+          printf("Can't define frameRange\n");
 	}
-
-	updateFrameRange(frameRange, start);
-	updateFrameRange(frameRange, end);
-
-
-	const MO_Node::InPorts inPorts = node->getInPorts();
-
-	for (const auto& port : inPorts)
-	{
-		if (port && port->realSrcNode())
-			getIncomingFrameRange(port->realSrcNode(), frameRange);
-	}
-#else
-
-	printf("Can't define frameRange\n");
-#endif
 }
 
 
