@@ -78,6 +78,7 @@ HEADERS += \
 	src/drawingTransformationModule.h\
 	src/pegModule.h\
 	src/pkoModule.h\
+	src/freeformModule.h\
 
 
 # Input
@@ -95,6 +96,8 @@ SOURCES += src/freezeTransformation.cpp\
 	src/drawingTransformationModule.cpp\
 	src/pegModule.cpp\
 	src/pkoModule.cpp\
+	src/freeformModule.cpp\
+
 
 
 win32 {

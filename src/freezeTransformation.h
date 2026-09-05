@@ -15,6 +15,7 @@
 #include "pegModule.h"
 #include "staticTransformationModule.h"
 #include "pkoModule.h"
+#include "freeformModule.h"
 #include "utils.h"
 
 #include <Util/pluginmanager/PLUG_Services.h>

@@ -36,7 +36,7 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 		{
 			continue;
 		}
-
+		printf("Node %s\n", qPrintable(node->keyword()));
 		if (node->keyword() == QLatin1String("READ"))
 		{
 			moduleWrappers.push_back(std::make_unique <DrawingTransformationModule>(freezeManager, node->toModule(),
@@ -85,6 +85,11 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 		if (node->keyword() == QLatin1String("DeformTransformOut"))
 		{
 			moduleWrappers.push_back(std::make_unique <PkoModule>(freezeManager, node->toModule(), ModuleType::PKO));
+		}
+
+		if (node->keyword() == QLatin1String("FreeFormDeformation"))
+		{
+			moduleWrappers.push_back(std::make_unique <FreeformModule>(freezeManager, node->toModule(), ModuleType::FREEFORM));
 		}
 
 		if (!moduleWrappers.empty())
