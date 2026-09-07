@@ -27,6 +27,16 @@
 #include "moduleBase.h"
 #include "utils.h"
 
+struct FreeformPoint
+{
+	QString name;
+
+	AT_Position2dAttr* positionAttr;
+	AT_Position2dAttr* restingPositionAttr;
+
+	double rotation;
+};
+
 class FreeformModule : public ModuleBase
 {
 public:
@@ -45,9 +55,7 @@ private:
 	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, 
 		CO_OrCommand& curMacro, double frameNo);
 	
-	//AT_Position2dAttr* m_pivot01Attr;
-	//AT_Position2dAttr* m_pivot02Attr;
-	//AT_Position2dAttr* m_pivot03Attr;
+	std::vector<std::unique_ptr<FreeformPoint>> freeformPoints;
 };
 
 #endif
