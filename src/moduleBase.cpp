@@ -18,7 +18,14 @@ ModuleBase::ModuleBase(std::shared_ptr<FreezeManager> freezeManager, MO_Module* 
 {
 	if (!modulePtr)
 		throw std::invalid_argument("modulePtr");
+
+	if (!getFreezeManagerPtr())
+		return;
+
+	if (getFreezeManagerPtr()->isExperimentalMode())
+		modulePtr->closeEditor();
 }
+
 
 ModuleType ModuleBase::getModuleType() const
 {
