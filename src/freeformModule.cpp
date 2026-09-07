@@ -138,61 +138,40 @@ FrameRange FreeformModule::getFrameRange() const
 
 	int key;
 
-	/*
 	//Main attribute only detects point2d keyframes
-	if (m_pivot01Attr->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
+	for (const auto& point : m_freeformPoints)
+	{
+		if (point->posAttr)
+		{
+			if (point->posAttr->getPrevKey(INT_MAX, &key))
+				updateFrameRange(range, key);
 
-	if (m_pivot01Attr->getNextKey(0, &key))
-		updateFrameRange(range, key);
+			if (point->posAttr->getNextKey(0, &key))
+				updateFrameRange(range, key);
 
-	if (m_pivot01Attr->separateX()->getNextKey(0, &key))
-		updateFrameRange(range, key);
+			if (point->posAttr->separateX()->getNextKey(0, &key))
+				updateFrameRange(range, key);
 
-	if (m_pivot01Attr->separateX()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
+			if (point->posAttr->separateX()->getPrevKey(INT_MAX, &key))
+				updateFrameRange(range, key);
 
-	if (m_pivot01Attr->separateY()->getNextKey(0, &key))
-		updateFrameRange(range, key);
+			if (point->posAttr->separateY()->getNextKey(0, &key))
+				updateFrameRange(range, key);
 
-	if (m_pivot01Attr->separateY()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-	
-	if (m_pivot02Attr->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
+			if (point->posAttr->separateY()->getPrevKey(INT_MAX, &key))
+				updateFrameRange(range, key);
+		}
 
-	if (m_pivot02Attr->getNextKey(0, &key))
-		updateFrameRange(range, key);
+		if (point->rotAttr)
+		{
+			if (point->rotAttr->getNextKey(0, &key))
+				updateFrameRange(range, key);
 
-	if (m_pivot02Attr->separateX()->getNextKey(0, &key))
-		updateFrameRange(range, key);
+			if (point->rotAttr->getPrevKey(INT_MAX, &key))
+				updateFrameRange(range, key);
+		}
+	}
+	//Resting position can't have any keyframes 
 
-	if (m_pivot02Attr->separateX()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot02Attr->separateY()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot02Attr->separateY()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-	
-	if (m_pivot03Attr->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->separateX()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->separateX()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->separateY()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->separateY()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-*/
 	return range;
 }

@@ -34,7 +34,7 @@ struct FreeformPoint
 	AT_Position2dAttr* posAttr;
 	AT_Position2dAttr* restingPosAttr;
 
-	AT_DoubleAttr* rotation;
+	AT_DoubleAttr* rotAttr;
 };
 
 class FreeformModule : public ModuleBase
