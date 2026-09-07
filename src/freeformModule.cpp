@@ -17,6 +17,9 @@ FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 		ModuleType moduleType)
 	: ModuleBase(std::move(freezeManager), modulePtr, moduleType)
 {
+	if (freezeManager->isExperimentalMode())
+		modulePtr->closeEditor();
+
 	AT_AttrList attrList = getAttributeList();
 
 	for (auto& attr : attrList)
