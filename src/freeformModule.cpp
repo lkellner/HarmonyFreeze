@@ -23,14 +23,20 @@ FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 	{
 		AT_ComplexAttr* cAttr;
 
-		if (attr._pAttr->typeName() == QStringLiteral("FREE-FORM-DEFORMATION-ATTRIBUTE"))
-			cAttr = dynamic_cast<AT_ComplexAttr*>(attr._pAttr);
+		if (attr._pAttr->typeName() != QStringLiteral("FREE-FORM-DEFORMATION-ATTRIBUTE"))
+			continue;
+		cAttr = dynamic_cast<AT_ComplexAttr*>(attr._pAttr);
 
 		if (!cAttr)
 			continue;
-	}
-	printAttributes(attrList);
 
+		AT_Position2dAttr* posAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("POSITION"), modulePtr);
+		AT_Position2dAttr* restingPosAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("RESTING_POSITION"), modulePtr);
+		AT_DoubleAttr* rotAttr = findSubAttribute<AT_DoubleAttr>(cAttr, QStringLiteral("Rotation"), modulePtr);
+
+		if(posAttr && restingPosAttr && rotAttr)
+			m_freeformPoints.push_back(std::make_unique <FreeformPoint>(cAttr->keyword(), posAttr, restingPosAttr, rotAttr));
+	}
 }
 
 

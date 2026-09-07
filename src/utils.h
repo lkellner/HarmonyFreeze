@@ -214,24 +214,44 @@ AT_AttrList getAttributeList(const MO_Node* node);
 template <typename T>
 T* findAttribute(const QString& keyword, MO_Node* node)
 {
+	if (!node)
+		return nullptr;
+
 	const AT_AttrList attributes = getAttributeList(node);
 
 	const auto it = std::find_if(attributes.begin(), attributes.end(),
-		[&keyword](const AT_AttrDesc& a) { return a._pAttr->keyword() == keyword; });
+		[&keyword](const AT_AttrDesc& a) { return a._pAttr && a._pAttr->keyword() == keyword; });
 
 	return it == attributes.end() ? nullptr : dynamic_cast<T*>(it->_pAttr);
 }
 
+
+template <typename T>
+T* findSubAttribute(const AT_ComplexAttr* parent, const QString& keyword, MO_Node* node)
+{
+	if (!parent)
+		return nullptr;
+
+	const auto it = std::find_if(parent->attrsBegin(), parent->attrsEnd(),
+		[&keyword](const AT_Attr* a) { return  a && a->keyword() == keyword; });
+
+	return it == parent->attrsEnd() ? nullptr : dynamic_cast<T*>(*it);
+}
+
+
 template <typename T>
 T* findSubAttribute(const QString& parentKeyword, const QString& keyword, MO_Node* node)
 {
+	if(!node)
+		return nullptr;
+
 	AT_ComplexAttr * parent = findAttribute<AT_ComplexAttr>(parentKeyword, node);
 
 	if (!parent)
 		return nullptr;
 
 	const auto it = std::find_if(parent->attrsBegin(), parent->attrsEnd(),
-		[&keyword](const AT_Attr* a) { return a->keyword() == keyword; });
+		[&keyword](const AT_Attr* a) { return  a && a->keyword() == keyword; });
 
 	return it == parent->attrsEnd() ? nullptr : dynamic_cast<T*>(*it);
 }

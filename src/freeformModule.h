@@ -31,10 +31,10 @@ struct FreeformPoint
 {
 	QString name;
 
-	AT_Position2dAttr* positionAttr;
-	AT_Position2dAttr* restingPositionAttr;
+	AT_Position2dAttr* posAttr;
+	AT_Position2dAttr* restingPosAttr;
 
-	double rotation;
+	AT_DoubleAttr* rotation;
 };
 
 class FreeformModule : public ModuleBase
@@ -55,7 +55,7 @@ private:
 	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, 
 		CO_OrCommand& curMacro, double frameNo);
 	
-	std::vector<std::unique_ptr<FreeformPoint>> freeformPoints;
+	std::vector<std::unique_ptr<FreeformPoint>> m_freeformPoints;
 };
 
 #endif
