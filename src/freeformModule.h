@@ -51,8 +51,9 @@ private:
 	FrameRange getFrameRange() const override;
 
 	void processPoint(FreeformPoint*, CO_OrCommand& curMacro);
-	void setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos, double rotation, CO_OrCommand& curMacro);
-	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, 
+	void setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos,
+		double rotation, CO_OrCommand& curMacro);
+	void setAttributes(FreeformPoint* point, Math::Point3d position, double rotation,
 		CO_OrCommand& curMacro, double frameNo);
 	
 	std::vector<std::unique_ptr<FreeformPoint>> m_freeformPoints;

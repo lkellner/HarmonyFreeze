@@ -73,22 +73,22 @@ void FreeformModule::processPoint(FreeformPoint* point, CO_OrCommand& curMacro)
 
 	setStaticAttributes(point, pos3d, restingPos3d, rotation, curMacro);
 
-	/*
+	
 	FrameRange range = getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
-		pivotAttr->getValue(curFrame, position);
+		point->posAttr->getValue(curFrame, position);
 		pos3d = Math::Point3d(position);
 
 		pos3d = changeMatrix * pos3d;
 
-		setAttributes(pos3d, pointAttr, point.name, curMacro, curFrame);
+		setAttributes(point, pos3d, rotation, curMacro, curFrame);
 	}
-	*/
 }
 
-void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos, double rotation, CO_OrCommand& curMacro)
+void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos, 
+	double rotation, CO_OrCommand& curMacro)
 {
 	clampValues(position);
 	clampValues(restingPos);
@@ -116,7 +116,7 @@ void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d pos
 }
 
 
-void FreeformModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, 
+void FreeformModule::setAttributes(FreeformPoint* point, Math::Point3d position, double rotation,
 	CO_OrCommand& curMacro, double frameNo)
 {
 	clampValues(position);
@@ -127,23 +127,26 @@ void FreeformModule::setAttributes(Math::Point3d position, AT_Position2dAttr* at
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		curMacro.add(Attr::Position2d::createSetValueCmd(attr, frameNo, position.x(), position.y()));
+		curMacro.add(Attr::Position2d::createSetValueCmd(point->posAttr, frameNo, position.x(), position.y()));
 	}
 	else
 	{
 		//JS
 
-		if (attr->useSeparate())
+		if (point->posAttr->useSeparate())
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ attributeKeyword + QLatin1String(".x"), position.x(), frameNo, true },
-				AttrData{ attributeKeyword + QLatin1String(".y"), position.y(), frameNo, true });
+				AttrData{ point->name + QLatin1String(".position.x"), position.x(), frameNo, true },
+				AttrData{ point->name + QLatin1String(".position.y"), position.y(), frameNo, true });
 		}
 		else
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, true });
+				Point2dAttrData{ point->name + QLatin1String(".position"), Math::Point2d(position.x(),position.y()) , frameNo, true });
 		}
+
+		fm->applyAttributes(getModulePtr()->qualifiedName(),
+			AttrData{ point->name + QLatin1String(".rotation"), rotation, frameNo, true });
 	}
 }
 
