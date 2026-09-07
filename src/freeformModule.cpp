@@ -34,8 +34,9 @@ FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 		AT_Position2dAttr* restingPosAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("RESTING_POSITION"), modulePtr);
 		AT_DoubleAttr* rotAttr = findSubAttribute<AT_DoubleAttr>(cAttr, QStringLiteral("Rotation"), modulePtr);
 
+		//Need to use xmlKeyword() as this corresponds to the keyword used in the JS syntax
 		if(posAttr && restingPosAttr && rotAttr)
-			m_freeformPoints.push_back(std::make_unique <FreeformPoint>(cAttr->keyword(), posAttr, restingPosAttr, rotAttr));
+			m_freeformPoints.push_back(std::make_unique <FreeformPoint>(cAttr->xmlKeyword(), posAttr, restingPosAttr, rotAttr));
 	}
 }
 
@@ -44,27 +45,35 @@ void FreeformModule::readjustSecondary()
 {
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
-	/*
-	processPivot(m_pivot01Attr, QLatin1String("pivot1"), *curMacro);
-	processPivot(m_pivot02Attr, QLatin1String("pivot2"), *curMacro);
-	processPivot(m_pivot03Attr, QLatin1String("pivot3"), *curMacro);
-	*/
+	for (const auto& point : m_freeformPoints)
+		processPoint(point.get(), *curMacro);
+
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
 
-void FreeformModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro)
+void FreeformModule::processPoint(FreeformPoint* point, CO_OrCommand& curMacro)
 {
-	Math::Matrix4x4 changeMatrix;
+	Math::Matrix4x4 changeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), 
+		getFreezeManagerPtr()->getFreezeMatrix());
+
+	Math::Point2d restingPos;
+	point->restingPosAttr->getLocalValue(restingPos);
+	Math::Point3d restingPos3d = Math::Point3d(restingPos);
+
+	restingPos3d = changeMatrix * restingPos3d;
 
 	Math::Point2d position;
-	pivotAttr->getLocalValue(position);
+	point->posAttr->getLocalValue(position);
 	Math::Point3d pos3d = Math::Point3d(position);
 
 	pos3d = changeMatrix * pos3d;
 
-	setStaticAttributes(pos3d, pivotAttr, pivotKeyword, curMacro);
+	double rotation = 0;
 
+	setStaticAttributes(point, pos3d, restingPos3d, rotation, curMacro);
+
+	/*
 	FrameRange range = getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
@@ -74,28 +83,35 @@ void FreeformModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKey
 
 		pos3d = changeMatrix * pos3d;
 
-		setAttributes(pos3d, pivotAttr, pivotKeyword, curMacro, curFrame);
+		setAttributes(pos3d, pointAttr, point.name, curMacro, curFrame);
 	}
+	*/
 }
 
-void FreeformModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro)
+void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos, double rotation, CO_OrCommand& curMacro)
 {
 	clampValues(position);
+	clampValues(restingPos);
 
 	FreezeManager* fm = getFreezeManagerPtr();
 
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		curMacro.add(Attr::Position2d::createSetLocalValueCmd(attr, position.x(), position.y()));
+		curMacro.add(Attr::Position2d::createSetLocalValueCmd(point->posAttr, position.x(), position.y()));
+		curMacro.add(Attr::Position2d::createSetLocalValueCmd(point->restingPosAttr, restingPos.x(), restingPos.y()));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(point->rotAttr, rotation));
 	}
 	else
 	{
 		//JS
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ attributeKeyword + QLatin1String(".x"), position.x() },
-			StaticAttrData{ attributeKeyword + QLatin1String(".y"), position.y() });
+			StaticAttrData{ point->name + QLatin1String(".restingPosition.x"), restingPos.x() },
+			StaticAttrData{ point->name + QLatin1String(".restingPosition.y"), restingPos.y() },
+			StaticAttrData{ point->name + QLatin1String(".position.x"), position.x() },
+			StaticAttrData{ point->name + QLatin1String(".position.y"), position.y() },
+			StaticAttrData{ point->name + QLatin1String(".rotation"), rotation });
 	}
 }
 
