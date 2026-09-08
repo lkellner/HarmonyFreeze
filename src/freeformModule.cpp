@@ -71,6 +71,13 @@ void FreeformModule::processPoint(FreeformPoint* point, CO_OrCommand& curMacro)
 
 	double rotation = 0;
 
+
+	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(point->rotAttr->localValue(),{ 0,0,1});
+	rotationMatrix = changeMatrix * rotationMatrix;
+
+	rotation = getAngle2d(rotationMatrix.getTransform2d());
+	printf("new rotation: %f\n", rotation);
+
 	setStaticAttributes(point, pos3d, restingPos3d, rotation, curMacro);
 
 	

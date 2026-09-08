@@ -43,7 +43,7 @@ void getIncomingFrameRange(const MO_Node * node, FrameRange& frameRange)
 	}
 	else
 	{
-          printf("Can't define frameRange\n");
+		printf("Can't define frameRange\n");
 	}
 }
 
