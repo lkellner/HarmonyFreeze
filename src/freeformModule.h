@@ -34,7 +34,7 @@ struct FreeformPoint
 	AT_Position2dAttr* posAttr;
 	AT_Position2dAttr* restingPosAttr;
 
-	AT_DoubleAttr* rotAttr;
+	//Rotation attribute has been left out, see note for processPoint
 };
 
 class FreeformModule : public ModuleBase
@@ -52,9 +52,9 @@ private:
 
 	void processPoint(FreeformPoint*, CO_OrCommand& curMacro);
 	void setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos,
-		double rotation, CO_OrCommand& curMacro);
-	void setAttributes(FreeformPoint* point, Math::Point3d position, double rotation,
-		CO_OrCommand& curMacro, double frameNo);
+		CO_OrCommand& curMacro);
+	void setAttributes(FreeformPoint* point, Math::Point3d position, CO_OrCommand& curMacro,
+		double frameNo);
 	
 	std::vector<std::unique_ptr<FreeformPoint>> m_freeformPoints;
 };

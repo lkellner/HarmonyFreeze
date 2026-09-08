@@ -5,7 +5,6 @@
 #include <GraphicCore/CinematicChain/CC_Transformation.h>
 #include <SceneCore/attribute/AT_Position2dAttr.h>
 #include <SceneCore/attribute/AT_Position3dAttr.h>
-#include <SceneCore/attribute/AT_Rotation3dAttr.h>
 #include <SceneCore/attribute/AT_Scale3dAttr.h>
 #include <SceneCore/module/MO_PortTransform.h>
 
@@ -32,11 +31,10 @@ FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 
 		AT_Position2dAttr* posAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("POSITION"), modulePtr);
 		AT_Position2dAttr* restingPosAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("RESTING_POSITION"), modulePtr);
-		AT_DoubleAttr* rotAttr = findSubAttribute<AT_DoubleAttr>(cAttr, QStringLiteral("Rotation"), modulePtr);
 
 		//Need to use xmlKeyword() as this corresponds to the keyword used in the JS syntax
-		if(posAttr && restingPosAttr && rotAttr)
-			m_freeformPoints.push_back(std::make_unique <FreeformPoint>(cAttr->xmlKeyword(), posAttr, restingPosAttr, rotAttr));
+		if(posAttr && restingPosAttr)
+			m_freeformPoints.push_back(std::make_unique <FreeformPoint>(cAttr->xmlKeyword(), posAttr, restingPosAttr));
 	}
 }
 
@@ -54,6 +52,12 @@ void FreeformModule::readjustSecondary()
 
 void FreeformModule::processPoint(FreeformPoint* point, CO_OrCommand& curMacro)
 {
+	//It was decided to not change the rotation attribute for now as it would only be effected
+	//by skews and non-uniform scales. However, these would also lead to modified non-uniform scale
+	//and skew attributes, which the freeform module is not able to represent. 
+	//The resulting transformation did therefor not lead to a significantly closer match than keeping
+	//the original value.
+
 	Math::Matrix4x4 changeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), 
 		getFreezeManagerPtr()->getFreezeMatrix());
 
@@ -69,16 +73,7 @@ void FreeformModule::processPoint(FreeformPoint* point, CO_OrCommand& curMacro)
 
 	pos3d = changeMatrix * pos3d;
 
-	double rotation = 0;
-
-
-	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(point->rotAttr->localValue(),{ 0,0,1});
-	rotationMatrix = changeMatrix * rotationMatrix;
-
-	rotation = getAngle2d(rotationMatrix.getTransform2d());
-	printf("new rotation: %f\n", rotation);
-
-	setStaticAttributes(point, pos3d, restingPos3d, rotation, curMacro);
+	setStaticAttributes(point, pos3d, restingPos3d, curMacro);
 
 	
 	FrameRange range = getFrameRange();
@@ -90,12 +85,12 @@ void FreeformModule::processPoint(FreeformPoint* point, CO_OrCommand& curMacro)
 
 		pos3d = changeMatrix * pos3d;
 
-		setAttributes(point, pos3d, rotation, curMacro, curFrame);
+		setAttributes(point, pos3d, curMacro, curFrame);
 	}
 }
 
-void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos, 
-	double rotation, CO_OrCommand& curMacro)
+void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d position,
+	Math::Point3d restingPos, CO_OrCommand& curMacro)
 {
 	clampValues(position);
 	clampValues(restingPos);
@@ -107,7 +102,6 @@ void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d pos
 		//C++
 		curMacro.add(Attr::Position2d::createSetLocalValueCmd(point->posAttr, position.x(), position.y()));
 		curMacro.add(Attr::Position2d::createSetLocalValueCmd(point->restingPosAttr, restingPos.x(), restingPos.y()));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(point->rotAttr, rotation));
 	}
 	else
 	{
@@ -117,13 +111,12 @@ void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d pos
 			StaticAttrData{ point->name + QLatin1String(".restingPosition.x"), restingPos.x() },
 			StaticAttrData{ point->name + QLatin1String(".restingPosition.y"), restingPos.y() },
 			StaticAttrData{ point->name + QLatin1String(".position.x"), position.x() },
-			StaticAttrData{ point->name + QLatin1String(".position.y"), position.y() },
-			StaticAttrData{ point->name + QLatin1String(".rotation"), rotation });
+			StaticAttrData{ point->name + QLatin1String(".position.y"), position.y() });
 	}
 }
 
 
-void FreeformModule::setAttributes(FreeformPoint* point, Math::Point3d position, double rotation,
+void FreeformModule::setAttributes(FreeformPoint* point, Math::Point3d position,
 	CO_OrCommand& curMacro, double frameNo)
 {
 	clampValues(position);
@@ -151,9 +144,6 @@ void FreeformModule::setAttributes(FreeformPoint* point, Math::Point3d position,
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
 				Point2dAttrData{ point->name + QLatin1String(".position"), Math::Point2d(position.x(),position.y()) , frameNo, true });
 		}
-
-		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			AttrData{ point->name + QLatin1String(".rotation"), rotation, frameNo, true });
 	}
 }
 
@@ -185,15 +175,6 @@ FrameRange FreeformModule::getFrameRange() const
 				updateFrameRange(range, key);
 
 			if (point->posAttr->separateY()->getPrevKey(INT_MAX, &key))
-				updateFrameRange(range, key);
-		}
-
-		if (point->rotAttr)
-		{
-			if (point->rotAttr->getNextKey(0, &key))
-				updateFrameRange(range, key);
-
-			if (point->rotAttr->getPrevKey(INT_MAX, &key))
 				updateFrameRange(range, key);
 		}
 	}
