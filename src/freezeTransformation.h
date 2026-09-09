@@ -35,6 +35,7 @@ class FreezeResponder : public QObject
 
 public slots:
 	void onActionFreezeTransformation();
+	void onActionShowSettings();
 };
 
 #endif

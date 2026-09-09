@@ -1,5 +1,6 @@
 #include "freezeTransformation.h"
 #include "utils.h"
+#include "dialog.h"
 
 #include <CelCore/Cel/CEL_Cel.h>
 #include <CelCore/Cel/CEL_PixmapRGBA16.h>
@@ -24,6 +25,7 @@
 #include <future>
 #include <iostream>
 #include <memory>
+
 
 ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::shared_ptr<FreezeManager> freezeManager)
 {
@@ -100,6 +102,13 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 
 	return moduleWrappers;
 }
+
+
+void FreezeResponder::onActionShowSettings()
+{
+	showDialog();
+}
+
 
 void FreezeResponder::onActionFreezeTransformation()
 {
