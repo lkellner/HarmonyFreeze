@@ -1,9 +1,8 @@
 #include "dialog.h"
 #include <QSlider>
+#include <QGridLayout>
 void showDialog()
 {
-	
-
 	QDialog dialogue;
 
 	QSlider slider01 = QSlider(Qt::Horizontal, &dialogue);
@@ -17,12 +16,14 @@ void showDialog()
 		"	background: #ccc;"
 		"}"
 		"QSlider::handle:horizontal {"
-		"    background: #007ACC;"
-		"    width: 20px;"
-		"    height: 20px;"
-		"    margin: -7px 0;"
+		"	background: #007ACC;"
+		"	width: 20px;"
+		"	height: 20px;"
+		"	margin: -7px 0;"
 		"}"
 	));
+	QGridLayout mainLayout = QGridLayout(&dialogue);
+	mainLayout.addWidget(&slider01, 1, 1);
 	slider01.show();
 	dialogue.exec();
 }
