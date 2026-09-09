@@ -8,5 +8,7 @@
 
 #include <QDialog>
 
+
 void showDialog();
+QWidget* createWidget(QWidget* parent);
 #endif
