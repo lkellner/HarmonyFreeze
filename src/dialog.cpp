@@ -3,18 +3,19 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QSettings>
+#include <QPushButton>
 
 QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 {
-	QWidget* widget = new QWidget(parent);
-	QGridLayout* widgetLayout = new QGridLayout(widget);
+	auto* widget = new QWidget(parent);
+	auto* widgetLayout = new QGridLayout(widget);
 
-	QLabel* descrLabel = new QLabel(widget);
+	auto* descrLabel = new QLabel(widget);
 	descrLabel->setText(description);
 	widgetLayout->addWidget(descrLabel, 0, 0, 1, 4, Qt::AlignLeft);
 
 
-	QSlider* slider = new QSlider(Qt::Horizontal, widget);
+	auto* slider = new QSlider(Qt::Horizontal, widget);
 	slider->setSingleStep(1);
 	slider->setMinimum(0);
 	slider->setMaximum(1);
@@ -34,22 +35,21 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 		"}"
 	));
 
-	if (isEnabled)
-		slider->setSliderPosition(1);
-	else
-		slider->setSliderPosition(0);
+	const int position = isEnabled ? 1 : 0;
+
+	slider->setSliderPosition(position);
 	slider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
 	widgetLayout->addWidget(slider, 1, 1);
 	
-	QLabel* onLabel = new QLabel(widget);
+	auto* onLabel = new QLabel(widget);
 	onLabel->setText(QStringLiteral("ON"));
 	onLabel->setEnabled(isEnabled);
 	onLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	widgetLayout->addWidget(onLabel, 1, 2);
 
 
-	QLabel* offLabel = new QLabel(widget);
+	auto* offLabel = new QLabel(widget);
 	offLabel->setText(QStringLiteral("OFF"));
 	offLabel->setEnabled(!isEnabled);
 	offLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -74,51 +74,6 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 	return widget;
 }
 
-void initWidgets(std::vector<QWidget*>& widgets, QWidget* parent)
-{
-	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
-
-	if (!settings.contains(QStringLiteral("2dMode")))
-		settings.setValue(QStringLiteral("2dMode"), false);
-
-	widgets.emplace_back(createWidget(parent, QStringLiteral("2dMode"), settings.value(QStringLiteral("2dMode")).toBool()));
-
-
-	if (!settings.contains(QStringLiteral("ExperimentalMode")))
-		settings.setValue(QStringLiteral("ExperimentalMode"), false);
-
-	widgets.emplace_back(createWidget(parent, QStringLiteral("ExperimentalMode"), settings.value(QStringLiteral("ExperimentalMode")).toBool()));
-
-
-	if (!settings.contains(QStringLiteral("PassOnOglControllerTransformation")))
-		settings.setValue(QStringLiteral("PassOnOglControllerTransformation"), true);
-
-	widgets.emplace_back(createWidget(parent, QStringLiteral("PassOnOglControllerTransformation"), settings.value(QStringLiteral("PassOnOglControllerTransformation")).toBool()));
-
-
-	if (!settings.contains(QStringLiteral("UseMultithreading")))
-		settings.setValue(QStringLiteral("UseMultithreading"), false);
-
-	widgets.emplace_back(createWidget(parent, QStringLiteral("UseMultithreading"), settings.value(QStringLiteral("UseMultithreading")).toBool()));
-
-
-	if (!settings.contains(QStringLiteral("MoveUnusedPivots")))
-		settings.setValue(QStringLiteral("MoveUnusedPivots"), false);
-
-	widgets.emplace_back(createWidget(parent, QStringLiteral("MoveUnusedPivots"), settings.value(QStringLiteral("MoveUnusedPivots")).toBool()));
-
-
-	if (!settings.contains(QStringLiteral("DebugMode")))
-		settings.setValue(QStringLiteral("DebugMode"), false);
-
-	widgets.emplace_back(createWidget(parent, QStringLiteral("DebugMode"), settings.value(QStringLiteral("DebugMode")).toBool()));
-
-	if (!settings.contains(QStringLiteral("SetInbetweenKeyframesMode")))
-		settings.setValue(QStringLiteral("SetInbetweenKeyframesMode"), false);
-
-	widgets.emplace_back(createWidget(parent, QStringLiteral("SetInbetweenKeyframesMode"), settings.value(QStringLiteral("SetInbetweenKeyframesMode")).toBool()));
-}
-
 
 void showDialog()
 {
@@ -126,14 +81,32 @@ void showDialog()
 
 	QGridLayout* mainLayout = new QGridLayout(dialog);
 
-	std::vector<QWidget*> widgets;
-	initWidgets(widgets, dialog);
 
-	for (int i = 0; i < widgets.size(); i++)
+	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
+
+	auto loadSetting = [&settings, mainLayout, dialog, i = 0](const QString& name, bool defaultValue) mutable
 	{
-		mainLayout->addWidget(widgets[i], i, 0);
-		widgets[i]->show();
-	}
+		// ensure it gets written to back to the file
+		if (!settings.contains(name))
+			settings.setValue(name, defaultValue);
+
+		QWidget *w = createWidget(dialog, name, settings.value(name).toBool());
+
+		mainLayout->addWidget(w, i++, 0);
+		w->show();
+	};
+
+	loadSetting(QStringLiteral("2dMode"), true);
+	loadSetting(QStringLiteral("ExperimentalMode"), false);
+	loadSetting(QStringLiteral("PassOnOglControllerTransformation"), true);
+	loadSetting(QStringLiteral("UseMultithreading"), false);
+	loadSetting(QStringLiteral("MoveUnusedPivots"), false);
+	loadSetting(QStringLiteral("DebugMode"), false);
+	loadSetting(QStringLiteral("SetInbetweenKeyframesMode"), false);
+
+	QPushButton* button = new QPushButton(dialog);
+	button->setDefault(true);
+	mainLayout->addWidget(button, 7, 0);
 
 	mainLayout->setVerticalSpacing(30);
 
