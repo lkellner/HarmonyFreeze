@@ -11,7 +11,7 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 
 	QLabel* descrLabel = new QLabel(widget);
 	descrLabel->setText(description);
-	widgetLayout->addWidget(descrLabel, 0, 0, 1, 3, Qt::AlignLeft);
+	widgetLayout->addWidget(descrLabel, 0, 0, 1, 4, Qt::AlignLeft);
 
 
 	QSlider* slider = new QSlider(Qt::Horizontal, widget);
@@ -20,15 +20,17 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 	slider->setMaximum(1);
 	slider->setStyleSheet(QStringLiteral(
 		"QSlider::groove:horizontal {"
-		"	width: 30px;"
+		"	border-radius: 10px;"
+		"	width: 40px;"
 		"	height: 20px;"
-		"	background: #ccc;"
+		"	background: #333333;"
 		"}"
 		"QSlider::handle:horizontal {"
-		"	background: #007ACC;"
+		"	background: #bbb;"
+		"	border-radius: 10px;"
 		"	width: 20px;"
 		"	height: 20px;"
-		"	margin: -7px 0;"
+		"	margin: -1px -1px;"
 		"}"
 	));
 
@@ -36,18 +38,21 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 		slider->setSliderPosition(1);
 	else
 		slider->setSliderPosition(0);
+	slider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
 	widgetLayout->addWidget(slider, 1, 1);
 	
 	QLabel* onLabel = new QLabel(widget);
 	onLabel->setText(QStringLiteral("ON"));
 	onLabel->setEnabled(isEnabled);
+	onLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	widgetLayout->addWidget(onLabel, 1, 2);
 
 
 	QLabel* offLabel = new QLabel(widget);
 	offLabel->setText(QStringLiteral("OFF"));
 	offLabel->setEnabled(!isEnabled);
+	offLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	widgetLayout->addWidget(offLabel, 1, 0, Qt::AlignLeft);
 
 	auto toggleLabels =	[onLabel, offLabel](int value)
@@ -59,10 +64,10 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 
 	QObject::connect(slider, &QSlider::valueChanged, toggleLabels);
 	
-	widgetLayout->setColumnStretch(1, 0);
-	widgetLayout->setColumnStretch(0, 0);
-	widgetLayout->setRowStretch(0, 0);
-	widgetLayout->setRowStretch(1, 0);
+	//widgetLayout->setColumnStretch(1, 0);
+	//widgetLayout->setColumnStretch(0, 0);
+	//widgetLayout->setRowStretch(0, 0);
+	//widgetLayout->setRowStretch(1, 0);
 
 	widgetLayout->setVerticalSpacing(20);
 
@@ -129,6 +134,8 @@ void showDialog()
 		mainLayout->addWidget(widgets[i], i, 0);
 		widgets[i]->show();
 	}
-	
+
+	mainLayout->setVerticalSpacing(30);
+
 	dialog->exec();
 }
