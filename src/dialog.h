@@ -10,5 +10,7 @@
 
 
 void showDialog();
-QWidget* createWidget(QWidget* parent);
+QWidget* createWidget(QWidget* parent, QString description, bool isEnabled);
+void initWidgets(std::vector<QWidget*>& widgets, QWidget* parent);
+
 #endif
