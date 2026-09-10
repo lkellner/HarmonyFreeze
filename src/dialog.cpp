@@ -17,7 +17,7 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 	widgetVLayout->addWidget(descrLabel, Qt::AlignLeft);
 	widgetVLayout->addSpacing(10);
 
-	auto* widgetHLayout = new QHBoxLayout(widget);
+	auto* widgetHLayout = new QHBoxLayout();
 	widgetVLayout->addLayout(widgetHLayout);
 
 	auto* slider = new QSlider(Qt::Horizontal, widget);
@@ -81,12 +81,12 @@ void showDialog()
 {
 	QDialog* dialog = new QDialog();
 
-	QGridLayout* mainLayout = new QGridLayout(dialog);
+	auto* mainLayout = new QVBoxLayout(dialog);
 
 
 	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
 
-	auto loadSetting = [&settings, mainLayout, dialog, i = 0](const QString& name, bool defaultValue) mutable
+	auto loadSetting = [&settings, mainLayout, dialog](const QString& name, bool defaultValue) mutable
 	{
 		// ensure it gets written to back to the file
 		if (!settings.contains(name))
@@ -94,7 +94,8 @@ void showDialog()
 
 		QWidget *w = createWidget(dialog, name, settings.value(name).toBool());
 
-		mainLayout->addWidget(w, i++, 0);
+		mainLayout->addWidget(w);
+		mainLayout->addSpacing(10);
 		w->show();
 	};
 
@@ -108,9 +109,7 @@ void showDialog()
 
 	QPushButton* button = new QPushButton(dialog);
 	button->setDefault(true);
-	mainLayout->addWidget(button, 7, 0);
-
-	mainLayout->setVerticalSpacing(30);
+	mainLayout->addWidget(button);
 
 	dialog->exec();
 }
