@@ -4,16 +4,21 @@
 #include <QLabel>
 #include <QSettings>
 #include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 {
 	auto* widget = new QWidget(parent);
-	auto* widgetLayout = new QGridLayout(widget);
+	auto* widgetVLayout = new QVBoxLayout(widget);
 
 	auto* descrLabel = new QLabel(widget);
 	descrLabel->setText(description);
-	widgetLayout->addWidget(descrLabel, 0, 0, 1, 4, Qt::AlignLeft);
+	widgetVLayout->addWidget(descrLabel, Qt::AlignLeft);
+	widgetVLayout->addSpacing(10);
 
+	auto* widgetHLayout = new QHBoxLayout(widget);
+	widgetVLayout->addLayout(widgetHLayout);
 
 	auto* slider = new QSlider(Qt::Horizontal, widget);
 	slider->setSingleStep(1);
@@ -40,20 +45,17 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 	slider->setSliderPosition(position);
 	slider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-	widgetLayout->addWidget(slider, 1, 1);
 	
 	auto* onLabel = new QLabel(widget);
 	onLabel->setText(QStringLiteral("ON"));
 	onLabel->setEnabled(isEnabled);
 	onLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	widgetLayout->addWidget(onLabel, 1, 2);
 
 
 	auto* offLabel = new QLabel(widget);
 	offLabel->setText(QStringLiteral("OFF"));
 	offLabel->setEnabled(!isEnabled);
 	offLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	widgetLayout->addWidget(offLabel, 1, 0, Qt::AlignLeft);
 
 	auto toggleLabels =	[onLabel, offLabel](int value)
 	{
@@ -63,13 +65,13 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 	};
 
 	QObject::connect(slider, &QSlider::valueChanged, toggleLabels);
-	
-	//widgetLayout->setColumnStretch(1, 0);
-	//widgetLayout->setColumnStretch(0, 0);
-	//widgetLayout->setRowStretch(0, 0);
-	//widgetLayout->setRowStretch(1, 0);
 
-	widgetLayout->setVerticalSpacing(20);
+	widgetHLayout->addSpacing(10);
+	widgetHLayout->addWidget(offLabel);
+	widgetHLayout->addWidget(slider);
+	widgetHLayout->addWidget(onLabel);
+	widgetHLayout->addWidget(onLabel);
+	widgetHLayout->addStretch();
 
 	return widget;
 }
