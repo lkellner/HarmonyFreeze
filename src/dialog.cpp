@@ -5,9 +5,14 @@
 
 QWidget* createWidget(QWidget* parent)
 {
-	
-
 	QWidget* widget = new QWidget(parent);
+	QGridLayout* widgetLayout = new QGridLayout(widget);
+
+	QLabel* descrLabel = new QLabel(widget);
+	descrLabel->setText(QStringLiteral("This is a description"));
+	widgetLayout->addWidget(descrLabel, 0, 0, 1, 3, Qt::AlignLeft);
+
+
 	QSlider* slider01 = new QSlider(Qt::Horizontal, widget);
 	slider01->setSingleStep(1);
 	slider01->setMinimum(0);
@@ -25,19 +30,28 @@ QWidget* createWidget(QWidget* parent)
 		"	margin: -7px 0;"
 		"}"
 	));
-	QGridLayout* widgetLayout = new QGridLayout(widget);
-	QLabel* descrLabel = new QLabel(widget);
-	descrLabel->setText(QStringLiteral("This is a description"));
 
+	widgetLayout->addWidget(slider01, 1, 1);
+	
 	QLabel* onLabel = new QLabel(widget);
 	onLabel->setText(QStringLiteral("ON"));
+	widgetLayout->addWidget(onLabel, 1, 0);
+	onLabel->setEnabled(false);
+
 	QLabel* offLabel = new QLabel(widget);
 	offLabel->setText(QStringLiteral("OFF"));
-
-	widgetLayout->addWidget(onLabel, 1, 0);
 	widgetLayout->addWidget(offLabel, 1, 2, Qt::AlignLeft);
-	widgetLayout->addWidget(slider01, 1, 1);
-	widgetLayout->addWidget(descrLabel, 0, 0, 1, 3, Qt::AlignLeft);
+
+
+	auto toggleLabels =	[onLabel, offLabel](int value)
+	{
+		const bool isEnabled = value > 0;
+		onLabel->setEnabled(!isEnabled);
+		offLabel->setEnabled(isEnabled);
+	};
+
+	QObject::connect(slider01, &QSlider::valueChanged, toggleLabels);
+	
 	widgetLayout->setColumnStretch(1, 0);
 	widgetLayout->setColumnStretch(0, 0);
 	widgetLayout->setRowStretch(0, 0);
