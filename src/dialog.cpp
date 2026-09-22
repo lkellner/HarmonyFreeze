@@ -8,22 +8,32 @@
 #include <QHBoxLayout>
 
 
+void UIDialog::storeSettings()
+{
+	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
+
+	for (const auto& setting : m_settings)
+	{
+		settings.setValue(QLatin1String(setting.name), setting.value);
+	}
+}
+
+
 void UIDialog::loadSettings()
 {
 	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
 
 	auto getSettingVal = [&settings](const QString& name, bool defaultValue) mutable
-		{
-			// ensure it gets written to back to the file
-			if (!settings.contains(name))
-				settings.setValue(name, defaultValue);
+	{
+		// ensure it gets written to back to the file
+		if (!settings.contains(name))
+			settings.setValue(name, defaultValue);
 
-			return settings.value(name).toBool();
-		};
-
+		return settings.value(name).toBool();
+	};
 
 	m_settings[0] = Setting{ "2dMode", getSettingVal(QStringLiteral("2dMode"), true) };
-	m_settings[1] = Setting{ "2dExperimentalModeMode", getSettingVal(QStringLiteral("ExperimentalMode"), true) };
+	m_settings[1] = Setting{ "ExperimentalMode", getSettingVal(QStringLiteral("ExperimentalMode"), true) };
 	m_settings[2] = Setting{ "PassOnOglControllerTransformation", getSettingVal(QStringLiteral("PassOnOglControllerTransformation"), true) };
 	m_settings[3] = Setting{ "UseMultithreading", getSettingVal(QStringLiteral("UseMultithreading"), true) };
 	m_settings[4] = Setting{ "MoveUnusedPivots", getSettingVal(QStringLiteral("MoveUnusedPivots"), true) };
@@ -31,27 +41,32 @@ void UIDialog::loadSettings()
 	m_settings[6] = Setting{ "SetInbetweenKeyframesMode", getSettingVal(QStringLiteral("SetInbetweenKeyframesMode"), true) };
 }
 
+
 void UIDialog::initializeWidgets()
 {
 	auto* mainLayout = new QVBoxLayout(this);
 
 	for (auto& setting : m_settings)
 	{
-		QWidget* w = createWidget(this, QLatin1String(setting.name), setting.value);
+		QWidget* w = createWidget(this, QLatin1String(setting.name), &setting.value);
 
 		mainLayout->addWidget(w);
 		mainLayout->addSpacing(10);
 		w->show();
 	}
 
-
 	QPushButton* button = new QPushButton(this);
 	button->setDefault(true);
+	button->setText(QStringLiteral("Okay"));
+
+	QObject::connect(button, &QPushButton::clicked, this, &UIDialog::storeSettings);
+	QObject::connect(button, &QPushButton::clicked, this, &QDialog::done);
+
 	mainLayout->addWidget(button);
 }
 
 
-QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
+QWidget* createWidget(QWidget* parent, QString description, bool* isEnabledSetting)
 {
 	auto* widget = new QWidget(parent);
 	auto* widgetVLayout = new QVBoxLayout(widget);
@@ -84,28 +99,27 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 		"}"
 	));
 
-	const int position = isEnabled ? 1 : 0;
+	const int position = *isEnabledSetting ? 1 : 0;
 
 	slider->setSliderPosition(position);
 	slider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-	
 	auto* onLabel = new QLabel(widget);
 	onLabel->setText(QStringLiteral("ON"));
-	onLabel->setEnabled(isEnabled);
+	onLabel->setEnabled(*isEnabledSetting);
 	onLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
 
 	auto* offLabel = new QLabel(widget);
 	offLabel->setText(QStringLiteral("OFF"));
-	offLabel->setEnabled(!isEnabled);
+	offLabel->setEnabled(!*isEnabledSetting);
 	offLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-	auto toggleLabels =	[onLabel, offLabel](int value)
+	auto toggleLabels =	[onLabel, offLabel, isEnabledSetting](int value)
 	{
 		const bool isEnabled = value > 0;
 		onLabel->setEnabled(isEnabled);
 		offLabel->setEnabled(!isEnabled);
+		*isEnabledSetting = isEnabled;
 	};
 
 	QObject::connect(slider, &QSlider::valueChanged, toggleLabels);

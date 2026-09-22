@@ -20,7 +20,9 @@ class UIDialog : public QDialog
 {
 public:
 	UIDialog() = default;
+
 	void loadSettings();
+	void storeSettings();
 	void initializeWidgets();
 
 private:
@@ -28,6 +30,6 @@ private:
 };
 
 void showDialog();
-QWidget* createWidget(QWidget* parent, QString description, bool isEnabled);
+QWidget* createWidget(QWidget* parent, QString description, bool* isEnabled);
 
 #endif
