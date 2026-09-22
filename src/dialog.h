@@ -23,6 +23,7 @@ public:
 
 	void loadSettings();
 	void storeSettings();
+	void resetSettings();
 	void initializeWidgets();
 
 private:

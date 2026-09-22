@@ -19,6 +19,20 @@ void UIDialog::storeSettings()
 }
 
 
+void UIDialog::resetSettings()
+{
+	m_settings[0].value = true;
+	m_settings[1].value = false;
+	m_settings[2].value = true;
+	m_settings[3].value = false;
+	m_settings[4].value = false;
+	m_settings[5].value = false;
+	m_settings[6].value = false;
+
+	storeSettings();
+}
+
+
 void UIDialog::loadSettings()
 {
 	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
@@ -33,12 +47,12 @@ void UIDialog::loadSettings()
 	};
 
 	m_settings[0] = Setting{ "2dMode", getSettingVal(QStringLiteral("2dMode"), true) };
-	m_settings[1] = Setting{ "ExperimentalMode", getSettingVal(QStringLiteral("ExperimentalMode"), true) };
+	m_settings[1] = Setting{ "ExperimentalMode", getSettingVal(QStringLiteral("ExperimentalMode"), false) };
 	m_settings[2] = Setting{ "PassOnOglControllerTransformation", getSettingVal(QStringLiteral("PassOnOglControllerTransformation"), true) };
-	m_settings[3] = Setting{ "UseMultithreading", getSettingVal(QStringLiteral("UseMultithreading"), true) };
-	m_settings[4] = Setting{ "MoveUnusedPivots", getSettingVal(QStringLiteral("MoveUnusedPivots"), true) };
-	m_settings[5] = Setting{ "DebugMode", getSettingVal(QStringLiteral("DebugMode"), true) };
-	m_settings[6] = Setting{ "SetInbetweenKeyframesMode", getSettingVal(QStringLiteral("SetInbetweenKeyframesMode"), true) };
+	m_settings[3] = Setting{ "UseMultithreading", getSettingVal(QStringLiteral("UseMultithreading"), false) };
+	m_settings[4] = Setting{ "MoveUnusedPivots", getSettingVal(QStringLiteral("MoveUnusedPivots"), false) };
+	m_settings[5] = Setting{ "DebugMode", getSettingVal(QStringLiteral("DebugMode"), false) };
+	m_settings[6] = Setting{ "SetInbetweenKeyframesMode", getSettingVal(QStringLiteral("SetInbetweenKeyframesMode"), false) };
 }
 
 
@@ -55,14 +69,28 @@ void UIDialog::initializeWidgets()
 		w->show();
 	}
 
-	QPushButton* button = new QPushButton(this);
-	button->setDefault(true);
-	button->setText(QStringLiteral("Okay"));
+	auto* buttonLayout = new QHBoxLayout();
+	mainLayout->addLayout(buttonLayout);
 
-	QObject::connect(button, &QPushButton::clicked, this, &UIDialog::storeSettings);
-	QObject::connect(button, &QPushButton::clicked, this, &QDialog::done);
+	QPushButton* okayButton = new QPushButton(this);
+	okayButton->setDefault(true);
+	okayButton->setText(QStringLiteral("Okay"));
+	okayButton->setFocus(Qt::ActiveWindowFocusReason);
 
-	mainLayout->addWidget(button);
+	QObject::connect(okayButton, &QPushButton::clicked, this, &UIDialog::storeSettings);
+	QObject::connect(okayButton, &QPushButton::clicked, this, &QDialog::done);
+
+	buttonLayout->addWidget(okayButton);
+
+	QPushButton* resetButton = new QPushButton(this);
+	resetButton->setDefault(true);
+	resetButton->setText(QStringLiteral("Default"));
+	resetButton->setFocus(Qt::ActiveWindowFocusReason);
+
+	QObject::connect(resetButton, &QPushButton::clicked, this, &UIDialog::resetSettings);
+	QObject::connect(resetButton, &QPushButton::clicked, this, &QDialog::done);
+
+	buttonLayout->addWidget(resetButton);
 }
 
 
