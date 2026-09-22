@@ -6,9 +6,9 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QDialog>
+#include "constants.h"
 
-constexpr int nSettings = 7;
+#include <QDialog>
 
 struct Setting
 {
@@ -27,7 +27,7 @@ public:
 	void initializeWidgets();
 
 private:
-	std::array<Setting, nSettings> m_settings;
+	std::array<Setting, g_nSettings> m_settings;
 };
 
 void showDialog();

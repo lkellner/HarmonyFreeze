@@ -1,3 +1,4 @@
+#include "constants.h"
 #include "freezeManager.h"
 
 #include <Util/pluginmanager/PLUG_Scripting.h>
@@ -24,7 +25,7 @@ void FreezeManager::readSettings()
 	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QLatin1String("HarmonyFreeze"), QLatin1String("HarmonyFreeze"));
 
 	if (!settings.contains(QLatin1String("2dMode")))
-		settings.setValue(QLatin1String("2dMode"), true);
+		settings.setValue(QLatin1String("2dMode"), g_2dMode);
 
 	if (settings.value(QLatin1String("2dMode")).toBool())
 		m_projection = PROJECTION::ORTHOGRAPHIC;
@@ -33,41 +34,41 @@ void FreezeManager::readSettings()
 
 
 	if (!settings.contains(QLatin1String("ExperimentalMode")))
-		settings.setValue(QLatin1String("ExperimentalMode"), false);
+		settings.setValue(QLatin1String("ExperimentalMode"), g_ExperimentalMode);
 
 	m_isExperimentalMode = settings.value(QLatin1String("ExperimentalMode")).toBool();
 
 
 
 	if (!settings.contains(QLatin1String("PassOnOglControllerTransformation")))
-		settings.setValue(QLatin1String("PassOnOglControllerTransformation"), true);
+		settings.setValue(QLatin1String("PassOnOglControllerTransformation"), g_PassOnOglControllerTransformation);
 
 	m_isPassOnOgl = settings.value(QLatin1String("PassOnOglControllerTransformation")).toBool();
 
 
 
 	if (!settings.contains(QLatin1String("UseMultithreading")))
-		settings.setValue(QLatin1String("UseMultithreading"), false);
+		settings.setValue(QLatin1String("UseMultithreading"), g_UseMultithreading);
 
 	m_isMultithreadingMode = settings.value(QLatin1String("UseMultithreading")).toBool();
 
 
 
 	if (!settings.contains(QLatin1String("MoveUnusedPivots")))
-		settings.setValue(QLatin1String("MoveUnusedPivots"), false);
+		settings.setValue(QLatin1String("MoveUnusedPivots"), g_MoveUnusedPivots);
 
 	m_isMoveUnusedPivots = settings.value(QLatin1String("MoveUnusedPivots")).toBool();
 
 
 
 	if (!settings.contains(QLatin1String("DebugMode")))
-		settings.setValue(QLatin1String("DebugMode"), false);
+		settings.setValue(QLatin1String("DebugMode"), g_DebugMode);
 
 	m_isDebugMode = settings.value(QLatin1String("DebugMode")).toBool();
 
 
 	if (!settings.contains(QLatin1String("SetInbetweenKeyframesMode")))
-		settings.setValue(QLatin1String("SetInbetweenKeyframesMode"), false);
+		settings.setValue(QLatin1String("SetInbetweenKeyframesMode"), g_SetInbetweenKeyframesMode);
 
 	m_isSetInbetweenKfMode = settings.value(QLatin1String("SetInbetweenKeyframesMode")).toBool();
 }

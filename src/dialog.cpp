@@ -1,4 +1,7 @@
+#include "constants.h"
 #include "dialog.h"
+
+
 #include <QSlider>
 #include <QGridLayout>
 #include <QLabel>
@@ -21,13 +24,13 @@ void UIDialog::storeSettings()
 
 void UIDialog::resetSettings()
 {
-	m_settings[0].value = true;
-	m_settings[1].value = false;
-	m_settings[2].value = true;
-	m_settings[3].value = false;
-	m_settings[4].value = false;
-	m_settings[5].value = false;
-	m_settings[6].value = false;
+	m_settings[0].value = g_2dMode;
+	m_settings[1].value = g_ExperimentalMode;
+	m_settings[2].value = g_PassOnOglControllerTransformation;
+	m_settings[3].value = g_UseMultithreading;
+	m_settings[4].value = g_MoveUnusedPivots;
+	m_settings[5].value = g_DebugMode;
+	m_settings[6].value = g_SetInbetweenKeyframesMode;
 
 	storeSettings();
 }
@@ -46,13 +49,13 @@ void UIDialog::loadSettings()
 		return settings.value(name).toBool();
 	};
 
-	m_settings[0] = Setting{ "2dMode", getSettingVal(QStringLiteral("2dMode"), true) };
-	m_settings[1] = Setting{ "ExperimentalMode", getSettingVal(QStringLiteral("ExperimentalMode"), false) };
-	m_settings[2] = Setting{ "PassOnOglControllerTransformation", getSettingVal(QStringLiteral("PassOnOglControllerTransformation"), true) };
-	m_settings[3] = Setting{ "UseMultithreading", getSettingVal(QStringLiteral("UseMultithreading"), false) };
-	m_settings[4] = Setting{ "MoveUnusedPivots", getSettingVal(QStringLiteral("MoveUnusedPivots"), false) };
-	m_settings[5] = Setting{ "DebugMode", getSettingVal(QStringLiteral("DebugMode"), false) };
-	m_settings[6] = Setting{ "SetInbetweenKeyframesMode", getSettingVal(QStringLiteral("SetInbetweenKeyframesMode"), false) };
+	m_settings[0] = Setting{ "2dMode", getSettingVal(QStringLiteral("2dMode"), g_2dMode) };
+	m_settings[1] = Setting{ "ExperimentalMode", getSettingVal(QStringLiteral("ExperimentalMode"), g_ExperimentalMode) };
+	m_settings[2] = Setting{ "PassOnOglControllerTransformation", getSettingVal(QStringLiteral("PassOnOglControllerTransformation"), g_PassOnOglControllerTransformation) };
+	m_settings[3] = Setting{ "UseMultithreading", getSettingVal(QStringLiteral("UseMultithreading"), g_UseMultithreading) };
+	m_settings[4] = Setting{ "MoveUnusedPivots", getSettingVal(QStringLiteral("MoveUnusedPivots"), g_MoveUnusedPivots) };
+	m_settings[5] = Setting{ "DebugMode", getSettingVal(QStringLiteral("DebugMode"), g_DebugMode) };
+	m_settings[6] = Setting{ "SetInbetweenKeyframesMode", getSettingVal(QStringLiteral("SetInbetweenKeyframesMode"), g_SetInbetweenKeyframesMode) };
 }
 
 

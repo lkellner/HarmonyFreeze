@@ -82,6 +82,7 @@ HEADERS += \
 	src/pkoModule.h\
 	src/freeformModule.h\
 	src/dialog.h\
+	src/constants.h\
 
 
 
