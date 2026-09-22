@@ -8,6 +8,24 @@
 
 #include <QDialog>
 
+constexpr int nSettings = 7;
+
+struct Setting
+{
+	const char* name;
+	bool value;
+};
+
+class UIDialog : public QDialog
+{
+public:
+	UIDialog() = default;
+	void loadSettings();
+	void initializeWidgets();
+
+private:
+	std::array<Setting, nSettings> m_settings;
+};
 
 void showDialog();
 QWidget* createWidget(QWidget* parent, QString description, bool isEnabled);

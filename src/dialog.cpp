@@ -7,6 +7,50 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
+
+void UIDialog::loadSettings()
+{
+	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
+
+	auto getSettingVal = [&settings](const QString& name, bool defaultValue) mutable
+		{
+			// ensure it gets written to back to the file
+			if (!settings.contains(name))
+				settings.setValue(name, defaultValue);
+
+			return settings.value(name).toBool();
+		};
+
+
+	m_settings[0] = Setting{ "2dMode", getSettingVal(QStringLiteral("2dMode"), true) };
+	m_settings[1] = Setting{ "2dExperimentalModeMode", getSettingVal(QStringLiteral("ExperimentalMode"), true) };
+	m_settings[2] = Setting{ "PassOnOglControllerTransformation", getSettingVal(QStringLiteral("PassOnOglControllerTransformation"), true) };
+	m_settings[3] = Setting{ "UseMultithreading", getSettingVal(QStringLiteral("UseMultithreading"), true) };
+	m_settings[4] = Setting{ "MoveUnusedPivots", getSettingVal(QStringLiteral("MoveUnusedPivots"), true) };
+	m_settings[5] = Setting{ "DebugMode", getSettingVal(QStringLiteral("DebugMode"), true) };
+	m_settings[6] = Setting{ "SetInbetweenKeyframesMode", getSettingVal(QStringLiteral("SetInbetweenKeyframesMode"), true) };
+}
+
+void UIDialog::initializeWidgets()
+{
+	auto* mainLayout = new QVBoxLayout(this);
+
+	for (auto& setting : m_settings)
+	{
+		QWidget* w = createWidget(this, QLatin1String(setting.name), setting.value);
+
+		mainLayout->addWidget(w);
+		mainLayout->addSpacing(10);
+		w->show();
+	}
+
+
+	QPushButton* button = new QPushButton(this);
+	button->setDefault(true);
+	mainLayout->addWidget(button);
+}
+
+
 QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 {
 	auto* widget = new QWidget(parent);
@@ -79,37 +123,8 @@ QWidget* createWidget(QWidget* parent, QString description, bool isEnabled)
 
 void showDialog()
 {
-	QDialog* dialog = new QDialog();
-
-	auto* mainLayout = new QVBoxLayout(dialog);
-
-
-	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
-
-	auto loadSetting = [&settings, mainLayout, dialog](const QString& name, bool defaultValue) mutable
-	{
-		// ensure it gets written to back to the file
-		if (!settings.contains(name))
-			settings.setValue(name, defaultValue);
-
-		QWidget *w = createWidget(dialog, name, settings.value(name).toBool());
-
-		mainLayout->addWidget(w);
-		mainLayout->addSpacing(10);
-		w->show();
-	};
-
-	loadSetting(QStringLiteral("2dMode"), true);
-	loadSetting(QStringLiteral("ExperimentalMode"), false);
-	loadSetting(QStringLiteral("PassOnOglControllerTransformation"), true);
-	loadSetting(QStringLiteral("UseMultithreading"), false);
-	loadSetting(QStringLiteral("MoveUnusedPivots"), false);
-	loadSetting(QStringLiteral("DebugMode"), false);
-	loadSetting(QStringLiteral("SetInbetweenKeyframesMode"), false);
-
-	QPushButton* button = new QPushButton(dialog);
-	button->setDefault(true);
-	mainLayout->addWidget(button);
-
+	UIDialog* dialog = new UIDialog();
+	dialog->loadSettings();
+	dialog->initializeWidgets();
 	dialog->exec();
 }
