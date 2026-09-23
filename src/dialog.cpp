@@ -86,8 +86,7 @@ void UIDialog::initializeWidgets()
 
 	QPushButton* resetButton = new QPushButton(this);
 	resetButton->setDefault(true);
-	resetButton->setText(QStringLiteral("Default"));
-	resetButton->setFocus(Qt::ActiveWindowFocusReason);
+	resetButton->setText(QStringLiteral("Reset to Default"));
 
 	QObject::connect(resetButton, &QPushButton::clicked, this, &UIDialog::resetSettings);
 	QObject::connect(resetButton, &QPushButton::clicked, this, &QDialog::done);
