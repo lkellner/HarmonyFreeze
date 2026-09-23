@@ -25,6 +25,7 @@ enum class ModuleType
 	CURVE,
 	PKO,
 	FREEFORM,
+	BONE,
 };
 
 

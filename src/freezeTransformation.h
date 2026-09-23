@@ -7,6 +7,7 @@
 #ifndef FREEZETRANSFORMATION_H
 #define FREEZETRANSFORMATION_H
 
+#include "boneModule.h"
 #include "curveModule.h"
 #include "drawingTransformationModule.h"
 #include "elementModule.h"

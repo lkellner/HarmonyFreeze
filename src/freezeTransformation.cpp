@@ -35,9 +35,7 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 	for (MO_Node* node : nodes)
 	{
 		if (!node->toModule())
-		{
 			continue;
-		}
 
 		if (node->keyword() == QLatin1String("READ"))
 		{
@@ -92,6 +90,11 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 		if (node->keyword() == QLatin1String("FreeFormDeformation"))
 		{
 			moduleWrappers.push_back(std::make_unique <FreeformModule>(freezeManager, node->toModule(), ModuleType::FREEFORM));
+		}
+
+		if (node->keyword() == QLatin1String("BendyBoneModule"))
+		{
+			moduleWrappers.push_back(std::make_unique <BoneModule>(freezeManager, node->toModule(), ModuleType::BONE));
 		}
 
 		if (!moduleWrappers.empty())

@@ -81,6 +81,7 @@ HEADERS += \
 	src/pegModule.h\
 	src/pkoModule.h\
 	src/freeformModule.h\
+	src/boneModule.h\
 	src/dialog.h\
 	src/constants.h\
 
@@ -103,6 +104,7 @@ SOURCES += src/freezeTransformation.cpp\
 	src/pegModule.cpp\
 	src/pkoModule.cpp\
 	src/freeformModule.cpp\
+	src/boneModule.cpp\
 	src/dialog.cpp\
 
 
