@@ -40,6 +40,22 @@ public:
 private:
 	FrameRange getFrameRange() const override;
 
+	AT_Position2dAttr* m_restOffsetAttr;
+	AT_DoubleAttr* m_restRadiusAttr;
+	AT_DoubleAttr* m_restLengthAttr;
+	AT_DoubleAttr* m_restOrientationAttr;
+
+	AT_Position2dAttr* m_offsetAttr;
+	AT_DoubleAttr* m_radiusAttr;
+	AT_DoubleAttr* m_lengthAttr;
+	AT_DoubleAttr* m_orientationAttr;
+
+	AT_DoubleAttr* m_longitudinalRadiusAttr;
+	AT_DoubleAttr* m_longitudinalRadiusBeginAttr;
+	AT_DoubleAttr* m_transversalRadiusAttr;
+	AT_DoubleAttr* m_transversalRadiusRightAttr;
+	AT_DoubleAttr* m_influenceFadeRadiusAttr;
+
 	/*
 	void processPoint(FreeformPoint*, CO_OrCommand& curMacro);
 	void setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos,

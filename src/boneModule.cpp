@@ -15,8 +15,47 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType)
 	: ModuleBase(std::move(freezeManager), modulePtr, moduleType)
+	, m_restOffsetAttr(findAttribute<AT_Position2dAttr>(QStringLiteral("restOffset")))
+	, m_restRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("restRadius")))
+	, m_restLengthAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("restLength")))
+	, m_restOrientationAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("restOrientation")))
+	, m_offsetAttr(findAttribute<AT_Position2dAttr>(QStringLiteral("offset")))
+	, m_radiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("ladius")))
+	, m_lengthAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("length")))
+	, m_orientationAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("orientation")))
+	, m_longitudinalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadiusAttr")))
+	, m_longitudinalRadiusBeginAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadiusBeginAttr")))
+	, m_transversalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("transversalRadiusAttr")))
+	, m_transversalRadiusRightAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("transversalRadiusRightAttr")))
+	, m_influenceFadeRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("influenceFadeRadiusAttr")))
+
 {
-	AT_AttrList attrList = getAttributeList();
+	if (!m_restOffsetAttr)
+		throw std::runtime_error("missing attribute: 'm_restOffsetAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_restRadiusAttr)
+		throw std::runtime_error("missing attribute: 'm_restRadiusAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_restLengthAttr)
+		throw std::runtime_error("missing attribute: 'm_restLengthAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_restOrientationAttr)
+		throw std::runtime_error("missing attribute: 'm_restOrientationAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_offsetAttr)
+		throw std::runtime_error("missing attribute: 'm_offsetAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_radiusAttr)
+		throw std::runtime_error("missing attribute: 'm_radiusAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_lengthAttr)
+		throw std::runtime_error("missing attribute: 'm_lengthAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_orientationAttr)
+		throw std::runtime_error("missing attribute: 'm_orientationAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_longitudinalRadiusAttr)
+		throw std::runtime_error("missing attribute: 'm_longitudinalRadiusAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_longitudinalRadiusBeginAttr)
+		throw std::runtime_error("missing attribute: 'm_longitudinalRadiusBeginAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_transversalRadiusAttr)
+		throw std::runtime_error("missing attribute: 'm_transversalRadiusAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_transversalRadiusRightAttr)
+		throw std::runtime_error("missing attribute: 'm_transversalRadiusRightAttr' for " + modulePtr->qualifiedName().toStdString());	
+	if (!m_influenceFadeRadiusAttr)
+		throw std::runtime_error("missing attribute: 'm_influenceFadeRadiusAttr' for " + modulePtr->qualifiedName().toStdString());
 }
 
 
