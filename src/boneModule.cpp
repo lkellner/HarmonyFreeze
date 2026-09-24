@@ -78,15 +78,23 @@ void BoneModule::readjustSecondary()
 
 	pos3d = changeMatrix * pos3d;
 
-	setStaticAttributes(restPos3d, pos3d, *curMacro);
+	Math::Matrix4x4 restRotationMatrix = Math::Matrix4x4().rotateDegrees(m_restOrientationAttr->localValue());
+	restRotationMatrix = changeMatrix * restRotationMatrix;// *(changeMatrix * get2dRotationMatrix(changeMatrix.getTransform2d()))* getInverse();
+
+	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(m_orientationAttr->localValue());
+	rotationMatrix = changeMatrix * rotationMatrix;// *(changeMatrix * get2dRotationMatrix(changeMatrix.getTransform2d()))* getInverse();
+
+	setStaticAttributes(restPos3d, pos3d, getAngle2d(restRotationMatrix.getTransform2d()), getAngle2d(rotationMatrix.getTransform2d()), *curMacro);
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
 
-void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d position, CO_OrCommand& curMacro)
+void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d position, double restOrientation,
+	double orientation, CO_OrCommand& curMacro)
 {
 	clampValues(position);
+	//TODO: need to get rotation close to original angle
 
 	FreezeManager* fm = getFreezeManagerPtr();
 
@@ -95,6 +103,8 @@ void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d p
 		//C++
 		curMacro.add(Attr::Position2d::createSetLocalValueCmd(m_restOffsetAttr, restPosition.x(), restPosition.y()));
 		curMacro.add(Attr::Position2d::createSetLocalValueCmd(m_offsetAttr, position.x(), position.y()));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_restOrientationAttr, restOrientation));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_orientationAttr, orientation));
 	}
 	else
 	{
@@ -104,7 +114,9 @@ void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d p
 			StaticAttrData{ QLatin1String("restoffset.x"), restPosition.x() },
 			StaticAttrData{ QLatin1String("restoffset.x"), restPosition.x() },
 			StaticAttrData{ QLatin1String("offset.x"), position.x() },
-			StaticAttrData{ QLatin1String("offset.y"), position.y() });
+			StaticAttrData{ QLatin1String("offset.y"), position.y() },
+			StaticAttrData{ QLatin1String("restorientation"), restOrientation },
+			StaticAttrData{ QLatin1String("orientation"), orientation });
 	}
 }
 
