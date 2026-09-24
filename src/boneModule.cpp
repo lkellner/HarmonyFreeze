@@ -20,7 +20,7 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 	, m_restLengthAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("restLength")))
 	, m_restOrientationAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("restOrientation")))
 	, m_offsetAttr(findAttribute<AT_Position2dAttr>(QStringLiteral("offset")))
-	, m_radiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("ladius")))
+	, m_radiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("radius")))
 	, m_lengthAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("length")))
 	, m_orientationAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("orientation")))
 	, m_longitudinalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadiusAttr")))
