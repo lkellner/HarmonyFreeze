@@ -63,7 +63,49 @@ void BoneModule::readjustSecondary()
 {
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
+	Math::Matrix4x4 changeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
+		getFreezeManagerPtr()->getFreezeMatrix());
+
+	Math::Point2d restPosition;
+	m_restOffsetAttr->getLocalValue(restPosition);
+	Math::Point3d restPos3d = Math::Point3d(restPosition);
+
+	restPos3d = changeMatrix * restPos3d;
+
+	Math::Point2d position;
+	m_offsetAttr->getLocalValue(position);
+	Math::Point3d pos3d = Math::Point3d(position);
+
+	pos3d = changeMatrix * pos3d;
+
+	setStaticAttributes(restPos3d, pos3d, *curMacro);
+
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
+}
+
+
+void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d position, CO_OrCommand& curMacro)
+{
+	clampValues(position);
+
+	FreezeManager* fm = getFreezeManagerPtr();
+
+	if (fm->isExperimentalMode())
+	{
+		//C++
+		curMacro.add(Attr::Position2d::createSetLocalValueCmd(m_restOffsetAttr, restPosition.x(), restPosition.y()));
+		curMacro.add(Attr::Position2d::createSetLocalValueCmd(m_offsetAttr, position.x(), position.y()));
+	}
+	else
+	{
+		//JS
+		//Similar to transformation module, can't set static value of combined paths
+		fm->applyAttributes(getModulePtr()->qualifiedName(),
+			StaticAttrData{ QLatin1String("restoffset.x"), restPosition.x() },
+			StaticAttrData{ QLatin1String("restoffset.x"), restPosition.x() },
+			StaticAttrData{ QLatin1String("offset.x"), position.x() },
+			StaticAttrData{ QLatin1String("offset.y"), position.y() });
+	}
 }
 
 /*
