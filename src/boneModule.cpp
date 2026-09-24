@@ -63,34 +63,48 @@ void BoneModule::readjustSecondary()
 {
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
-	Math::Matrix4x4 changeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
+	Math::Matrix4x4 changeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
+	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
 		getFreezeManagerPtr()->getFreezeMatrix());
 
 	Math::Point2d restPosition;
 	m_restOffsetAttr->getLocalValue(restPosition);
 	Math::Point3d restPos3d = Math::Point3d(restPosition);
 
-	restPos3d = changeMatrix * restPos3d;
+	restPos3d = fieldsChangeMatrix * restPos3d;
 
 	Math::Point2d position;
 	m_offsetAttr->getLocalValue(position);
 	Math::Point3d pos3d = Math::Point3d(position);
 
-	pos3d = changeMatrix * pos3d;
+	pos3d = fieldsChangeMatrix * pos3d;
 
 	Math::Matrix4x4 restRotationMatrix = Math::Matrix4x4().rotateDegrees(m_restOrientationAttr->localValue());
-	restRotationMatrix = changeMatrix * restRotationMatrix;// *(changeMatrix * get2dRotationMatrix(changeMatrix.getTransform2d()))* getInverse();
+	restRotationMatrix = fieldsChangeMatrix * restRotationMatrix;
 
 	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(m_orientationAttr->localValue());
-	rotationMatrix = changeMatrix * rotationMatrix;// *(changeMatrix * get2dRotationMatrix(changeMatrix.getTransform2d()))* getInverse();
+	rotationMatrix = fieldsChangeMatrix * rotationMatrix;
 
-	setStaticAttributes(restPos3d, pos3d, getAngle2d(restRotationMatrix.getTransform2d()), getAngle2d(rotationMatrix.getTransform2d()), *curMacro);
+	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
+	scaleShearChangeMatrix = Math::Matrix4x4().rotateDegrees(m_orientationAttr->localValue()) * scaleShearChangeMatrix * Math::Matrix4x4().rotateDegrees(m_orientationAttr->localValue()).getInverse();
+	//TODO: need to see if 3d rotations need any special treatment
+	changeMatrix.rotation().print("change matrix rotation");
+	get2dRotationMatrix(changeMatrix.getTransform2d()).print("change matrix z rotation");
+	scaleShearChangeMatrix.print("scaleShearMatrix");
+	Math::Point3d restLength = Math::Point3d(m_restLengthAttr->localValue(), 0, 0);
+	restLength = scaleShearChangeMatrix * restLength;
+	
+	Math::Point3d length = Math::Point3d(m_lengthAttr->localValue(), 0, 0);
+	length = scaleShearChangeMatrix * length;
+
+	setStaticAttributes(restPos3d, pos3d, restLength.toVector().length(), length.toVector().length(), getAngle2d(restRotationMatrix.getTransform2d()), getAngle2d(rotationMatrix.getTransform2d()), *curMacro);
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
 
-void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d position, double restOrientation,
+void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d position,
+	double restLength, double length, double restOrientation,
 	double orientation, CO_OrCommand& curMacro)
 {
 	clampValues(position);
@@ -103,6 +117,8 @@ void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d p
 		//C++
 		curMacro.add(Attr::Position2d::createSetLocalValueCmd(m_restOffsetAttr, restPosition.x(), restPosition.y()));
 		curMacro.add(Attr::Position2d::createSetLocalValueCmd(m_offsetAttr, position.x(), position.y()));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_restLengthAttr, restLength));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_lengthAttr, length));
 		curMacro.add(Attr::Double::createSetLocalValueCmd(m_restOrientationAttr, restOrientation));
 		curMacro.add(Attr::Double::createSetLocalValueCmd(m_orientationAttr, orientation));
 	}
@@ -115,6 +131,8 @@ void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d p
 			StaticAttrData{ QLatin1String("restoffset.x"), restPosition.x() },
 			StaticAttrData{ QLatin1String("offset.x"), position.x() },
 			StaticAttrData{ QLatin1String("offset.y"), position.y() },
+			StaticAttrData{ QLatin1String("restlength"), restLength },
+			StaticAttrData{ QLatin1String("length"), length},
 			StaticAttrData{ QLatin1String("restorientation"), restOrientation },
 			StaticAttrData{ QLatin1String("orientation"), orientation });
 	}
