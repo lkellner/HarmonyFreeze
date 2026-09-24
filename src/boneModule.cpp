@@ -23,11 +23,11 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 	, m_radiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("radius")))
 	, m_lengthAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("length")))
 	, m_orientationAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("orientation")))
-	, m_longitudinalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadiusAttr")))
-	, m_longitudinalRadiusBeginAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadiusBeginAttr")))
-	, m_transversalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("transversalRadiusAttr")))
-	, m_transversalRadiusRightAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("transversalRadiusRightAttr")))
-	, m_influenceFadeRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("influenceFadeRadiusAttr")))
+	, m_longitudinalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadius")))
+	, m_longitudinalRadiusBeginAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadiusBegin")))
+	, m_transversalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("transversalRadius")))
+	, m_transversalRadiusRightAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("transversalRadiusRight")))
+	, m_influenceFadeAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("influenceFade")))
 
 {
 	if (!m_restOffsetAttr)
@@ -54,8 +54,8 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		throw std::runtime_error("missing attribute: 'm_transversalRadiusAttr' for " + modulePtr->qualifiedName().toStdString());
 	if (!m_transversalRadiusRightAttr)
 		throw std::runtime_error("missing attribute: 'm_transversalRadiusRightAttr' for " + modulePtr->qualifiedName().toStdString());	
-	if (!m_influenceFadeRadiusAttr)
-		throw std::runtime_error("missing attribute: 'm_influenceFadeRadiusAttr' for " + modulePtr->qualifiedName().toStdString());
+	if (!m_influenceFadeAttr)
+		throw std::runtime_error("missing attribute: 'm_influenceFadeAttr' for " + modulePtr->qualifiedName().toStdString());
 }
 
 

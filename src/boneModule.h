@@ -54,7 +54,7 @@ private:
 	AT_DoubleAttr* m_longitudinalRadiusBeginAttr;
 	AT_DoubleAttr* m_transversalRadiusAttr;
 	AT_DoubleAttr* m_transversalRadiusRightAttr;
-	AT_DoubleAttr* m_influenceFadeRadiusAttr;
+	AT_DoubleAttr* m_influenceFadeAttr;
 
 	/*
 	void processPoint(FreeformPoint*, CO_OrCommand& curMacro);
