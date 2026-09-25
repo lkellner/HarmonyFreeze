@@ -7,6 +7,7 @@
 #ifndef FREEZEMANAGER_H
 #define FREEZEMANAGER_H
 
+#include "settings.h"
 #include "utils.h"
 
 #include <Util/command/CO_OrCommand.h>
@@ -43,8 +44,6 @@ class FreezeManager
 public:
 	FreezeManager();
 
-	void readSettings();
-
 	void setFreezePegPtr(MO_Module* freezePegPtr);
 	MO_Module* getFreezePegPtr() { return m_freezePegPtr; };
 	void setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* sceneMetrics);
@@ -73,7 +72,7 @@ public:
 		QMutexLocker locker(&m_writeMutex);
 		QTextStream out;
 
-		if (m_isDebugMode)
+		if (isDebugMode())
 			out.setDevice(&m_file);
 		else
 			out.setDevice(&m_tempFile);
@@ -96,12 +95,12 @@ public:
 	void updateDrawingPivotStatus(int curId, const QString& layerAttr, bool hasUsedDrawingPivots);
 	bool getDrawingPivotStatus(int curId, const QString& layerAttr);
 	void addElement(int curId, const QString& layerAttr, bool hasUsedDrawingPivots);
-	bool isExperimentalMode() { return m_isExperimentalMode; }
-	bool isMultithreadingMode() { return m_isMultithreadingMode; }
-	bool isDebugMode() { return m_isDebugMode; }
-	bool isPassOnOgl() { return m_isPassOnOgl; }
-	bool isMoveUnusedPivots() { return m_isMoveUnusedPivots; }
-	bool isSetInbetweenKfMode() { return m_isSetInbetweenKfMode; }
+	bool isExperimentalMode() const { return m_settings[settingIndex("ExperimentalMode")].value; }
+	bool isMultithreadingMode() const { return m_settings[settingIndex("UseMultithreading")].value; }
+	bool isDebugMode() const { return m_settings[settingIndex("DebugMode")].value; }
+	bool isPassOnOgl() const { return m_settings[settingIndex("PassOnOglControllerTransformation")].value; }
+	bool isMoveUnusedPivots() const { return m_settings[settingIndex("MoveUnusedPivots")].value; }
+	bool isSetInbetweenKfMode() const { return m_settings[settingIndex("SetInbetweenKeyframesMode")].value; }
 
 private:
 
@@ -130,13 +129,8 @@ private:
 
 	double m_selFrame;
 
+	// must be declared before m_projection, which is initialized from it
+	SettingsDesc m_settings;
 	PROJECTION m_projection;
-
-	bool m_isExperimentalMode;
-	bool m_isPassOnOgl;
-	bool m_isMultithreadingMode;
-	bool m_isMoveUnusedPivots;
-	bool m_isDebugMode;
-	bool m_isSetInbetweenKfMode;
 };
 #endif

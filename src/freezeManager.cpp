@@ -1,76 +1,15 @@
-#include "constants.h"
 #include "freezeManager.h"
 
 #include <Util/pluginmanager/PLUG_Scripting.h>
 #include <SDKExtension/SDK_Selection.h>
 
-#include <QSettings>
 
 FreezeManager::FreezeManager()
-	: m_projection(PROJECTION::ORTHOGRAPHIC)
-	, m_isExperimentalMode(false)
-	, m_isPassOnOgl(false)
-	, m_isMultithreadingMode(false)
-	, m_isMoveUnusedPivots(false)
-	, m_isDebugMode(true)
+	: m_settings(loadSettings())
+	, m_projection(m_settings[settingIndex("2dMode")].value ? PROJECTION::ORTHOGRAPHIC : PROJECTION::NONE)
 {
 	SDK_Selection::getSelectedFrameRange(m_frameRange.start, m_frameRange.end);
 	m_selFrame = m_frameRange.start;
-
-	readSettings();
-}
-
-void FreezeManager::readSettings()
-{
-	QSettings settings(QSettings::IniFormat, QSettings::UserScope, QLatin1String("HarmonyFreeze"), QLatin1String("HarmonyFreeze"));
-
-	if (!settings.contains(QLatin1String("2dMode")))
-		settings.setValue(QLatin1String("2dMode"), g_2dMode);
-
-	if (settings.value(QLatin1String("2dMode")).toBool())
-		m_projection = PROJECTION::ORTHOGRAPHIC;
-	else
-		m_projection = PROJECTION::NONE;
-
-
-	if (!settings.contains(QLatin1String("ExperimentalMode")))
-		settings.setValue(QLatin1String("ExperimentalMode"), g_ExperimentalMode);
-
-	m_isExperimentalMode = settings.value(QLatin1String("ExperimentalMode")).toBool();
-
-
-
-	if (!settings.contains(QLatin1String("PassOnOglControllerTransformation")))
-		settings.setValue(QLatin1String("PassOnOglControllerTransformation"), g_PassOnOglControllerTransformation);
-
-	m_isPassOnOgl = settings.value(QLatin1String("PassOnOglControllerTransformation")).toBool();
-
-
-
-	if (!settings.contains(QLatin1String("UseMultithreading")))
-		settings.setValue(QLatin1String("UseMultithreading"), g_UseMultithreading);
-
-	m_isMultithreadingMode = settings.value(QLatin1String("UseMultithreading")).toBool();
-
-
-
-	if (!settings.contains(QLatin1String("MoveUnusedPivots")))
-		settings.setValue(QLatin1String("MoveUnusedPivots"), g_MoveUnusedPivots);
-
-	m_isMoveUnusedPivots = settings.value(QLatin1String("MoveUnusedPivots")).toBool();
-
-
-
-	if (!settings.contains(QLatin1String("DebugMode")))
-		settings.setValue(QLatin1String("DebugMode"), g_DebugMode);
-
-	m_isDebugMode = settings.value(QLatin1String("DebugMode")).toBool();
-
-
-	if (!settings.contains(QLatin1String("SetInbetweenKeyframesMode")))
-		settings.setValue(QLatin1String("SetInbetweenKeyframesMode"), g_SetInbetweenKeyframesMode);
-
-	m_isSetInbetweenKfMode = settings.value(QLatin1String("SetInbetweenKeyframesMode")).toBool();
 }
 
 
@@ -243,7 +182,7 @@ void FreezeManager::initializeFileJS()
 
 	QTextStream out;
 
-	if (m_isDebugMode)
+	if (isDebugMode())
 	{
 		QString path = scriptUI->projectScriptFileDir();
 		QDir dir(path);
@@ -285,7 +224,7 @@ void FreezeManager::finalizeFileJS()
 
 	QTextStream out;
 
-	if (m_isDebugMode)
+	if (isDebugMode())
 		out.setDevice(&m_file);
 	else
 		out.setDevice(&m_tempFile);
@@ -296,7 +235,7 @@ void FreezeManager::finalizeFileJS()
 
 	QString filepath;
 
-	if (m_isDebugMode)
+	if (isDebugMode())
 	{
 		filepath = QDir::toNativeSeparators(m_file.fileName());
 		m_file.close();

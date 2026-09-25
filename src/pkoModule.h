@@ -56,9 +56,9 @@ private:
 		KeyframeState keyframeState, double frameNo);
 	void identifyTransformationType();
 	KeyframeState generateKeyframeData(AT_Position2dAttr* attr, double frameNo, bool isFirst);
-	bool hasComplexPort1Parent();
-	bool hasNoParentKeyframe(double frameNo);
-	bool isComplexTransform() { return m_freezeMatrixComplexity != MatrixComplexity::Simple; } //This is different from curve module
+	bool hasComplexPort1Parent() const;
+	bool hasNoParentKeyframe(double frameNo) const;
+	bool isComplexTransform() const { return m_freezeMatrixComplexity != MatrixComplexity::Simple; } //This is different from curve module
 	void setComplexTransform(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 
 	AT_Position2dAttr* m_pivot01Attr;

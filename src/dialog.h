@@ -6,15 +6,9 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include "constants.h"
+#include "settings.h"
 
 #include <QDialog>
-
-struct Setting
-{
-	const char* name;
-	bool value;
-};
 
 class UIDialog : public QDialog
 {
@@ -27,10 +21,10 @@ public:
 	void initializeWidgets();
 
 private:
-	std::array<Setting, g_nSettings> m_settings;
+	SettingsDesc m_settings;
 };
 
 void showDialog();
-QWidget* createWidget(QWidget* parent, QString description, bool* isEnabled);
+QWidget* createWidget(QWidget* parent, Setting& setting);
 
 #endif

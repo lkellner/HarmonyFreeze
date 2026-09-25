@@ -300,7 +300,7 @@ KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double fr
 	return KeyframeState::NoKeyframe;
 }
 
-bool PkoModule::hasComplexPort1Parent()
+bool PkoModule::hasComplexPort1Parent() const
 {
 	MO_Module* port1srcModule = getSourceModule(getModulePtr(), 1);
 
@@ -321,7 +321,7 @@ bool PkoModule::hasComplexPort1Parent()
 	return (port1srcModule->getParentNode() ? true : false);
 }
 
-bool PkoModule::hasNoParentKeyframe(double frameNo)
+bool PkoModule::hasNoParentKeyframe(double frameNo) const
 {
 	//TODO: there is quite a bit of intersection with transformationModule's generateKeyframeData
 	//It might be worth consolidating the two

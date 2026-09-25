@@ -82,7 +82,7 @@ HEADERS += \
 	src/pkoModule.h\
 	src/freeformModule.h\
 	src/dialog.h\
-	src/constants.h\
+	src/settings.h\
 
 
 
@@ -104,6 +104,7 @@ SOURCES += src/freezeTransformation.cpp\
 	src/pkoModule.cpp\
 	src/freeformModule.cpp\
 	src/dialog.cpp\
+	src/settings.cpp\
 
 
 

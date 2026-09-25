@@ -44,7 +44,7 @@ public:
 			MO_Module* modulePtr,
 			ModuleType moduleType);
 
-	void readjustSecondary();
+	void readjustSecondary() override;
 
 
 private:
