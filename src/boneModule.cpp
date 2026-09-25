@@ -80,13 +80,15 @@ void BoneModule::readjustSecondary()
 	pos3d = fieldsChangeMatrix * pos3d;
 
 	Math::Matrix4x4 restRotationMatrix = Math::Matrix4x4().rotateDegrees(m_restOrientationAttr->localValue());
+	//Math::Matrix4x4 restRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_restOrientationAttr->localValue()));
 	restRotationMatrix = fieldsChangeMatrix * restRotationMatrix;
 
 	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(m_orientationAttr->localValue());
+	//Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue()));
 	rotationMatrix = fieldsChangeMatrix * rotationMatrix;
 
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
-	scaleShearChangeMatrix = Math::Matrix4x4().rotateDegrees(m_orientationAttr->localValue()) * scaleShearChangeMatrix * Math::Matrix4x4().rotateDegrees(m_orientationAttr->localValue()).getInverse();
+	scaleShearChangeMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue())) * scaleShearChangeMatrix * Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue())).getInverse();
 	//TODO: need to see if 3d rotations need any special treatment
 	changeMatrix.rotation().print("change matrix rotation");
 	get2dRotationMatrix(changeMatrix.getTransform2d()).print("change matrix z rotation");
