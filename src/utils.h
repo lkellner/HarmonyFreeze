@@ -227,7 +227,7 @@ T* findAttribute(const QString& keyword, MO_Node* node)
 
 
 template <typename T>
-T* findSubAttribute(const AT_ComplexAttr* parent, const QString& keyword, MO_Node* node)
+T* findSubAttribute(const AT_ComplexAttr* parent, const QString& keyword)
 {
 	if (!parent)
 		return nullptr;

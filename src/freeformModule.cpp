@@ -27,8 +27,8 @@ FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 		if (!cAttr)
 			continue;
 
-		AT_Position2dAttr* posAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("POSITION"), modulePtr);
-		AT_Position2dAttr* restingPosAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("RESTING_POSITION"), modulePtr);
+		AT_Position2dAttr* posAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("POSITION"));
+		AT_Position2dAttr* restingPosAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("RESTING_POSITION"));
 
 		//Need to use xmlKeyword() as this corresponds to the keyword used in the JS syntax
 		if(posAttr && restingPosAttr)
