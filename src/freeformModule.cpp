@@ -88,7 +88,7 @@ void FreeformModule::processPoint(FreeformPoint* point, CO_OrCommand& curMacro)
 }
 
 void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d position,
-	Math::Point3d restingPos, CO_OrCommand& curMacro)
+	Math::Point3d restingPos, CO_OrCommand& curMacro) const
 {
 	clampValues(position);
 	clampValues(restingPos);
@@ -115,7 +115,7 @@ void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d pos
 
 
 void FreeformModule::setAttributes(FreeformPoint* point, Math::Point3d position,
-	CO_OrCommand& curMacro, double frameNo)
+	CO_OrCommand& curMacro, double frameNo) const
 {
 	clampValues(position);
 

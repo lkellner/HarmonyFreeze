@@ -48,9 +48,9 @@ private:
 
 	void processPoint(FreeformPoint*, CO_OrCommand& curMacro);
 	void setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos,
-		CO_OrCommand& curMacro);
+		CO_OrCommand& curMacro) const;
 	void setAttributes(FreeformPoint* point, Math::Point3d position, CO_OrCommand& curMacro,
-		double frameNo);
+		double frameNo) const;
 	
 	std::vector<std::unique_ptr<FreeformPoint>> m_freeformPoints;
 };
