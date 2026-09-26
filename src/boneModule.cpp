@@ -63,71 +63,56 @@ void BoneModule::readjustSecondary()
 {
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
+	processAttributeSet(*curMacro, true);
+	processAttributeSet(*curMacro, false);
+	
+	getFreezeManagerPtr()->addCommand(std::move(curMacro));
+}
+
+void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
+{
+	AT_Position2dAttr* positionAttr = isRest ? m_restOffsetAttr : m_offsetAttr;
+	AT_DoubleAttr* radiusAttr = isRest ? m_restRadiusAttr : m_radiusAttr;
+	AT_DoubleAttr* lengthAttr = isRest ? m_restLengthAttr : m_lengthAttr;
+	AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
+
 	Math::Matrix4x4 changeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
 		getFreezeManagerPtr()->getFreezeMatrix());
 
-	Math::Point2d restPosition;
-	m_restOffsetAttr->getLocalValue(restPosition);
-	Math::Point3d restPos3d = Math::Point3d(restPosition);
-
-	restPos3d = fieldsChangeMatrix * restPos3d;
-
+	//OFFSET
 	Math::Point2d position;
-	m_offsetAttr->getLocalValue(position);
+	positionAttr->getLocalValue(position);
 	Math::Point3d pos3d = Math::Point3d(position);
 
 	pos3d = fieldsChangeMatrix * pos3d;
 
-	Math::Matrix4x4 restRotationMatrix = Math::Matrix4x4().rotateDegrees(m_restOrientationAttr->localValue());
-	//Math::Matrix4x4 restRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_restOrientationAttr->localValue()));
-	restRotationMatrix = fieldsChangeMatrix * restRotationMatrix;
+	//ORIENTATION
+	Math::Matrix4x4 fieldsRotationMatrix = Math::Matrix4x4().rotateDegrees(orientationAttr->localValue());
 
-	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(m_orientationAttr->localValue());
-	//Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue()));
-	rotationMatrix = fieldsChangeMatrix * rotationMatrix;
+	fieldsRotationMatrix = fieldsChangeMatrix * fieldsRotationMatrix;
+	double fieldsOrientation = getAngle2d(fieldsRotationMatrix.getTransform2d());
 
-
-	changeMatrix.rotation().print("og change matrix");
+	//RADIUS
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
-	scaleShearChangeMatrix.print("S");
 
-	Math::Matrix4x4 oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue()));
-	oldParentRotationMatrix.print("R");
+	Math::Matrix4x4 oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->localValue()));
+	Math::Matrix4x4 newParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), fieldsOrientation));
 
-	(scaleShearChangeMatrix* oldParentRotationMatrix).print("S*R");
-
-	Math::Matrix4x4 newParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), getAngle2d(rotationMatrix.getTransform2d())));
-	newParentRotationMatrix.print("R\'");
-
-	//scaleShearChangeMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue())) * scaleShearChangeMatrix * Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue())).getInverse();
 	scaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
 	//TODO: need to see if 3d rotations need any special treatment
-	changeMatrix.rotation().print("change matrix rotation");
-
-	scaleShearChangeMatrix.print("S\'");
-	
-
-	(newParentRotationMatrix* scaleShearChangeMatrix).print("R\'* S\'");
+	//TODO: see if behaviour changes with different scene settings
 
 
-
-
-	Math::Point3d restLength = Math::Point3d(m_restLengthAttr->localValue(), 0, 0);
-	restLength = scaleShearChangeMatrix * restLength;
-	
-	Math::Point3d length = Math::Point3d(m_lengthAttr->localValue(), 0, 0);
+	Math::Point3d length = Math::Point3d(lengthAttr->localValue(), 0, 0);
 	length = scaleShearChangeMatrix * length;
 
-	setStaticAttributes(restPos3d, pos3d, restLength.toVector().length(), length.toVector().length(), getAngle2d(restRotationMatrix.getTransform2d()), getAngle2d(rotationMatrix.getTransform2d()), *curMacro);
+	setStaticAttributes(pos3d, length.toVector().length(), fieldsOrientation, curMacro, isRest);
 
-	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
-
-void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d position,
-	double restLength, double length, double restOrientation,
-	double orientation, CO_OrCommand& curMacro)
+void BoneModule::setStaticAttributes(Math::Point3d position,
+	double length, double orientation, CO_OrCommand& curMacro, bool isRest)
 {
 	clampValues(position);
 	//TODO: need to get rotation close to original angle
@@ -137,26 +122,29 @@ void BoneModule::setStaticAttributes(Math::Point3d restPosition, Math::Point3d p
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		curMacro.add(Attr::Position2d::createSetLocalValueCmd(m_restOffsetAttr, restPosition.x(), restPosition.y()));
-		curMacro.add(Attr::Position2d::createSetLocalValueCmd(m_offsetAttr, position.x(), position.y()));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_restLengthAttr, restLength));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_lengthAttr, length));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_restOrientationAttr, restOrientation));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_orientationAttr, orientation));
+		AT_Position2dAttr* positionAttr = isRest ? m_restOffsetAttr : m_offsetAttr;
+		AT_DoubleAttr* radiusAttr = isRest ? m_restRadiusAttr : m_radiusAttr;
+		AT_DoubleAttr* lengthAttr = isRest ? m_restLengthAttr : m_lengthAttr;
+		AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
+
+		curMacro.add(Attr::Position2d::createSetLocalValueCmd(positionAttr, position.x(), position.y()));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(lengthAttr, length));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(orientationAttr, orientation));
 	}
 	else
 	{
 		//JS
+
+		QString offsetKW = isRest ? QLatin1String("restoffset") : QLatin1String("offset");
+		QString lengthKW = isRest ? QLatin1String("restlength") : QLatin1String("length");
+		QString orientationKW = isRest ? QLatin1String("restorientation") : QLatin1String("orientation");
+
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ QLatin1String("restoffset.x"), restPosition.x() },
-			StaticAttrData{ QLatin1String("restoffset.x"), restPosition.x() },
-			StaticAttrData{ QLatin1String("offset.x"), position.x() },
-			StaticAttrData{ QLatin1String("offset.y"), position.y() },
-			StaticAttrData{ QLatin1String("restlength"), restLength },
-			StaticAttrData{ QLatin1String("length"), length},
-			StaticAttrData{ QLatin1String("restorientation"), restOrientation },
-			StaticAttrData{ QLatin1String("orientation"), orientation });
+			StaticAttrData{ offsetKW + QLatin1String(".x"), position.x() },
+			StaticAttrData{ offsetKW + QLatin1String(".y"), position.y() },
+			StaticAttrData{ lengthKW, length},
+			StaticAttrData{ orientationKW, orientation });
 	}
 }
 
