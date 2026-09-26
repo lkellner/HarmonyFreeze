@@ -8,8 +8,6 @@
 #include <SceneCore/attribute/AT_Scale3dAttr.h>
 #include <SceneCore/module/MO_PortTransform.h>
 
-#include <limits>
-#include <stdexcept>
 
 FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
