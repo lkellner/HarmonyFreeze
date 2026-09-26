@@ -58,14 +58,6 @@ private:
 	AT_DoubleAttr* m_transversalRadiusAttr;
 	AT_DoubleAttr* m_transversalRadiusRightAttr;
 	AT_DoubleAttr* m_influenceFadeAttr;
-
-	/*
-	void processPoint(FreeformPoint*, CO_OrCommand& curMacro);
-	void setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos,
-		CO_OrCommand& curMacro);
-	void setAttributes(FreeformPoint* point, Math::Point3d position, CO_OrCommand& curMacro,
-		double frameNo);
-	*/
 };
 
 #endif
