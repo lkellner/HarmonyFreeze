@@ -68,7 +68,7 @@ void PkoModule::identifyTransformationType()
 	m_transformationType = TransformationType::Simple;
 }
 
-Math::Matrix4x4 PkoModule::calculateChangeMatrix(double frameNo)
+Math::Matrix4x4 PkoModule::calculateChangeMatrix(double frameNo) const
 {
 	/*
 	How point kinematic outputs work:
@@ -210,7 +210,7 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword,
 	}
 }
 
-void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro)
+void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro) const
 {
 	clampValues(position);
 
@@ -269,7 +269,7 @@ void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, Q
 }
 
 
-KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double frameNo, bool isFirst)
+KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double frameNo, bool isFirst) const
 {
 	Math::Point2d tempPoint; 
 	bool isPosCtrlPnt = false;

@@ -46,14 +46,14 @@ public:
 private:
 	FrameRange getFrameRange() const override;
 
-	Math::Matrix4x4 calculateChangeMatrix(double frameNo);
+	Math::Matrix4x4 calculateChangeMatrix(double frameNo) const;
 
 	void processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro);
-	void setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro);
+	void setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro) const;
 	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, 
 		KeyframeState keyframeState, double frameNo);
 	void identifyTransformationType();
-	KeyframeState generateKeyframeData(AT_Position2dAttr* attr, double frameNo, bool isFirst);
+	KeyframeState generateKeyframeData(AT_Position2dAttr* attr, double frameNo, bool isFirst) const;
 	bool hasComplexPort1Parent() const;
 	bool hasNoParentKeyframe(double frameNo) const;
 	bool isComplexTransform() const { return m_freezeMatrixComplexity != MatrixComplexity::Simple; } //This is different from curve module
