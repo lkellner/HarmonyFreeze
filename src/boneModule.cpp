@@ -87,12 +87,32 @@ void BoneModule::readjustSecondary()
 	//Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue()));
 	rotationMatrix = fieldsChangeMatrix * rotationMatrix;
 
+
+	changeMatrix.rotation().print("og change matrix");
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
-	scaleShearChangeMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue())) * scaleShearChangeMatrix * Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue())).getInverse();
+	scaleShearChangeMatrix.print("S");
+
+	Math::Matrix4x4 oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue()));
+	oldParentRotationMatrix.print("R");
+
+	(scaleShearChangeMatrix* oldParentRotationMatrix).print("S*R");
+
+	Math::Matrix4x4 newParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), getAngle2d(rotationMatrix.getTransform2d())));
+	newParentRotationMatrix.print("R\'");
+
+	//scaleShearChangeMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue())) * scaleShearChangeMatrix * Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), m_orientationAttr->localValue())).getInverse();
+	scaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
 	//TODO: need to see if 3d rotations need any special treatment
 	changeMatrix.rotation().print("change matrix rotation");
-	get2dRotationMatrix(changeMatrix.getTransform2d()).print("change matrix z rotation");
-	scaleShearChangeMatrix.print("scaleShearMatrix");
+
+	scaleShearChangeMatrix.print("S\'");
+	
+
+	(newParentRotationMatrix* scaleShearChangeMatrix).print("R\'* S\'");
+
+
+
+
 	Math::Point3d restLength = Math::Point3d(m_restLengthAttr->localValue(), 0, 0);
 	restLength = scaleShearChangeMatrix * restLength;
 	
