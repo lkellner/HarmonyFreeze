@@ -7,9 +7,6 @@
 #ifndef FREEFORMMODULE_H
 #define FREEFORMMODULE_H
 
-#include <cstdint>
-#include <cstdio>
-
 #include <SceneCore/module/MO_Module.h>
 #include <SceneCore/module/MO_SoftContext.h>
 #include <SceneCore/module/MO_Port.h>
@@ -18,7 +15,6 @@
 #include <SceneCore/attribute/AT_Position2dAttr.h>
 #include <SceneCore/attribute/AT_BoolAttr.h>
 #include <SceneCore/module/MO_NetworkUtils.h>
-#include "SceneCore/selectable/SLB_CmdManipulator.h"
 #include "SceneCore/selectable/SLB_ManipContext.h"
 #include "SceneCore/attribute/AT_AttrCmds.h"
 #include "SceneCore/attribute/AT_PositionAttrCmds.h"
