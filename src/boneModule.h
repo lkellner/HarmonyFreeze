@@ -40,8 +40,10 @@ public:
 private:
 	FrameRange getFrameRange() const override;
 	void processAttributeSet(CO_OrCommand& curMacro, bool isRest);
-	void setStaticAttributes(Math::Point3d position,
-		double length,	double orientation, CO_OrCommand& curMacro, bool isRest);
+	void setStaticAttributes(Math::Point3d position,double length,
+		double orientation, CO_OrCommand& curMacro, bool isRest);
+	void setAttributes(Math::Point3d position, double length,
+		double orientation, CO_OrCommand& curMacro, double frameNo);
 
 	AT_Position2dAttr* m_restOffsetAttr;
 	AT_DoubleAttr* m_restRadiusAttr;
