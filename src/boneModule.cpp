@@ -69,6 +69,52 @@ void BoneModule::readjustSecondary()
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
+double BoneModule::getStaticChainRotation(bool isRest) const
+{
+	const auto orientationKeyword = isRest
+		? QStringLiteral("restorientation")
+		: QStringLiteral("orientation");
+
+	return getRotationImpl(orientationKeyword,
+		[](const AT_DoubleAttr& a) { return a.localValue(); });
+}
+
+
+template <typename ValueFunc>
+double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const
+{
+	FreezeManager* fm = getFreezeManagerPtr();
+
+	const MO_Module* mod = getModulePtr();
+
+	const MO_Node* parent = mod->getParentNode();
+
+	double rotation = 0.0;
+
+	while (parent && parent->keyword() == QLatin1String("BendyBoneModule"))
+	{
+		const AT_AttrList attributes = ::getAttributeList(parent);
+
+		for (const AT_AttrDesc& attribute : std::as_const(attributes))
+		{
+			if (attribute._pAttr->keyword() == orientationKeyword)
+			{
+				const auto* a = dynamic_cast<const AT_DoubleAttr*>(attribute._pAttr);
+
+				//Curve module
+				if (a)
+					//rotation += valFunc(*a);
+					rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
+			}
+		}
+
+		parent = parent->getParentNode();
+	}
+
+	return rotation;
+}
+
+
 void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 {
 	AT_Position2dAttr* positionAttr = isRest ? m_restOffsetAttr : m_offsetAttr;
@@ -77,13 +123,21 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
 
 	Math::Matrix4x4 changeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
-	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
-		getFreezeManagerPtr()->getFreezeMatrix());
+	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), changeMatrix);
+	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
 
+	Math::Matrix4x4 oldParentRotationMatrix;
+	Math::Matrix4x4 newParentRotationMatrix;
+
+	//TODO: this only needs to be done for complex matrices
 	if (hasBoneParents())
-		printf("has bone parents\n");
-	else
-		printf("no bone parents\n");
+	{
+		oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), getStaticChainRotation(isRest)));
+		newParentRotationMatrix = get2dRotationMatrix((scaleShearChangeMatrix * oldParentRotationMatrix).getTransform2d());
+
+		changeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
+		fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), changeMatrix);
+	}
 
 	//OFFSET
 	Math::Point2d position;
@@ -97,10 +151,8 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	double fieldsOrientation = getAngle2d(fieldsRotationMatrix.getTransform2d());
 
 	//RADIUS
-	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
-
-	Math::Matrix4x4 oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->localValue()));
-	Math::Matrix4x4 newParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), fieldsOrientation));
+	oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->localValue()));
+	newParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), fieldsOrientation));
 
 	Math::Matrix4x4 adjScaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
 	//TODO: need to see if 3d rotations need any special treatment
@@ -217,7 +269,7 @@ void BoneModule::setAttributes(Math::Point3d position, double length,
 
 bool BoneModule::hasBoneParents() const
 {
-	MO_Module* parent = getSourceModule(getModulePtr(), 0);
+	MO_Node* parent = getModulePtr()->getParentNode();
 
 	if (!parent)
 		return false;
