@@ -151,8 +151,8 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	double fieldsOrientation = getAngle2d(fieldsRotationMatrix.getTransform2d());
 
 	//RADIUS
-	oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->localValue()));
-	newParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), fieldsOrientation));
+	oldParentRotationMatrix = oldParentRotationMatrix.rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->localValue()));
+	newParentRotationMatrix = newParentRotationMatrix.rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), fieldsOrientation));
 
 	Math::Matrix4x4 adjScaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
 	//TODO: need to see if 3d rotations need any special treatment
