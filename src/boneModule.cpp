@@ -80,6 +80,11 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
 		getFreezeManagerPtr()->getFreezeMatrix());
 
+	if (hasBoneParents())
+		printf("has bone parents\n");
+	else
+		printf("no bone parents\n");
+
 	//OFFSET
 	Math::Point2d position;
 	positionAttr->getLocalValue(position);
@@ -207,6 +212,17 @@ void BoneModule::setAttributes(Math::Point3d position, double length,
 			AttrData{ QLatin1String("length"), length, frameNo, true },
 			AttrData{ QLatin1String("orientation"), orientation, frameNo, true });
 	}
+}
+
+
+bool BoneModule::hasBoneParents() const
+{
+	MO_Module* parent = getSourceModule(getModulePtr(), 0);
+
+	if (!parent)
+		return false;
+
+	return parent->keyword() == QLatin1String("BendyBoneModule");
 }
 
 

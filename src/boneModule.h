@@ -44,6 +44,7 @@ private:
 		double orientation, CO_OrCommand& curMacro, bool isRest);
 	void setAttributes(Math::Point3d position, double length,
 		double orientation, CO_OrCommand& curMacro, double frameNo);
+	bool hasBoneParents() const;
 
 	AT_Position2dAttr* m_restOffsetAttr;
 	AT_DoubleAttr* m_restRadiusAttr;
