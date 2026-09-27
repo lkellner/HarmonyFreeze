@@ -72,7 +72,7 @@ void BoneModule::readjustSecondary()
 double BoneModule::getStaticChainRotation(bool isRest) const
 {
 	const auto orientationKeyword = isRest
-		? QStringLiteral("restorientation")
+		? QStringLiteral("restOrientation")
 		: QStringLiteral("orientation");
 
 	return getRotationImpl(orientationKeyword,
@@ -100,8 +100,6 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 			if (attribute._pAttr->keyword() == orientationKeyword)
 			{
 				const auto* a = dynamic_cast<const AT_DoubleAttr*>(attribute._pAttr);
-
-				//Curve module
 				if (a)
 					//rotation += valFunc(*a);
 					rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
