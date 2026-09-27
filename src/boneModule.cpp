@@ -108,8 +108,8 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 			{
 				const auto* a = dynamic_cast<const AT_DoubleAttr*>(attribute._pAttr);
 				if (a)
-					//rotation += valFunc(*a);
-					rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
+					rotation += valFunc(*a);
+					//rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
 			}
 		}
 
@@ -138,10 +138,15 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	if (hasBoneParents())
 	{
 		oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), getStaticChainRotation(isRest)));
-		newParentRotationMatrix = get2dRotationMatrix((scaleShearChangeMatrix * oldParentRotationMatrix).getTransform2d());
+		newParentRotationMatrix = get2dRotationMatrix((changeMatrix * oldParentRotationMatrix).getTransform2d());
+		//newParentRotationMatrix = get2dRotationMatrix((scaleShearChangeMatrix * oldParentRotationMatrix).getTransform2d());
 
-		changeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
+		changeMatrix = (newParentRotationMatrix.getInverse() * changeMatrix * oldParentRotationMatrix).rotation();
+		//changeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse()* changeMatrix.rotation();
 		fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), changeMatrix);
+
+		printf("new parent matrix rotation: %f\n", getAngle2d(getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), newParentRotationMatrix).getTransform2d()));
+		printf("old parent matrix rotation: %f\n", getAngle2d(getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oldParentRotationMatrix).getTransform2d()));
 	}
 
 	//OFFSET
@@ -154,6 +159,10 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	Math::Matrix4x4 fieldsRotationMatrix = Math::Matrix4x4().rotateDegrees(orientationAttr->localValue());
 	fieldsRotationMatrix = fieldsChangeMatrix * fieldsRotationMatrix;
 	double fieldsOrientation = getAngle2d(fieldsRotationMatrix.getTransform2d());
+
+	Math::Matrix4x4 altRotMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->localValue()));
+	altRotMatrix = changeMatrix * altRotMatrix;
+	printf("alt calc angle: %f\n", getAngle2d(getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), altRotMatrix).getTransform2d()));
 
 	//RADIUS
 	oldParentRotationMatrix = oldParentRotationMatrix.rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->localValue()));
