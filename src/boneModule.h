@@ -46,6 +46,7 @@ private:
 		double orientation, CO_OrCommand& curMacro, double frameNo);
 	bool hasBoneParents() const;
 	double getStaticChainRotation(bool isRest) const;
+	double getChainRotation(const double frameNo) const;
 
 	template <typename ValueFunc>
 	double getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const;

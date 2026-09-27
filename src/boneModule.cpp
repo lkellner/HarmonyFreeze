@@ -80,6 +80,13 @@ double BoneModule::getStaticChainRotation(bool isRest) const
 }
 
 
+double BoneModule::getChainRotation(const double frameNo) const
+{
+	return getRotationImpl(QStringLiteral("orientation"),
+		[frameNo](const AT_DoubleAttr& a) { return a.value(frameNo); });
+}
+
+
 template <typename ValueFunc>
 double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const
 {
@@ -162,12 +169,24 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 	setStaticAttributes(pos3d, length.toVector().length(), fieldsOrientation, curMacro, isRest);
 
+	//Rest attributes only contain static values
+	if (isRest)
+		return;
 
 	FrameRange range = getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
 		double frameNo = curFrame;
+
+		if (hasBoneParents())
+		{
+			oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), getChainRotation(frameNo)));
+			newParentRotationMatrix = get2dRotationMatrix((scaleShearChangeMatrix * oldParentRotationMatrix).getTransform2d());
+
+			changeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
+			fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), changeMatrix);
+		}
 
 		//OFFSET
 		positionAttr->getValue(frameNo, position);
@@ -180,8 +199,8 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		fieldsOrientation = getAngle2d(fieldsRotationMatrix.getTransform2d());
 
 		//RADIUS
-		Math::Matrix4x4 oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->value(frameNo)));
-		Math::Matrix4x4 newParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), fieldsOrientation));
+		oldParentRotationMatrix.rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), orientationAttr->value(frameNo)));
+		newParentRotationMatrix.rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), fieldsOrientation));
 
 		adjScaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
 		length = Math::Point3d(lengthAttr->localValue(), 0, 0);
