@@ -108,8 +108,20 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 			{
 				const auto* a = dynamic_cast<const AT_DoubleAttr*>(attribute._pAttr);
 				if (a)
-					rotation += valFunc(*a);
-					//rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
+				{
+					if (parent->getParentNode() && parent->getParentNode()->keyword() == QLatin1String("BendyBoneModule"))
+					{
+						//Not the first bone in the chain
+						rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
+					}
+					else
+					{
+						//First bone in the chain, need to convert rotation from fields to ogl
+						double rotationValue = valFunc(*a);
+						rotationValue = fieldsToOgl(getModulePtr()->sceneMetrics(), rotationValue);
+						rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), rotationValue);
+					}
+				}
 			}
 		}
 
@@ -139,7 +151,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	//TODO: this only needs to be done for complex matrices
 	if (hasBoneParents())
 	{
-		oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), getStaticChainRotation(isRest)));
+		oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(getStaticChainRotation(isRest));
 		newParentRotationMatrix = get2dRotationMatrix((changeMatrix * oldParentRotationMatrix).getTransform2d());
 
 		adjChangeMatrix = (newParentRotationMatrix.getInverse() * changeMatrix * oldParentRotationMatrix).rotation();
@@ -195,7 +207,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 		if (hasBoneParents())
 		{
-			oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(fieldsToOgl(getModulePtr()->sceneMetrics(), getChainRotation(frameNo)));
+			oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(getChainRotation(frameNo));
 			newParentRotationMatrix = get2dRotationMatrix((changeMatrix * oldParentRotationMatrix).getTransform2d());
 
 			adjChangeMatrix = (newParentRotationMatrix.getInverse() * changeMatrix * oldParentRotationMatrix).rotation();
