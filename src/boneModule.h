@@ -40,10 +40,10 @@ public:
 private:
 	FrameRange getFrameRange() const override;
 	void processAttributeSet(CO_OrCommand& curMacro, bool isRest);
-	void setStaticAttributes(Math::Point3d position,double length,
+	void setStaticAttributes(Math::Point3d position,double radius, double length,
 		double orientation, CO_OrCommand& curMacro, bool isRest);
-	void setAttributes(Math::Point3d position, double length,
-		double orientation, CO_OrCommand& curMacro, double frameNo);
+	void setAttributes(Math::Point3d position, double orientation, double radius,
+		double length, CO_OrCommand& curMacro, double frameNo);
 	bool hasBoneParents() const;
 	double getStaticChainRotation(bool isRest) const;
 	double getChainRotation(const double frameNo) const;

@@ -181,19 +181,21 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 
 	//RADIUS
+	Math::Point3d radius = Math::Point3d(radiusAttr->localValue(), 0, 0);
+	radius = adjChangeMatrix * radius;
+
+
+	//LENGTH
 	oldParentRotationMatrix.rotateDegrees(ogOglOrientation);
 	newParentRotationMatrix.rotateDegrees(oglOrientation);
-
-
-
 	Math::Matrix4x4 adjScaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
 	//TODO: need to see if 3d rotations need any special treatment
 	//TODO: see if behaviour changes with different scene settings
 
 	Math::Point3d length = Math::Point3d(lengthAttr->localValue(), 0, 0);
 	length = adjScaleShearChangeMatrix * length;
-
-	setStaticAttributes(pos3d, length.toVector().length(), orientation, curMacro, isRest);
+	
+	setStaticAttributes(pos3d, orientation, radius.toVector().length(), length.toVector().length(), curMacro, isRest);
 
 	//Rest attributes only contain static values
 	if (isRest)
@@ -233,14 +235,18 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		orientation = hasBoneParents() ? oglOrientation : getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
 		//RADIUS
+		radius = Math::Point3d(radiusAttr->value(frameNo), 0, 0);
+		radius = adjChangeMatrix * radius;
+
+		//LENGTH
 		oldParentRotationMatrix.rotateDegrees(ogOglOrientation);
 		newParentRotationMatrix.rotateDegrees(oglOrientation);
-
 		adjScaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
-		length = Math::Point3d(lengthAttr->localValue(), 0, 0);
+
+		length = Math::Point3d(lengthAttr->value(frameNo), 0, 0);
 		length = adjScaleShearChangeMatrix * length;
 
-		setAttributes(pos3d, length.toVector().length(), orientation, curMacro, frameNo);
+		setAttributes(pos3d, orientation, radius.toVector().length(), length.toVector().length(), curMacro, frameNo);
 	}
 }
 
@@ -279,8 +285,8 @@ void BoneModule::readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::M
 }
 
 
-void BoneModule::setStaticAttributes(Math::Point3d position,
-	double length, double orientation, CO_OrCommand& curMacro, bool isRest)
+void BoneModule::setStaticAttributes(Math::Point3d position, double orientation,
+	double radius, double length, CO_OrCommand& curMacro, bool isRest)
 {
 	clampValues(position);
 	//TODO: need to get rotation close to original angle
@@ -296,29 +302,32 @@ void BoneModule::setStaticAttributes(Math::Point3d position,
 		AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
 
 		curMacro.add(Attr::Position2d::createSetLocalValueCmd(positionAttr, position.x(), position.y()));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(lengthAttr, length));
 		curMacro.add(Attr::Double::createSetLocalValueCmd(orientationAttr, orientation));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(radiusAttr, radius));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(lengthAttr, length));
 	}
 	else
 	{
 		//JS
 
 		QString offsetJS = isRest ? QLatin1String("restoffset") : QLatin1String("offset");
-		QString lengthJS = isRest ? QLatin1String("restlength") : QLatin1String("length");
 		QString orientationJS = isRest ? QLatin1String("restorientation") : QLatin1String("orientation");
+		QString radiusJS = isRest ? QLatin1String("restradius") : QLatin1String("radius");
+		QString lengthJS = isRest ? QLatin1String("restlength") : QLatin1String("length");
 
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
 			StaticAttrData{ offsetJS + QLatin1String(".x"), position.x() },
 			StaticAttrData{ offsetJS + QLatin1String(".y"), position.y() },
-			StaticAttrData{ lengthJS, length},
-			StaticAttrData{ orientationJS, orientation });
+			StaticAttrData{ orientationJS, orientation },
+			StaticAttrData{ radiusJS, radius},
+			StaticAttrData{ lengthJS, length });
 	}
 }
 
 
-void BoneModule::setAttributes(Math::Point3d position, double length,
-	double orientation, CO_OrCommand& curMacro, double frameNo)
+void BoneModule::setAttributes(Math::Point3d position, double orientation, double radius,
+	double length, CO_OrCommand& curMacro, double frameNo)
 {
 	clampValues(position);
 
@@ -329,8 +338,9 @@ void BoneModule::setAttributes(Math::Point3d position, double length,
 	{
 		//C++
 		curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, position.x(), position.y()));
-		curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, length));
 		curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, orientation));
+		curMacro.add(Attr::Double::createSetValueCmd(m_radiusAttr, frameNo, radius));
+		curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, length));
 	}
 	else
 	{
@@ -347,8 +357,9 @@ void BoneModule::setAttributes(Math::Point3d position, double length,
 				Point2dAttrData{QLatin1String("offset"), Math::Point2d(position.x(),position.y()) , frameNo, true });
 		}
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			AttrData{ QLatin1String("length"), length, frameNo, true },
-			AttrData{ QLatin1String("orientation"), orientation, frameNo, true });
+			AttrData{ QLatin1String("orientation"), orientation, frameNo, true },
+			AttrData{ QLatin1String("radius"), radius, frameNo, true },
+			AttrData{ QLatin1String("length"), length, frameNo, true });
 	}
 }
 
