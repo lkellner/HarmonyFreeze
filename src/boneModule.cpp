@@ -121,9 +121,10 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 					else
 					{
 						//First bone in the chain, need to convert rotation from fields to ogl
-						double rotationValue = valFunc(*a);
-						rotationValue = fieldsToOgl(getModulePtr()->sceneMetrics(), rotationValue);
-						rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), rotationValue);
+						//double rotationValue = valFunc(*a);
+						//rotationValue = fieldsToOgl(getModulePtr()->sceneMetrics(), rotationValue);
+						//rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), rotationValue);
+						rotation += fieldsToOgl(mod->sceneMetrics(), valFunc(*a));
 					}
 				}
 			}
@@ -148,6 +149,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	Math::Matrix4x4 changeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(sm, changeMatrix);
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
+	Math::Matrix4x4 unitOffsetMatrix = getFreezeManagerPtr()->getUnitOffsetScaleMatrix();
 
 	//Matrix only contains translation and rotation values,
 	//Only the first bone in the chain will be affected
@@ -233,19 +235,25 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 		//ORIENTATION
 		ogOrientation = orientationAttr->value(frameNo);
-		ogOglOrientation = hasBoneParents() ? ogOrientation : fieldsToOgl(sm, ogOrientation);
+
+		ogOglOrientation = hasBoneParents() ? applyUnitOffset(getFreezeManagerPtr()->getUnitOffsetScaleMatrix(), ogOrientation) : fieldsToOgl(sm, ogOrientation);
 
 		rotationMatrix = Math::Matrix4x4().rotateDegrees(ogOglOrientation);
 		rotationMatrix = adjChangeMatrix * rotationMatrix;
 
 		oglOrientation = getAngle2d(rotationMatrix.getTransform2d());
-		orientation = hasBoneParents() ? oglOrientation : getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
+		orientation = hasBoneParents() ? applyUnitOffset(getFreezeManagerPtr()->getUnitOffsetScaleMatrix().getInverse(), oglOrientation) : getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
 		//RADIUS
 		radius = Math::Point3d(radiusAttr->value(frameNo), 0, 0);
 		radius = adjChangeMatrix * radius;
 
 		//LENGTH
+		/*
+		if (hasBoneParents())
+			ogOglOrientation = applyUnitOffset(getFreezeManagerPtr()->getUnitOffsetScaleMatrix(), ogOglOrientation);
+	*/
+
 		oldParentRotationMatrix.rotateDegrees(ogOglOrientation);
 		newParentRotationMatrix.rotateDegrees(oglOrientation);
 		adjScaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
