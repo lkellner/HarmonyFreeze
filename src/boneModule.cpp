@@ -139,8 +139,10 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	AT_DoubleAttr* lengthAttr = isRest ? m_restLengthAttr : m_lengthAttr;
 	AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
 
+	SC_SceneMetrics* sm = getModulePtr()->sceneMetrics();
+
 	Math::Matrix4x4 changeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
-	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), changeMatrix);
+	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(sm, changeMatrix);
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
 
 	Math::Matrix4x4 adjChangeMatrix = changeMatrix;
@@ -155,7 +157,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		newParentRotationMatrix = get2dRotationMatrix((changeMatrix * oldParentRotationMatrix).getTransform2d());
 
 		adjChangeMatrix = (newParentRotationMatrix.getInverse() * changeMatrix * oldParentRotationMatrix).rotation();
-		fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), adjChangeMatrix);
+		fieldsChangeMatrix = getFieldsModificationMatrix(sm, adjChangeMatrix);
 	}
 
 
@@ -168,13 +170,13 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 	//ORIENTATION
 	double ogOrientation = orientationAttr->localValue();
-	double ogOglOrientation = hasBoneParents() ? ogOrientation : fieldsToOgl(getModulePtr()->sceneMetrics(), ogOrientation);
+	double ogOglOrientation = hasBoneParents() ? ogOrientation : fieldsToOgl(sm, ogOrientation);
 
 	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(ogOglOrientation);
 	rotationMatrix = adjChangeMatrix * rotationMatrix;
 
 	double oglOrientation = getAngle2d(rotationMatrix.getTransform2d());
-	double orientation = hasBoneParents() ? oglOrientation : getAngle2d(getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), rotationMatrix).getTransform2d());
+	double orientation = hasBoneParents() ? oglOrientation : getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
 
 	//RADIUS
@@ -211,7 +213,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 			newParentRotationMatrix = get2dRotationMatrix((changeMatrix * oldParentRotationMatrix).getTransform2d());
 
 			adjChangeMatrix = (newParentRotationMatrix.getInverse() * changeMatrix * oldParentRotationMatrix).rotation();
-			fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), adjChangeMatrix);
+			fieldsChangeMatrix = getFieldsModificationMatrix(sm, adjChangeMatrix);
 		}
 
 		//OFFSET
@@ -221,13 +223,13 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 		//ORIENTATION
 		ogOrientation = orientationAttr->value(frameNo);
-		ogOglOrientation = hasBoneParents() ? ogOrientation : fieldsToOgl(getModulePtr()->sceneMetrics(), ogOrientation);
+		ogOglOrientation = hasBoneParents() ? ogOrientation : fieldsToOgl(sm, ogOrientation);
 
 		rotationMatrix = Math::Matrix4x4().rotateDegrees(ogOglOrientation);
 		rotationMatrix = adjChangeMatrix * rotationMatrix;
 
 		oglOrientation = getAngle2d(rotationMatrix.getTransform2d());
-		orientation = hasBoneParents() ? oglOrientation : getAngle2d(getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), rotationMatrix).getTransform2d());
+		orientation = hasBoneParents() ? oglOrientation : getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
 		//RADIUS
 		oldParentRotationMatrix.rotateDegrees(ogOglOrientation);
