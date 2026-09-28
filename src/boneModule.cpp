@@ -65,6 +65,7 @@ void BoneModule::readjustSecondary()
 
 	processAttributeSet(*curMacro, true);
 	processAttributeSet(*curMacro, false);
+	readjustRegionOfInfluence(*curMacro, getFreezeManagerPtr()->getFreezeMatrix());
 	
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
@@ -242,6 +243,41 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		setAttributes(pos3d, length.toVector().length(), orientation, curMacro, frameNo);
 	}
 }
+
+
+void BoneModule::readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix)
+{
+	Math::Point3d scale = getScale(matrix);
+	double scaleFactor = (abs(scale.x()) + abs(scale.y())) / 2;
+
+	double transversalRadius = m_transversalRadiusAttr->localValue() * scaleFactor;
+	double transversalRadiusRight = m_transversalRadiusRightAttr->localValue() * scaleFactor;
+	double longitudinalRadiusBegin = m_longitudinalRadiusBeginAttr->localValue() * scaleFactor;
+	double longitudinalRadius = m_longitudinalRadiusAttr->localValue() * scaleFactor;
+	double influenceFadeRadius = m_influenceFadeAttr->localValue() * scaleFactor;
+
+
+	FreezeManager* fm = getFreezeManagerPtr();
+
+	if (fm->isExperimentalMode())
+	{
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_transversalRadiusAttr, transversalRadius));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_transversalRadiusRightAttr, transversalRadiusRight));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_longitudinalRadiusBeginAttr, longitudinalRadiusBegin));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_longitudinalRadiusAttr, longitudinalRadius));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_influenceFadeAttr, influenceFadeRadius));
+	}
+	else
+	{
+		fm->applyAttributes(getModulePtr()->qualifiedName(),
+			StaticAttrData{ QLatin1String("transversalradius"), transversalRadius },
+			StaticAttrData{ QLatin1String("transversalradiusright"), transversalRadiusRight },
+			StaticAttrData{ QLatin1String("longitudinalradius"), longitudinalRadius },
+			StaticAttrData{ QLatin1String("longitudinalradiusbegin"), longitudinalRadiusBegin },
+			StaticAttrData{ QLatin1String("influencefade"), influenceFadeRadius });
+	}
+}
+
 
 void BoneModule::setStaticAttributes(Math::Point3d position,
 	double length, double orientation, CO_OrCommand& curMacro, bool isRest)

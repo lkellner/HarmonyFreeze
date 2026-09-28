@@ -47,6 +47,7 @@ private:
 	bool hasBoneParents() const;
 	double getStaticChainRotation(bool isRest) const;
 	double getChainRotation(const double frameNo) const;
+	void readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix);
 
 	template <typename ValueFunc>
 	double getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const;
