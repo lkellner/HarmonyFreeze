@@ -63,9 +63,12 @@ void BoneModule::readjustSecondary()
 {
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
+	Math::Matrix4x4 freezeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
+	setMatrixComplexity(defineMatrixComplexity(freezeMatrix, false));
+
 	processAttributeSet(*curMacro, true);
 	processAttributeSet(*curMacro, false);
-	readjustRegionOfInfluence(*curMacro, getFreezeManagerPtr()->getFreezeMatrix());
+	readjustRegionOfInfluence(*curMacro, freezeMatrix);
 	
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
@@ -146,12 +149,16 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(sm, changeMatrix);
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
 
+	//Matrix only contains translation and rotation values,
+	//Only the first bone in the chain will be affected
+	if (isIdentity(scaleShearChangeMatrix) && hasBoneParents())
+		return;
+
 	Math::Matrix4x4 adjChangeMatrix = changeMatrix;
 	Math::Matrix4x4 oldParentRotationMatrix;
 	Math::Matrix4x4 newParentRotationMatrix;
 	
 
-	//TODO: this only needs to be done for complex matrices
 	if (hasBoneParents())
 	{
 		oldParentRotationMatrix = Math::Matrix4x4().rotateDegrees(getStaticChainRotation(isRest));

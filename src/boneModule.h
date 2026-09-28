@@ -48,6 +48,7 @@ private:
 	double getStaticChainRotation(bool isRest) const;
 	double getChainRotation(const double frameNo) const;
 	void readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix);
+	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 
 	template <typename ValueFunc>
 	double getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const;
@@ -67,6 +68,8 @@ private:
 	AT_DoubleAttr* m_transversalRadiusAttr;
 	AT_DoubleAttr* m_transversalRadiusRightAttr;
 	AT_DoubleAttr* m_influenceFadeAttr;
+
+	MatrixComplexity m_freezeMatrixComplexity;
 };
 
 #endif
