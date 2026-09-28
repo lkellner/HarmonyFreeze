@@ -236,23 +236,24 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		//ORIENTATION
 		ogOrientation = orientationAttr->value(frameNo);
 
-		ogOglOrientation = hasBoneParents() ? applyUnitOffset(getFreezeManagerPtr()->getUnitOffsetScaleMatrix(), ogOrientation) : fieldsToOgl(sm, ogOrientation);
+		if (hasBoneParents())
+			ogOglOrientation =  applyUnitOffset(unitOffsetMatrix, ogOrientation);
+		else
+			ogOglOrientation = fieldsToOgl(sm, ogOrientation);
 
 		rotationMatrix = Math::Matrix4x4().rotateDegrees(ogOglOrientation);
 		rotationMatrix = adjChangeMatrix * rotationMatrix;
 
 		oglOrientation = getAngle2d(rotationMatrix.getTransform2d());
-		orientation = hasBoneParents() ? applyUnitOffset(getFreezeManagerPtr()->getUnitOffsetScaleMatrix().getInverse(), oglOrientation) : getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
+
+		if (hasBoneParents())
+			orientation = applyUnitOffset(unitOffsetMatrix.getInverse(), oglOrientation);
+		else
+			orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
 		//RADIUS
 		radius = Math::Point3d(radiusAttr->value(frameNo), 0, 0);
 		radius = adjChangeMatrix * radius;
-
-		//LENGTH
-		/*
-		if (hasBoneParents())
-			ogOglOrientation = applyUnitOffset(getFreezeManagerPtr()->getUnitOffsetScaleMatrix(), ogOglOrientation);
-	*/
 
 		oldParentRotationMatrix.rotateDegrees(ogOglOrientation);
 		newParentRotationMatrix.rotateDegrees(oglOrientation);
