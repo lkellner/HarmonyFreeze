@@ -455,5 +455,26 @@ FrameRange BoneModule::getFrameRange() const
 	if (m_orientationAttr->getNextKey(0, &key))
 		updateFrameRange(range, key);
 
+
+	//Need to include the whole chain's range for dependent curve modules as sometimes it's necessary
+	//to force keyframes
+	MO_Node* parent = getModulePtr()->getParentNode();
+
+	while (parent && (parent->keyword() == QLatin1String("BendyBoneModule")))
+	{
+		AT_DoubleAttr* att = ::findAttribute<AT_DoubleAttr>(QStringLiteral("orientation"), parent);
+		if (!att)
+			continue;
+
+		if (att->getNextKey(0, &key))
+			updateFrameRange(range, key);
+
+		if (att->getPrevKey(std::numeric_limits<int>::max(), &key))
+			updateFrameRange(range, key);
+		
+
+		parent = parent->getParentNode();
+	}
+
 	return range;
 }
