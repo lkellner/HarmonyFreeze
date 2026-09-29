@@ -198,6 +198,8 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	else
 		orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
+	double referenceAngle = getAngle2d(changeMatrix.getTransform2d()) + ogOrientation;
+	orientation = matchFullRotations(referenceAngle, orientation);
 
 	//RADIUS
 	Math::Point3d radius = Math::Point3d(radiusAttr->localValue(), 0, 0);
@@ -262,6 +264,8 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		else
 			orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
+		referenceAngle = getAngle2d(changeMatrix.getTransform2d()) + ogOrientation;
+		orientation = matchFullRotations(referenceAngle, orientation);
 
 		//RADIUS
 		radius = Math::Point3d(radiusAttr->value(frameNo), 0, 0);
@@ -319,7 +323,6 @@ void BoneModule::setStaticAttributes(Math::Point3d position, double orientation,
 	double radius, double length, CO_OrCommand& curMacro, bool isRest)
 {
 	clampValues(position);
-	//TODO: need to get rotation close to original angle
 
 	FreezeManager* fm = getFreezeManagerPtr();
 

@@ -128,7 +128,7 @@ BezierHandleInfo getRecalculatedHandleInfo(SC_SceneMetrics* sceneMetrics,
 	const Math::Point3d origin = rotMatrix.origin();
 
 	//Rougly estimated angle used as a reference know whether to add n*360 degrees
-	//to final angle. This is to make sure that animatio don't break
+	//to final angle. This is to make sure that animations don't break
 	const double referenceAngle = getAngle2d(changeMatrix.getTransform2d()) + angle;
 
 	const double orientation = matchFullRotations(referenceAngle, getAngle2d(rotMatrix.getTransform2d()));
