@@ -203,7 +203,9 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 	//RADIUS
 	Math::Point3d radius = Math::Point3d(radiusAttr->localValue(), 0, 0);
-	radius = adjChangeMatrix * radius;
+
+	if(hasBoneParents())
+		radius = adjChangeMatrix * radius;
 
 
 	//LENGTH
@@ -269,7 +271,9 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 		//RADIUS
 		radius = Math::Point3d(radiusAttr->value(frameNo), 0, 0);
-		radius = adjChangeMatrix * radius;
+
+		if (hasBoneParents())
+			radius = adjChangeMatrix * radius;
 
 
 		//LENGTH
