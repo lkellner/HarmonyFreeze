@@ -27,28 +27,48 @@
 #include "moduleBase.h"
 #include "utils.h"
 
+struct BoneKeyframeData
+{
+	KeyframeState position;
+	KeyframeState length;
+	KeyframeState orientation;
+	KeyframeState radius;
+};
+
+
 class BoneModule : public ModuleBase
 {
 public:
 	explicit BoneModule(std::shared_ptr<FreezeManager> freezeManager,
-			MO_Module* modulePtr,
-			ModuleType moduleType);
+		MO_Module* modulePtr,
+		ModuleType moduleType);
 
 	void readjustSecondary();
 
 
 private:
 	FrameRange getFrameRange() const override;
+
 	void processAttributeSet(CO_OrCommand& curMacro, bool isRest);
-	void setStaticAttributes(Math::Point3d position,double radius, double length,
+	void setStaticAttributes(Math::Point3d position, double radius, double length,
 		double orientation, CO_OrCommand& curMacro, bool isRest);
 	void setAttributes(Math::Point3d position, double orientation, double radius,
-		double length, CO_OrCommand& curMacro, double frameNo);
-	bool hasBoneParents() const;
+		double length, CO_OrCommand& curMacro, double frameNo, bool isFirst);
+
 	double getStaticChainRotation(bool isRest) const;
 	double getChainRotation(const double frameNo) const;
+
 	void readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix);
 	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
+	BoneKeyframeData generateKeyframeData(double frameNo, bool isFirst);
+
+	bool isParentKeyframe(double frameNo);
+	bool hasBoneParents() const;
+
+	bool isComplexTransform() {
+		return m_freezeMatrixComplexity == MatrixComplexity::Complex
+			|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly;
+	}
 
 	template <typename ValueFunc>
 	double getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const;
@@ -70,6 +90,10 @@ private:
 	AT_DoubleAttr* m_influenceFadeAttr;
 
 	MatrixComplexity m_freezeMatrixComplexity;
-};
 
+	Math::Point3d m_prevPosition;
+	double m_prevLength;
+	double m_prevOrientation;
+	double m_prevRadius;
+};
 #endif

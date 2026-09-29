@@ -104,30 +104,19 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 
 	while (parent && parent->keyword() == QLatin1String("BendyBoneModule"))
 	{
-		const AT_AttrList attributes = ::getAttributeList(parent);
+		AT_DoubleAttr* attr = ::findAttribute<AT_DoubleAttr>(orientationKeyword, parent);
+		if (!attr)
+			continue;
 
-		for (const AT_AttrDesc& attribute : std::as_const(attributes))
+		if (parent->getParentNode() && parent->getParentNode()->keyword() == QLatin1String("BendyBoneModule"))
 		{
-			if (attribute._pAttr->keyword() == orientationKeyword)
-			{
-				const auto* a = dynamic_cast<const AT_DoubleAttr*>(attribute._pAttr);
-				if (a)
-				{
-					if (parent->getParentNode() && parent->getParentNode()->keyword() == QLatin1String("BendyBoneModule"))
-					{
-						//Not the first bone in the chain
-						rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
-					}
-					else
-					{
-						//First bone in the chain, need to convert rotation from fields to ogl
-						//double rotationValue = valFunc(*a);
-						//rotationValue = fieldsToOgl(getModulePtr()->sceneMetrics(), rotationValue);
-						//rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), rotationValue);
-						rotation += fieldsToOgl(mod->sceneMetrics(), valFunc(*a));
-					}
-				}
-			}
+			//Not the first bone in the chain
+			rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*attr));
+		}
+		else
+		{
+			//First bone in the chain, need to convert rotation from fields to ogl
+			rotation += fieldsToOgl(mod->sceneMetrics(), valFunc(*attr));
 		}
 
 		parent = parent->getParentNode();
@@ -284,7 +273,8 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		length = Math::Point3d(lengthAttr->value(frameNo), 0, 0);
 		length = adjScaleShearChangeMatrix * length;
 
-		setAttributes(pos3d, orientation, radius.toVector().length(), length.toVector().length(), curMacro, frameNo);
+		setAttributes(pos3d, orientation, radius.toVector().length(), length.toVector().length(),
+			curMacro, frameNo, curFrame == range.start);
 	}
 }
 
@@ -364,11 +354,28 @@ void BoneModule::setStaticAttributes(Math::Point3d position, double orientation,
 
 
 void BoneModule::setAttributes(Math::Point3d position, double orientation, double radius,
-	double length, CO_OrCommand& curMacro, double frameNo)
+	double length, CO_OrCommand& curMacro, double frameNo, bool isFirst)
 {
 	clampValues(position);
 
 	FreezeManager* fm = getFreezeManagerPtr();
+
+	BoneKeyframeData kfData = generateKeyframeData(frameNo, isFirst);
+
+	const bool isSetPosition = kfData.position == KeyframeState::Keyframe ||
+		(m_prevPosition != position && kfData.position == KeyframeState::PossibleKeyframe);
+	const bool isSetLength = kfData.length == KeyframeState::Keyframe ||
+		(m_prevLength != length && kfData.length == KeyframeState::PossibleKeyframe);
+	const bool isSetOrientation = kfData.orientation == KeyframeState::Keyframe ||
+		(m_prevOrientation != orientation && kfData.orientation == KeyframeState::PossibleKeyframe);
+	const bool isSetRadius = kfData.radius == KeyframeState::Keyframe ||
+		(m_prevRadius != radius && kfData.orientation == KeyframeState::PossibleKeyframe);
+
+	//Saving the current values for the next keyframe
+	m_prevPosition = position;
+	m_prevLength = length; 
+	m_prevOrientation = orientation;
+	m_prevRadius = radius;
 
 
 	if (fm->isExperimentalMode())
@@ -394,9 +401,9 @@ void BoneModule::setAttributes(Math::Point3d position, double orientation, doubl
 				Point2dAttrData{QLatin1String("offset"), Math::Point2d(position.x(),position.y()) , frameNo, true });
 		}
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			AttrData{ QLatin1String("orientation"), orientation, frameNo, true },
-			AttrData{ QLatin1String("radius"), radius, frameNo, true },
-			AttrData{ QLatin1String("length"), length, frameNo, true });
+			AttrData{ QLatin1String("orientation"), orientation, frameNo, isSetOrientation },
+			AttrData{ QLatin1String("radius"), radius, frameNo, isSetRadius },
+			AttrData{ QLatin1String("length"), length, frameNo, isSetLength });
 	}
 }
 
@@ -462,14 +469,14 @@ FrameRange BoneModule::getFrameRange() const
 
 	while (parent && (parent->keyword() == QLatin1String("BendyBoneModule")))
 	{
-		AT_DoubleAttr* att = ::findAttribute<AT_DoubleAttr>(QStringLiteral("orientation"), parent);
-		if (!att)
+		AT_DoubleAttr* attr = ::findAttribute<AT_DoubleAttr>(QStringLiteral("orientation"), parent);
+		if (!attr)
 			continue;
 
-		if (att->getNextKey(0, &key))
+		if (attr->getNextKey(0, &key))
 			updateFrameRange(range, key);
 
-		if (att->getPrevKey(std::numeric_limits<int>::max(), &key))
+		if (attr->getPrevKey(std::numeric_limits<int>::max(), &key))
 			updateFrameRange(range, key);
 		
 
@@ -477,4 +484,97 @@ FrameRange BoneModule::getFrameRange() const
 	}
 
 	return range;
+}
+
+
+BoneKeyframeData BoneModule::generateKeyframeData(double frameNo, bool isFirst)
+{
+	BoneKeyframeData kfData;
+	//Check if there is a keyframe on the attributes
+
+	if (isFirst && isComplexTransform())
+	{
+		kfData.position = KeyframeState::Keyframe;
+		kfData.length = KeyframeState::Keyframe;
+		kfData.orientation = KeyframeState::Keyframe;
+		kfData.radius = KeyframeState::Keyframe;
+
+		return kfData;
+	}
+
+	bool isCtrlPntPosition = false;
+	bool isCtrlPntLength = false;
+	bool isCtrlPntOrientation = false;
+	bool isCtrlPntRadius = false;
+
+	Math::Point2d tempPoint;
+
+	//There have been changes to the getValue function between H24 and H27.
+	//When making changes here, all supported versions need to be taken into account
+	m_offsetAttr->getValue(frameNo, tempPoint, &isCtrlPntPosition);
+
+	m_lengthAttr->value(frameNo, &isCtrlPntLength);
+	m_orientationAttr->value(frameNo, &isCtrlPntOrientation);
+	m_radiusAttr->value(frameNo, &isCtrlPntRadius);
+
+	bool isAdjustKeyframe = isCtrlPntOrientation || isParentKeyframe(frameNo)
+		|| getFreezeManagerPtr()->isSetInbetweenKfMode();
+
+	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
+
+	if (isCtrlPntLength)
+		kfData.length = KeyframeState::Keyframe;
+	else if (isAdjustKeyframe)
+		kfData.length = KeyframeState::PossibleKeyframe;
+	else
+		kfData.length = KeyframeState::NoKeyframe;
+
+	if (isCtrlPntOrientation)
+		kfData.orientation = KeyframeState::Keyframe;
+	else if (isAdjustKeyframe)
+		kfData.orientation = KeyframeState::PossibleKeyframe;
+	else
+		kfData.orientation = KeyframeState::NoKeyframe;
+
+	//Radius and position are not being influenced by current bone's orientation
+	if (isCtrlPntRadius)
+		kfData.radius = KeyframeState::Keyframe;
+	else if (isParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
+		kfData.radius = KeyframeState::PossibleKeyframe;
+	else
+		kfData.radius = KeyframeState::NoKeyframe;
+
+	if (isCtrlPntPosition)
+		kfData.position = KeyframeState::Keyframe;
+	else if (isParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
+		kfData.position = KeyframeState::PossibleKeyframe;
+	else
+		kfData.position = KeyframeState::NoKeyframe;
+
+	return kfData;
+}
+
+
+bool BoneModule::isParentKeyframe(double frameNo)
+{
+	bool isKeyframe = false;
+
+	MO_Node* parent = getModulePtr()->getParentNode();
+
+	while (parent && parent->keyword() == QLatin1String("BendyBoneModule"))
+	{
+		AT_DoubleAttr* attr = ::findAttribute<AT_DoubleAttr>(QStringLiteral("orientation"), parent);
+		if (!attr)
+			continue;
+
+		if (attr)
+			attr->value(frameNo, &isKeyframe);
+
+		if (isKeyframe)
+			return true;
+
+		parent = parent->getParentNode();
+	}
+
+	return false;
 }
