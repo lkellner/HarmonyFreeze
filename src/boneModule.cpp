@@ -11,6 +11,63 @@
 #include <limits>
 #include <stdexcept>
 
+bool hasOffset(const MO_Node* node)
+{
+	if (!node)
+		return false;
+
+	AT_Position2dAttr* offsetAttr = ::findAttribute<AT_Position2dAttr>(QStringLiteral("offset"), node);
+	AT_Position2dAttr* restOffsetAttr = ::findAttribute<AT_Position2dAttr>(QStringLiteral("restOffset"), node);
+
+	if (!offsetAttr || !restOffsetAttr)
+		return false;
+
+	//As soon as either the offset or restOffset attributes have a non-zero value, 
+	//the bone deformers rotation is set as a fields rotation value instead of ogl
+	Math::Point2d position;
+
+	restOffsetAttr->getLocalValue(position);
+	if (position != Math::Point2d())
+		return true;
+
+	offsetAttr->getLocalValue(position);
+	if (position != Math::Point2d())
+		return true;
+
+	FrameRange range;
+	int key;
+
+	//Main attribute only detects point2d keyframes
+	if (offsetAttr->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (offsetAttr->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (offsetAttr->separateX()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (offsetAttr->separateX()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (offsetAttr->separateY()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (offsetAttr->separateY()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
+	{
+		double frameNo = curFrame;
+		offsetAttr->getValue(frameNo, position);
+		if (position != Math::Point2d())
+			return true;
+	}
+
+	return false;
+}
+
+
 BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType)
@@ -79,6 +136,10 @@ double BoneModule::getStaticChainRotation(bool isRest) const
 		? QStringLiteral("restOrientation")
 		: QStringLiteral("orientation");
 
+	const auto posKeyword = isRest
+		? QStringLiteral("restOffset")
+		: QStringLiteral("offset");
+
 	return getRotationImpl(orientationKeyword,
 		[](const AT_DoubleAttr& a) { return a.localValue(); });
 }
@@ -86,6 +147,8 @@ double BoneModule::getStaticChainRotation(bool isRest) const
 
 double BoneModule::getChainRotation(const double frameNo) const
 {
+	const auto posKeyword = QStringLiteral("offset");
+
 	return getRotationImpl(QStringLiteral("orientation"),
 		[frameNo](const AT_DoubleAttr& a) { return a.value(frameNo); });
 }
@@ -108,7 +171,8 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 		if (!attr)
 			continue;
 
-		if (parent->getParentNode() && parent->getParentNode()->keyword() == QLatin1String("BendyBoneModule"))
+		if (parent->getParentNode() && parent->getParentNode()->keyword() == QLatin1String("BendyBoneModule")
+			&& !hasOffset(parent))
 		{
 			//Not the first bone in the chain
 			rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*attr));
@@ -171,7 +235,9 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	double ogOrientation = orientationAttr->localValue();
 	double ogOglOrientation;
 
-	if (hasBoneParents())
+	bool isHasFieldsOrientation = hasFieldsOrientation();
+
+	if (!isHasFieldsOrientation)
 		ogOglOrientation = applyUnitOffset(unitOffsetMatrix, ogOrientation);
 	else
 		ogOglOrientation = fieldsToOgl(sm, ogOrientation);
@@ -182,7 +248,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	double oglOrientation = getAngle2d(rotationMatrix.getTransform2d());
 	double orientation;
 
-	if (hasBoneParents())
+	if (!isHasFieldsOrientation)
 		orientation = applyUnitOffset(unitOffsetMatrix.getInverse(), oglOrientation);
 	else
 		orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
@@ -193,7 +259,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	//RADIUS
 	Math::Point3d radius = Math::Point3d(radiusAttr->localValue(), 0, 0);
 
-	if(hasBoneParents())
+	if(!isHasFieldsOrientation)
 		radius = adjChangeMatrix * radius;
 
 
@@ -238,7 +304,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		//ORIENTATION
 		ogOrientation = orientationAttr->value(frameNo);
 
-		if (hasBoneParents())
+		if (!isHasFieldsOrientation)
 			ogOglOrientation =  applyUnitOffset(unitOffsetMatrix, ogOrientation);
 		else
 			ogOglOrientation = fieldsToOgl(sm, ogOrientation);
@@ -249,7 +315,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 		oglOrientation = getAngle2d(rotationMatrix.getTransform2d());
 
-		if (hasBoneParents())
+		if (!isHasFieldsOrientation)
 			orientation = applyUnitOffset(unitOffsetMatrix.getInverse(), oglOrientation);
 		else
 			orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
@@ -260,7 +326,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		//RADIUS
 		radius = Math::Point3d(radiusAttr->value(frameNo), 0, 0);
 
-		if (hasBoneParents())
+		if (!isHasFieldsOrientation)
 			radius = adjChangeMatrix * radius;
 
 
@@ -421,23 +487,9 @@ bool BoneModule::hasBoneParents() const
 	return parent->keyword() == QLatin1String("BendyBoneModule");
 }
 
-
-bool BoneModule::hasOffset(const AT_Position2dAttr* attr, const bool isStatic, const double frameNo) const
+bool BoneModule::hasFieldsOrientation() const
 {
-	Math::Point2d position;
-
-	if(isStatic)
-		attr->getLocalValue(position);
-	else
-		attr->getValue(frameNo, position);
-
-	return position != Math::Point2d();
-}
-
-
-bool BoneModule::hasFieldsOrientation(const AT_Position2dAttr* attr, const bool isStatic, const double frameNo) const
-{
-	return !hasBoneParents() || hasOffset(attr, isStatic, frameNo);
+	return !hasBoneParents() || hasOffset(getModulePtr());
 }
 
 FrameRange BoneModule::getFrameRange() const

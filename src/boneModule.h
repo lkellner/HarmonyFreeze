@@ -35,6 +35,7 @@ struct BoneKeyframeData
 	KeyframeState radius;
 };
 
+bool hasOffset(const MO_Node* node);
 
 class BoneModule : public ModuleBase
 {
@@ -65,8 +66,7 @@ private:
 
 	bool isParentKeyframe(double frameNo);
 	bool hasBoneParents() const;
-	bool hasOffset(const AT_Position2dAttr* attr, const bool isStatic, const double frameNo = 1) const;
-	bool hasFieldsOrientation(const AT_Position2dAttr* attr, const bool isStatic, const double frameNo = 1) const;
+	bool hasFieldsOrientation() const;
 
 	bool isComplexTransform() {
 		return m_freezeMatrixComplexity == MatrixComplexity::Complex
