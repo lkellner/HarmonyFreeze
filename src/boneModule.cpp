@@ -230,6 +230,8 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	Math::Point3d pos3d = Math::Point3d(position);
 	pos3d = fieldsChangeMatrix * pos3d;
 
+	if(!hasBoneParents() || !hasOffset(getModulePtr()))
+		clampValues(pos3d);
 
 	//ORIENTATION
 	double ogOrientation = orientationAttr->localValue();
@@ -300,6 +302,9 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 		positionAttr->getValue(frameNo, position);
 		Math::Point3d pos3d = Math::Point3d(position);
 		pos3d = fieldsChangeMatrix * pos3d;
+
+		if (!hasBoneParents() || !hasOffset(getModulePtr()))
+			clampValues(pos3d);
 
 		//ORIENTATION
 		ogOrientation = orientationAttr->value(frameNo);
@@ -421,8 +426,6 @@ void BoneModule::setStaticAttributes(Math::Point3d position, double orientation,
 void BoneModule::setAttributes(Math::Point3d position, double orientation, double radius,
 	double length, CO_OrCommand& curMacro, double frameNo, bool isFirst)
 {
-	clampValues(position);
-
 	FreezeManager* fm = getFreezeManagerPtr();
 
 	BoneKeyframeData kfData = generateKeyframeData(frameNo, isFirst);
