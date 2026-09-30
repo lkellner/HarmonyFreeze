@@ -381,10 +381,14 @@ void BoneModule::setAttributes(Math::Point3d position, double orientation, doubl
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, position.x(), position.y()));
-		curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, orientation));
-		curMacro.add(Attr::Double::createSetValueCmd(m_radiusAttr, frameNo, radius));
-		curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, length));
+		if(isSetPosition)
+			curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, position.x(), position.y()));
+		if(isSetOrientation)
+			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, orientation));
+		if(isSetRadius)
+			curMacro.add(Attr::Double::createSetValueCmd(m_radiusAttr, frameNo, radius));
+		if(isSetLength)
+			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, length));
 	}
 	else
 	{
@@ -392,13 +396,13 @@ void BoneModule::setAttributes(Math::Point3d position, double orientation, doubl
 		if (m_offsetAttr->useSeparate())
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ QLatin1String("offset.x"), position.x(), frameNo, true },
-				AttrData{ QLatin1String("offset.y"), position.y(), frameNo, true });
+				AttrData{ QLatin1String("offset.x"), position.x(), frameNo, isSetPosition },
+				AttrData{ QLatin1String("offset.y"), position.y(), frameNo, isSetPosition });
 		}
 		else
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{QLatin1String("offset"), Math::Point2d(position.x(),position.y()) , frameNo, true });
+				Point2dAttrData{QLatin1String("offset"), Math::Point2d(position.x(),position.y()) , frameNo, isSetPosition });
 		}
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
 			AttrData{ QLatin1String("orientation"), orientation, frameNo, isSetOrientation },
@@ -463,7 +467,7 @@ FrameRange BoneModule::getFrameRange() const
 		updateFrameRange(range, key);
 
 
-	//Need to include the whole chain's range for dependent curve modules as sometimes it's necessary
+	//Need to include the whole chain's range for bone modules as sometimes it's necessary
 	//to force keyframes
 	MO_Node* parent = getModulePtr()->getParentNode();
 
@@ -498,7 +502,6 @@ BoneKeyframeData BoneModule::generateKeyframeData(double frameNo, bool isFirst)
 		kfData.length = KeyframeState::Keyframe;
 		kfData.orientation = KeyframeState::Keyframe;
 		kfData.radius = KeyframeState::Keyframe;
-
 		return kfData;
 	}
 
@@ -521,6 +524,7 @@ BoneKeyframeData BoneModule::generateKeyframeData(double frameNo, bool isFirst)
 		|| getFreezeManagerPtr()->isSetInbetweenKfMode();
 
 	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
+
 
 	if (isCtrlPntLength)
 		kfData.length = KeyframeState::Keyframe;
