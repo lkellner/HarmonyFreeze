@@ -135,7 +135,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 	SC_SceneMetrics* sm = getModulePtr()->sceneMetrics();
 
-	Math::Matrix4x4 changeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
+	Math::Matrix4x4 changeMatrix = convertToProjectionMatrix(getFreezeManagerPtr()->getFreezeMatrix());
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(sm, changeMatrix);
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
 	Math::Matrix4x4 unitOffsetMatrix = getFreezeManagerPtr()->getUnitOffsetScaleMatrix();
@@ -201,7 +201,6 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	oldParentRotationMatrix.rotateDegrees(ogOglOrientation);
 	newParentRotationMatrix.rotateDegrees(oglOrientation);
 	Math::Matrix4x4 adjScaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
-	//TODO: need to see if 3d rotations need any special treatment
 	//TODO: see if behaviour changes with different scene settings
 
 	Math::Point3d length = Math::Point3d(lengthAttr->localValue(), 0, 0);
