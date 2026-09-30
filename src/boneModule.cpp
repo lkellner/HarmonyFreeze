@@ -422,6 +422,24 @@ bool BoneModule::hasBoneParents() const
 }
 
 
+bool BoneModule::hasOffset(const AT_Position2dAttr* attr, const bool isStatic, const double frameNo) const
+{
+	Math::Point2d position;
+
+	if(isStatic)
+		attr->getLocalValue(position);
+	else
+		attr->getValue(frameNo, position);
+
+	return position != Math::Point2d();
+}
+
+
+bool BoneModule::hasFieldsOrientation(const AT_Position2dAttr* attr, const bool isStatic, const double frameNo) const
+{
+	return !hasBoneParents() || hasOffset(attr, isStatic, frameNo);
+}
+
 FrameRange BoneModule::getFrameRange() const
 {
 	FrameRange range;

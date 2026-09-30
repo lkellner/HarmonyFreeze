@@ -59,11 +59,14 @@ private:
 	double getChainRotation(const double frameNo) const;
 
 	void readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix);
+
 	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 	BoneKeyframeData generateKeyframeData(double frameNo, bool isFirst);
 
 	bool isParentKeyframe(double frameNo);
 	bool hasBoneParents() const;
+	bool hasOffset(const AT_Position2dAttr* attr, const bool isStatic, const double frameNo = 1) const;
+	bool hasFieldsOrientation(const AT_Position2dAttr* attr, const bool isStatic, const double frameNo = 1) const;
 
 	bool isComplexTransform() {
 		return m_freezeMatrixComplexity == MatrixComplexity::Complex
