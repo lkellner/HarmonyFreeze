@@ -67,7 +67,6 @@ bool hasOffset(const MO_Node* node)
 	return false;
 }
 
-
 BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType)
@@ -115,7 +114,6 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		throw std::runtime_error("missing attribute: 'm_influenceFadeAttr' for " + modulePtr->qualifiedName().toStdString());
 }
 
-
 void BoneModule::readjustSecondary()
 {
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
@@ -144,7 +142,6 @@ double BoneModule::getStaticChainRotation(bool isRest) const
 		[](const AT_DoubleAttr& a) { return a.localValue(); });
 }
 
-
 double BoneModule::getChainRotation(const double frameNo) const
 {
 	const auto posKeyword = QStringLiteral("offset");
@@ -152,7 +149,6 @@ double BoneModule::getChainRotation(const double frameNo) const
 	return getRotationImpl(QStringLiteral("orientation"),
 		[frameNo](const AT_DoubleAttr& a) { return a.value(frameNo); });
 }
-
 
 template <typename ValueFunc>
 double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const
@@ -188,7 +184,6 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 
 	return rotation;
 }
-
 
 void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 {
@@ -347,7 +342,6 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	}
 }
 
-
 void BoneModule::readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix)
 {
 	const Math::Point3d scale = getScale(matrix);
@@ -380,7 +374,6 @@ void BoneModule::readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::M
 			StaticAttrData{ QLatin1String("influencefade"), influenceFadeRadius });
 	}
 }
-
 
 void BoneModule::setStaticAttributes(Math::Point3d position, double orientation,
 	double radius, double length, CO_OrCommand& curMacro, bool isRest)
@@ -420,7 +413,6 @@ void BoneModule::setStaticAttributes(Math::Point3d position, double orientation,
 			StaticAttrData{ lengthJS, length });
 	}
 }
-
 
 void BoneModule::setAttributes(Math::Point3d position, double orientation, double radius,
 	double length, CO_OrCommand& curMacro, double frameNo, bool isFirst)
@@ -477,7 +469,6 @@ void BoneModule::setAttributes(Math::Point3d position, double orientation, doubl
 			AttrData{ QLatin1String("length"), length, frameNo, isSetLength });
 	}
 }
-
 
 bool BoneModule::hasBoneParents() const
 {
@@ -561,7 +552,6 @@ FrameRange BoneModule::getFrameRange() const
 	return range;
 }
 
-
 BoneKeyframeData BoneModule::generateKeyframeData(double frameNo, bool isFirst)
 {
 	BoneKeyframeData kfData;
@@ -628,7 +618,6 @@ BoneKeyframeData BoneModule::generateKeyframeData(double frameNo, bool isFirst)
 
 	return kfData;
 }
-
 
 bool BoneModule::isParentKeyframe(double frameNo)
 {
