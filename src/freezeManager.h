@@ -48,9 +48,9 @@ public:
 	void setFreezePegPtr(MO_Module* freezePegPtr);
 	MO_Module* getFreezePegPtr() { return m_freezePegPtr; };
 	void setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* sceneMetrics);
-	Math::Matrix4x4 getFreezeMatrix() { return m_freezeMatrix; };
-	Math::Matrix4x4 getOffsetMatrix() { return m_offsetMatrix; };
-	Math::Matrix4x4 getUnitOffsetScaleMatrix() { return m_unitOffsetScaleMatrix; };
+	Math::Matrix4x4 getFreezeMatrix() const { return m_freezeMatrix; };
+	Math::Matrix4x4 getOffsetMatrix() const { return m_offsetMatrix; };
+	Math::Matrix4x4 getUnitOffsetScaleMatrix() const { return m_unitOffsetScaleMatrix; };
 
 
 	FrameRange getFrameRange() const;
@@ -96,12 +96,12 @@ public:
 	void updateDrawingPivotStatus(int curId, const QString& layerAttr, bool hasUsedDrawingPivots);
 	bool getDrawingPivotStatus(int curId, const QString& layerAttr);
 	void addElement(int curId, const QString& layerAttr, bool hasUsedDrawingPivots);
-	bool isExperimentalMode() { return m_isExperimentalMode; }
-	bool isMultithreadingMode() { return m_isMultithreadingMode; }
-	bool isDebugMode() { return m_isDebugMode; }
-	bool isPassOnOgl() { return m_isPassOnOgl; }
-	bool isMoveUnusedPivots() { return m_isMoveUnusedPivots; }
-	bool isSetInbetweenKfMode() { return m_isSetInbetweenKfMode; }
+	bool isExperimentalMode() const { return m_isExperimentalMode; }
+	bool isMultithreadingMode() const { return m_isMultithreadingMode; }
+	bool isDebugMode() const { return m_isDebugMode; }
+	bool isPassOnOgl() const { return m_isPassOnOgl; }
+	bool isMoveUnusedPivots() const { return m_isMoveUnusedPivots; }
+	bool isSetInbetweenKfMode() const { return m_isSetInbetweenKfMode; }
 
 private:
 

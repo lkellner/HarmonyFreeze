@@ -120,7 +120,7 @@ void BoneModule::readjustSecondary()
 {
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
-	Math::Matrix4x4 freezeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
+	const Math::Matrix4x4 freezeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
 	setMatrixComplexity(defineMatrixComplexity(freezeMatrix, false));
 
 	processAttributeSet(*curMacro, true);
@@ -157,7 +157,7 @@ double BoneModule::getChainRotation(const double frameNo) const
 template <typename ValueFunc>
 double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const
 {
-	FreezeManager* fm = getFreezeManagerPtr();
+	const FreezeManager* fm = getFreezeManagerPtr();
 
 	const MO_Module* mod = getModulePtr();
 
@@ -192,17 +192,17 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 
 void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 {
-	AT_Position2dAttr* positionAttr = isRest ? m_restOffsetAttr : m_offsetAttr;
-	AT_DoubleAttr* radiusAttr = isRest ? m_restRadiusAttr : m_radiusAttr;
-	AT_DoubleAttr* lengthAttr = isRest ? m_restLengthAttr : m_lengthAttr;
-	AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
+	const AT_Position2dAttr* positionAttr = isRest ? m_restOffsetAttr : m_offsetAttr;
+	const AT_DoubleAttr* radiusAttr = isRest ? m_restRadiusAttr : m_radiusAttr;
+	const AT_DoubleAttr* lengthAttr = isRest ? m_restLengthAttr : m_lengthAttr;
+	const AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
 
 	SC_SceneMetrics* sm = getModulePtr()->sceneMetrics();
 
-	Math::Matrix4x4 changeMatrix = convertToProjectionMatrix(getFreezeManagerPtr()->getFreezeMatrix());
+	const Math::Matrix4x4 changeMatrix = convertToProjectionMatrix(getFreezeManagerPtr()->getFreezeMatrix());
 	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(sm, changeMatrix);
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
-	Math::Matrix4x4 unitOffsetMatrix = getFreezeManagerPtr()->getUnitOffsetScaleMatrix();
+	const Math::Matrix4x4 unitOffsetMatrix = getFreezeManagerPtr()->getUnitOffsetScaleMatrix();
 
 	//Matrix only contains translation and rotation values,
 	//Only the first bone in the chain will be affected
@@ -269,7 +269,6 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	oldParentRotationMatrix.rotateDegrees(ogOglOrientation);
 	newParentRotationMatrix.rotateDegrees(oglOrientation);
 	Math::Matrix4x4 adjScaleShearChangeMatrix = newParentRotationMatrix.getInverse() * scaleShearChangeMatrix * oldParentRotationMatrix;
-	//TODO: see if behaviour changes with different scene settings
 
 	Math::Point3d length = Math::Point3d(lengthAttr->localValue(), 0, 0);
 	length = adjScaleShearChangeMatrix * length;
@@ -280,7 +279,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	if (isRest)
 		return;
 
-	FrameRange range = getFrameRange();
+	const FrameRange range = getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
@@ -351,14 +350,14 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 void BoneModule::readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix)
 {
-	Math::Point3d scale = getScale(matrix);
-	double scaleFactor = (abs(scale.x()) + abs(scale.y())) / 2;
+	const Math::Point3d scale = getScale(matrix);
+	const double scaleFactor = (abs(scale.x()) + abs(scale.y())) / 2;
 
-	double transversalRadius = m_transversalRadiusAttr->localValue() * scaleFactor;
-	double transversalRadiusRight = m_transversalRadiusRightAttr->localValue() * scaleFactor;
-	double longitudinalRadiusBegin = m_longitudinalRadiusBeginAttr->localValue() * scaleFactor;
-	double longitudinalRadius = m_longitudinalRadiusAttr->localValue() * scaleFactor;
-	double influenceFadeRadius = m_influenceFadeAttr->localValue() * scaleFactor;
+	const double transversalRadius = m_transversalRadiusAttr->localValue() * scaleFactor;
+	const double transversalRadiusRight = m_transversalRadiusRightAttr->localValue() * scaleFactor;
+	const double longitudinalRadiusBegin = m_longitudinalRadiusBeginAttr->localValue() * scaleFactor;
+	const double longitudinalRadius = m_longitudinalRadiusAttr->localValue() * scaleFactor;
+	const double influenceFadeRadius = m_influenceFadeAttr->localValue() * scaleFactor;
 
 
 	FreezeManager* fm = getFreezeManagerPtr();
@@ -482,7 +481,7 @@ void BoneModule::setAttributes(Math::Point3d position, double orientation, doubl
 
 bool BoneModule::hasBoneParents() const
 {
-	MO_Node* parent = getModulePtr()->getParentNode();
+	const MO_Node* parent = getModulePtr()->getParentNode();
 
 	if (!parent)
 		return false;
