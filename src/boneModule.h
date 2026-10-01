@@ -51,24 +51,24 @@ private:
 	FrameRange getFrameRange() const override;
 
 	void processAttributeSet(CO_OrCommand& curMacro, bool isRest);
-	void setStaticAttributes(Math::Point3d position, double radius, double length,
-		double orientation, CO_OrCommand& curMacro, bool isRest);
-	void setAttributes(Math::Point3d position, double orientation, double radius,
-		double length, CO_OrCommand& curMacro, double frameNo, bool isFirst);
+	void setStaticAttributes(const Math::Point3d position, const double radius, const double length,
+		const double orientation, CO_OrCommand& curMacro, const bool isRest);
+	void setAttributes(const Math::Point3d position, const double orientation,const double radius,
+		const double length, CO_OrCommand& curMacro, const double frameNo, const bool isFirst);
 
-	double getStaticChainRotation(bool isRest) const;
+	double getStaticChainRotation(const bool isRest) const;
 	double getChainRotation(const double frameNo) const;
 
 	void readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix);
 
 	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
-	BoneKeyframeData generateKeyframeData(double frameNo, bool isFirst);
+	BoneKeyframeData generateKeyframeData(const double frameNo, const bool isFirst);
 
-	bool isParentKeyframe(double frameNo);
+	bool isParentKeyframe(const double frameNo) const;
 	bool hasBoneParents() const;
 	bool hasFieldsOrientation() const;
 
-	bool isComplexTransform() {
+	bool isComplexTransform() const {
 		return m_freezeMatrixComplexity == MatrixComplexity::Complex
 			|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly;
 	}

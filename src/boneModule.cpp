@@ -128,7 +128,7 @@ void BoneModule::readjustSecondary()
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
-double BoneModule::getStaticChainRotation(bool isRest) const
+double BoneModule::getStaticChainRotation(const bool isRest) const
 {
 	const auto orientationKeyword = isRest
 		? QStringLiteral("restOrientation")
@@ -375,11 +375,9 @@ void BoneModule::readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::M
 	}
 }
 
-void BoneModule::setStaticAttributes(Math::Point3d position, double orientation,
-	double radius, double length, CO_OrCommand& curMacro, bool isRest)
+void BoneModule::setStaticAttributes(const Math::Point3d position, const double orientation,
+	const double radius, const double length, CO_OrCommand& curMacro, const bool isRest)
 {
-	clampValues(position);
-
 	FreezeManager* fm = getFreezeManagerPtr();
 
 	if (fm->isExperimentalMode())
@@ -414,8 +412,8 @@ void BoneModule::setStaticAttributes(Math::Point3d position, double orientation,
 	}
 }
 
-void BoneModule::setAttributes(Math::Point3d position, double orientation, double radius,
-	double length, CO_OrCommand& curMacro, double frameNo, bool isFirst)
+void BoneModule::setAttributes(const Math::Point3d position, const double orientation, const double radius,
+	const double length, CO_OrCommand& curMacro, const double frameNo, const bool isFirst)
 {
 	FreezeManager* fm = getFreezeManagerPtr();
 
@@ -552,7 +550,7 @@ FrameRange BoneModule::getFrameRange() const
 	return range;
 }
 
-BoneKeyframeData BoneModule::generateKeyframeData(double frameNo, bool isFirst)
+BoneKeyframeData BoneModule::generateKeyframeData(const double frameNo, const bool isFirst)
 {
 	BoneKeyframeData kfData;
 	//Check if there is a keyframe on the attributes
@@ -619,7 +617,7 @@ BoneKeyframeData BoneModule::generateKeyframeData(double frameNo, bool isFirst)
 	return kfData;
 }
 
-bool BoneModule::isParentKeyframe(double frameNo)
+bool BoneModule::isParentKeyframe(const double frameNo) const
 {
 	bool isKeyframe = false;
 
