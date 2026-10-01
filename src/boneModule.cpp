@@ -16,8 +16,8 @@ bool hasOffset(const MO_Node* node)
 	if (!node)
 		return false;
 
-	AT_Position2dAttr* offsetAttr = ::findAttribute<AT_Position2dAttr>(QStringLiteral("offset"), node);
-	AT_Position2dAttr* restOffsetAttr = ::findAttribute<AT_Position2dAttr>(QStringLiteral("restOffset"), node);
+	auto offsetAttr = ::findAttribute<AT_Position2dAttr>(QStringLiteral("offset"), node);
+	auto restOffsetAttr = ::findAttribute<AT_Position2dAttr>(QStringLiteral("restOffset"), node);
 
 	if (!offsetAttr || !restOffsetAttr)
 		return false;
@@ -116,7 +116,7 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 
 void BoneModule::readjustSecondary()
 {
-	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
+	auto curMacro = std::make_shared<CO_OrCommand>();
 
 	const Math::Matrix4x4 freezeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
 	setMatrixComplexity(defineMatrixComplexity(freezeMatrix, false));
@@ -222,7 +222,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	//OFFSET
 	Math::Point2d position;
 	positionAttr->getLocalValue(position);
-	Math::Point3d pos3d = Math::Point3d(position);
+	auto pos3d = Math::Point3d(position);
 	pos3d = fieldsChangeMatrix * pos3d;
 
 	if(!hasBoneParents() || !hasOffset(getModulePtr()))
@@ -239,7 +239,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	else
 		ogOglOrientation = fieldsToOgl(sm, ogOrientation);
 
-	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(ogOglOrientation);
+	auto rotationMatrix = Math::Matrix4x4().rotateDegrees(ogOglOrientation);
 	rotationMatrix = adjChangeMatrix * rotationMatrix;
 
 	double oglOrientation = getAngle2d(rotationMatrix.getTransform2d());
@@ -254,7 +254,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 	orientation = matchFullRotations(referenceAngle, orientation);
 
 	//RADIUS
-	Math::Point3d radius = Math::Point3d(radiusAttr->localValue(), 0, 0);
+	auto radius = Math::Point3d(radiusAttr->localValue(), 0, 0);
 
 	if(!isHasFieldsOrientation)
 		radius = adjChangeMatrix * radius;
@@ -294,7 +294,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, bool isRest)
 
 		//OFFSET
 		positionAttr->getValue(frameNo, position);
-		Math::Point3d pos3d = Math::Point3d(position);
+		pos3d = Math::Point3d(position);
 		pos3d = fieldsChangeMatrix * pos3d;
 
 		if (!hasBoneParents() || !hasOffset(getModulePtr()))
