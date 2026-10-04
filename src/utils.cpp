@@ -691,7 +691,22 @@ void printAttributes(AT_AttrList attributes)
 	}
 }
 
+static bool isAuxiliaryPort(MO_Port* port)
+{
+	//Already checked before that node() is not nullptr
+	MO_Node* node = port->node();
+	//TODO: there are most likely other cases where this should return true (e.g ogl controllers with no port 0 input)
+
+	//TODO: there must be a better way to get the port index
+	//port->id() unfortunately returns something different
+	const MO_Node::InPorts inPorts = node->getInPorts();
+	
+	if (node->keyword() == QLatin1String("DeformTransformOut") && inPorts.size() >= 2 && port == inPorts[1])
+	{
+		return true;
 	}
+
+	return false;
 }
 
 static void getAllChildren_internal(MO_Node* node, std::vector<MO_Node*>& children)
