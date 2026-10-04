@@ -177,6 +177,12 @@ void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const
 		out << "\t\tnode.getAttr(\"" << moduleName << "\", 1, \"" << attr.name << "\").setValueAt(" << attr.value << "," << attr.frameNo << ");\n";
 }
 
+void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const Point2dAttrData& attr)
+{
+	if (attr.isKeyframe)
+		out << "\t\tnode.getAttr(\"" << moduleName << "\", 1, \"" << attr.name << "\").setValueAt(Point2d(" << attr.value.x() << "," << attr.value.y() << ")," << attr.frameNo << ");\n";
+}
+
 
 void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const QuaternionAttrData& attr)
 {
