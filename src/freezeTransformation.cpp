@@ -25,11 +25,11 @@
 #include <iostream>
 #include <memory>
 
+
 ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::shared_ptr<FreezeManager> freezeManager)
 {
 	ModuleWrappers moduleWrappers;
 	moduleWrappers.reserve(nodes.size());
-
 
 	for (MO_Node* node : nodes)
 	{
@@ -154,6 +154,7 @@ void FreezeResponder::onActionFreezeTransformation()
 	const Math::Matrix4x4 freezeMatrix = freezeModule->getLocalMatrix(freezeManager->getSelFrame());
 
 	//Need to check the original matrix, before being converted to 2d inside freezeManager
+	
 	if (isScaleZero(freezeMatrix) || freezeMatrix.isIdentity())
 	{
 		//Either won't be able to invert freeze matrix, everything underneath is invisible,
@@ -161,7 +162,7 @@ void FreezeResponder::onActionFreezeTransformation()
 		return;
 	}
 
-	//It is important to use the freeze Modules actual matrix into account here, not the one without pivot values
+	//It is important to use the freeze Modules actual matrix here, not the one without pivot values
 	freezeManager->setMatrices(freezeMatrix, freezeModule->getModulePtr()->sceneMetrics());
 
 	if (!freezeManager->isExperimentalMode())
