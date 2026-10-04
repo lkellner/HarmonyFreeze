@@ -81,6 +81,7 @@ HEADERS += \
 	src/pegModule.h\
 	src/pkoModule.h\
 	src/freeformModule.h\
+	src/settings.h\
 
 
 
@@ -101,6 +102,10 @@ SOURCES += src/freezeTransformation.cpp\
 	src/pegModule.cpp\
 	src/pkoModule.cpp\
 	src/freeformModule.cpp\
+	src/settings.cpp\
+
+
+
 
 win32 {
 	LIBS += \
