@@ -4,4 +4,9 @@
 		shortcut="FREEZE_1"
 		slot="onActionFreezeTransformation" responder="FreezeResponder"
 		text="Freeze Transformation" />
+	<item id="Freeze 2"
+		shortcut="FREEZE_2"
+		slot="onActionShowSettings" responder="FreezeResponder"
+		text="Show Settings" />
+
 </menu>

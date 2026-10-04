@@ -2,6 +2,8 @@
 <shortcuts>
  <category condition="not hasBasicPluginsOnly" id="HarmonyFreeze" text="HarmonyFreeze">
   <shortcut id="FREEZE_1" longDesc="Freeze Transformation" order="256" responder="FreezeResponder" slot="onActionFreezeTransformation()" text="Freeze Transformation" />
+<shortcut id="FREEZE_2" longDesc="Show Settings" order="256" responder="FreezeResponder" slot="onActionShowSettings()" text="Show Settings" />
+
 
  </category>
 </shortcuts>

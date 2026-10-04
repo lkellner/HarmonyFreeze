@@ -1,5 +1,6 @@
 #include "freezeTransformation.h"
 #include "utils.h"
+#include "dialog.h"
 
 #include <CelCore/Cel/CEL_Cel.h>
 #include <CelCore/Cel/CEL_PixmapRGBA16.h>
@@ -101,6 +102,13 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 
 	return moduleWrappers;
 }
+
+
+void FreezeResponder::onActionShowSettings()
+{
+	showDialog();
+}
+
 
 void FreezeResponder::onActionFreezeTransformation()
 {
@@ -245,7 +253,7 @@ void FreezeResponder::onActionFreezeTransformation()
 }
 
 constexpr char copyrightHeader[] = "===== HarmonyFreeze - "
-"v0.5.1 \n"
+"v0.5.2 \n"
 "Copyright 2026 Laura Kellner <laura@roquetto.com>. All rights reserved. =====\n"
 " SPDX - License - Identifier: GPL-3.0-only\n"
 "\n"
