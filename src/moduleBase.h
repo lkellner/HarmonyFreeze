@@ -24,6 +24,7 @@ enum class ModuleType
 	CURVE_OFFSET,
 	CURVE,
 	PKO,
+	FREEFORM,
 };
 
 

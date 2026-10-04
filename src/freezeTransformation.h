@@ -10,6 +10,7 @@
 #include "curveModule.h"
 #include "drawingTransformationModule.h"
 #include "elementModule.h"
+#include "freeformModule.h"
 #include "offsetModule.h"
 #include "oglControllerModule.h"
 #include "pegModule.h"
