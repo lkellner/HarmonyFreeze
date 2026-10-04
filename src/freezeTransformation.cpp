@@ -83,6 +83,11 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 			moduleWrappers.push_back(std::make_unique <OglControllerModule>(freezeManager, node->toModule(), ModuleType::OGL_CONTROLLER));
 		}
 
+		if (node->keyword() == QLatin1String("DeformTransformOut"))
+		{
+			moduleWrappers.push_back(std::make_unique <PkoModule>(freezeManager, node->toModule(), ModuleType::PKO));
+		}
+
 		if (!moduleWrappers.empty())
 		{
 			freezeManager->updateFrameRange(moduleWrappers.back()->getFrameRange());
@@ -130,6 +135,7 @@ void FreezeResponder::onActionFreezeTransformation()
 		return;
 	}
 	freezeManager->setFreezePegPtr(freezeModule->getModulePtr());
+	freezeManager->updateFrameRange(freezeModule->getFrameRange());
 
 	const std::vector<MO_Node*> children = getAllChildren(freezeModule->getModulePtr());
 

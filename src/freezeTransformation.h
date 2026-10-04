@@ -13,6 +13,7 @@
 #include "offsetModule.h"
 #include "oglControllerModule.h"
 #include "pegModule.h"
+#include "pkoModule.h"
 #include "staticTransformationModule.h"
 #include "utils.h"
 
