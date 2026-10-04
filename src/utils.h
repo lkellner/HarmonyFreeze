@@ -228,4 +228,14 @@ T* findSubAttribute(const QString& parentKeyword, const QString& keyword, MO_Nod
 int getElementId(MO_Module* modulePtr);
 void printAttributes(AT_AttrList attributes);
 
+
+constexpr bool supportsKeysRange()
+{
+#if SDK_MAJOR_VERSION > 25
+return true;
+#else
+return false;
+#endif
+
+}
 #endif
