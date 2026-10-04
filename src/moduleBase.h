@@ -25,6 +25,15 @@ enum class ModuleType
 	CURVE,
 };
 
+
+enum class KeyframeState : uint8_t
+{
+	Keyframe,
+	PossibleKeyframe,
+	NoKeyframe
+};
+
+
 class ModuleBase
 {
 public:
