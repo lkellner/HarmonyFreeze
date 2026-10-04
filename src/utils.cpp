@@ -709,7 +709,8 @@ static bool isAuxiliaryPort(MO_Port* port)
 	return false;
 }
 
-static void getAllChildren_internal(MO_Node* node, std::vector<MO_Node*>& children)
+
+static void getAllChildren_internal(MO_Node* node, std::vector<MO_Node*>& children, std::vector<MO_Node*>& noRecChildren)
 {
 	std::vector<MO_Port*> outPorts = node->getOutPorts();
 	for (auto& port : outPorts)
@@ -722,12 +723,22 @@ static void getAllChildren_internal(MO_Node* node, std::vector<MO_Node*>& childr
 
 		for (auto& dstPort : dstPorts)
 		{
-			if (dstPort->node() && dstPort->node()->toModule()
-				&& find(children.begin(), children.end(), dstPort->node()->toModule()) == children.end())
+			if (!dstPort->node() || !dstPort->node()->toModule())
+				continue;
+
+			//Adding nodes reached through an auxiliary port to their own vector first
+			//as they might still be reached via their main port
+			if (isAuxiliaryPort(dstPort))
+			{
+				noRecChildren.push_back(dstPort->node()->toModule());
+				continue;
+			}
+
+			if (find(children.begin(), children.end(), dstPort->node()->toModule()) == children.end())
 			{
 				children.push_back(dstPort->node()->toModule());
 
-				getAllChildren_internal(dstPort->node(), children);
+				getAllChildren_internal(dstPort->node(), children, noRecChildren);
 			}
 		}
 	}
@@ -736,7 +747,16 @@ static void getAllChildren_internal(MO_Node* node, std::vector<MO_Node*>& childr
 std::vector<MO_Node*> getAllChildren(MO_Node* node)
 {
 	std::vector<MO_Node*> children;
-	getAllChildren_internal(node, children);
+	std::vector<MO_Node*> noRecChildren;
+	getAllChildren_internal(node, children, noRecChildren);
+
+	for (auto& child : noRecChildren)
+	{
+		//Including no recursive children in the main vector if they aren't already there
+		if (find(children.begin(), children.end(), child) == children.end())
+			children.push_back(child);
+	}
+
 	return children;
 }
 
