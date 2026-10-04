@@ -6,8 +6,6 @@ INCLUDEPATH += .
 
 CONFIG += c++2a
 
-QMAKE_CXXFLAGS += -Wswitch
-
 QT += core gui xml widgets
 
 greaterThan(QT_MAJOR_VERSION, 5) {
@@ -43,6 +41,8 @@ macx {
 	QMAKE_LFLAGS += '-L$$SDK_LIB'
 	QMAKE_LFLAGS += '-L$$SDK_EXT_LIB'
 	QMAKE_LFLAGS_SHLIB += '-e PLUG_Init'
+	QMAKE_CXXFLAGS += -Wswitch
+
 
 	LIBS += \
 		-lToonBoomBaseCore \
