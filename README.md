@@ -425,6 +425,16 @@ Limitations for Deformers can only arise from their “Region of Influence” at
 + Currently, region of influence paths defined by “Shaped” cannot be transformed
 
 
+## Point Kinematic Outputs
+
+Point Kinematic Outputs work best with translations, rotations and uniform scales. For skews and non-uniform scales with an animated Deformer on top, the final position might differ slightly, especially when the Point Kinematic Output is not located closely to the Deformer. It mimics changes that would be observed in images places underneath an animated Deformer as well and is most likely due to changes in the triangulation of the deformed area.
+
+When Point Kinematic Outputs have inputs in their auxiliary port, these inputs are taken into account when calculating the new position. Please note that the transformation is not completely linear in these cases and avoid using cloned Point Kinematic Deformers/Kinematic Deformers with shared expressions.
+
+There might be a Toon Boom Harmony bug when using “2D Path” attributes instead of “Separate“ for the Point Kinematic Output’s pivots, which means they are not always properly adjusted. The issue has been reported to Toon Boom and is currently under investigation.
+
+Further restrictions arise from using older Harmony versions with the auxiliary port’s frameRange not always being properly detected in Harmony 24 and 25 as well as keyframes for pivots set to “2D path“ not being properly discovered in Harmony 24, 25.0, 25.1.
+
 
 ## Static Transformations
 
