@@ -308,8 +308,8 @@ Select the temporary Freeze Peg, run HarmonyFreeze, and once done, reconnect the
 # Settings
 
 
-
-After running the plugin at least once, settings are usually stored under
+You can open the settings' pop-up dialog via ```Animation->HarmonyFreeze->Show Settings```, or alternatively, 
+after running the plugin at least once, you can open the settings file directly which is usually stored under
 
 `Users/<username>/AppData/Roaming/HarmonyFreeze` on Windows and `/Users/<username>/.config/HarmonyFreeze` on Mac. (Make sure hidden folders are visible to find it.)
 
