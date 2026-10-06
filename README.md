@@ -127,6 +127,7 @@ Navigate to the folder where your HarmonyFreeze source code is located and run t
 mkdir build
 cd build
 set HARMONY_SDK_ROOT=<path-to-SDK-folder>
+set SDK_MAJOR_VERSION_ENV=<major-version-of-Toon-Boom-Harmony>
 set QTDIR=<path-to-qmake.exe>
 <path-to-qmake.exe>\qmake.exe> ..
 nmake
@@ -152,6 +153,7 @@ cd build
 export HARMONY_SDK_ROOT=<path-to-SDK-folder>
 export QTDIR=<path-to-QT>
 export TB_ROOT=<path-to-Toon-Boom-Harmony>
+export SDK_MAJOR_VERSION_ENV=<major-version-of-Toon-Boom-Harmony>
 <path-to-qmake>/qmake ..
 make
 ```
@@ -166,6 +168,7 @@ cd build
 export HARMONY_SDK_ROOT=/Users/laurakellner/Dev/harmonySDK/25.0/harmony-full-25.0.0.23967-macosx_sdk
 export QTDIR=/Users/laurakellner/Dev/harmonySDK/25.0/harmony-full-25.0.0.23967-macosx_sdk/qt
 export TB_ROOT='/Applications/Toon\ Boom\ Harmony\ 25\ Premium/Harmony\ 25\ Premium.app'
+export SDK_MAJOR_VERSION_ENV=25
 /Users/laurakellner/Dev/harmonySDK/25.0/harmony-full-25.0.0.23967-macosx_sdk/qt/bin/qmake ..
 make
 ```
