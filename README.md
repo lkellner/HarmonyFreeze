@@ -472,11 +472,10 @@ Transformations will be orthographically projected into 2D space.
 # Roadmap
 
 The next steps in this project are to add support for
-+ Point Kinematic Outputs
 + Bone Deformers
-+ Free Form Deformers
++ Shape Aware Deformers and
++ Quadmaps.
 
-as well as creating a UI for the settings.
 
 
 
