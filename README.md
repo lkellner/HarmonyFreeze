@@ -15,11 +15,11 @@ HarmonyFreeze is a Toon Boom Harmony plugin that lets you transform rigs or part
   - [Windows](#windows-1)
   - [Mac](#mac-1)
 - [Usage](#usage)
+- [Best Practices](#best-practices)
   - [Drawing Pivots](#drawing-pivots)
   - [Animated Rigs and Stop-Motion Keyframes](#animated-rigs-and-stop-motion-keyframes)
   - [Animated Rigs with Motion Keyframes](#animated-rigs-with-motion-keyframes)
   - [Cloned Drawings and Shared Functions](#cloned-drawings-and-shared-functions)
-- [Best Practices](#best-practices)
 - [Settings](#settings)
   - [ExperimentalMode](#experimentalmode)
   - [2dMode](#2dmode)
@@ -73,7 +73,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
  ## Windows
 
-Installers are available for Harmony 24.0.2 and 25.2. Download the one matching your version of Harmony.
+Installers are available for Harmony 24.0.2, 25.1, 25.2 and 27.0.0. Download the one matching your version of Harmony.
 
 The installer will attempt to automatically detect your Toon Boom Harmony directory, e.g. `”C:\Program Files (x86)\Toon Boom Animation\Toon Boom Harmony 24 Premium”`.
 
