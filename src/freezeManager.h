@@ -47,9 +47,9 @@ public:
 	void setFreezePegPtr(MO_Module* freezePegPtr);
 	MO_Module* getFreezePegPtr() { return m_freezePegPtr; };
 	void setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* sceneMetrics);
-	Math::Matrix4x4 getFreezeMatrix() { return m_freezeMatrix; };
-	Math::Matrix4x4 getOffsetMatrix() { return m_offsetMatrix; };
-	Math::Matrix4x4 getUnitOffsetScaleMatrix() { return m_unitOffsetScaleMatrix; };
+	Math::Matrix4x4 getFreezeMatrix() const { return m_freezeMatrix; };
+	Math::Matrix4x4 getOffsetMatrix() const { return m_offsetMatrix; };
+	Math::Matrix4x4 getUnitOffsetScaleMatrix() const { return m_unitOffsetScaleMatrix; };
 
 
 	FrameRange getFrameRange() const;
