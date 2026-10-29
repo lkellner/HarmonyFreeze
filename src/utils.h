@@ -212,7 +212,7 @@ QString getLayerAttr(MO_Module* modulePtr);
 AT_AttrList getAttributeList(const MO_Node* node);
 
 template <typename T>
-T* findAttribute(const QString& keyword, MO_Node* node)
+T* findAttribute(const QString& keyword, const MO_Node* node)
 {
 	if (!node)
 		return nullptr;
