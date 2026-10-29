@@ -15,6 +15,7 @@
 #include "oglControllerModule.h"
 #include "pegModule.h"
 #include "pkoModule.h"
+#include "boneModule.h"
 #include "staticTransformationModule.h"
 #include "utils.h"
 

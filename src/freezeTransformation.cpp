@@ -94,6 +94,11 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 			moduleWrappers.push_back(std::make_unique <FreeformModule>(freezeManager, node->toModule(), ModuleType::FREEFORM));
 		}
 
+		if (node->keyword() == QLatin1String("BendyBoneModule"))
+		{
+			moduleWrappers.push_back(std::make_unique <BoneModule>(freezeManager, node->toModule(), ModuleType::BONE));
+		}
+
 		if (!moduleWrappers.empty())
 		{
 			freezeManager->updateFrameRange(moduleWrappers.back()->getFrameRange());
