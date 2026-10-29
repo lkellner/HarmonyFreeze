@@ -55,8 +55,6 @@ private:
 	double getStaticChainRotation(const bool isRest) const;
 	double getChainRotation(const double frameNo) const;
 
-	//void readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix) const;
-
 	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 	BoneKeyframeData generateKeyframeData(const double frameNo, const bool isFirst) const;
 
