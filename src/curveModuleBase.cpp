@@ -313,8 +313,6 @@ void CurveModuleBase::initAttributes()
 			m_offsetAttr = dynamic_cast<AT_Position2dAttr*>(a._pAttr);
 		else if (kw == QLatin1String("restingOffset"))
 			m_restingOffsetAttr = dynamic_cast<AT_Position2dAttr*>(a._pAttr);
-		else if (kw == QLatin1String("restingOffset"))
-			m_restingOffsetAttr = dynamic_cast<AT_Position2dAttr*>(a._pAttr);
 		else if (kw == QLatin1String("localReferential") && getModuleType() != ModuleType::CURVE_OFFSET)
 		{
 			const auto *attr = dynamic_cast<const AT_BoolAttr*>(a._pAttr);
