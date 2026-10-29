@@ -9,6 +9,7 @@
 #define CURVEMODULE_H
 
 #include "curveModuleBase.h"
+#include "regionOfInfluence.h"
 #include "utils.h"
 
 #include <SceneCore/attribute/AT_BoolAttr.h>
@@ -37,8 +38,8 @@ private:
 	FrameRange getFrameRange() const override;
 
 	void readjustBezierHandles(CO_OrCommand& curMacro, Math::Matrix4x4 matrix);
-	void readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix);
 
+	std::unique_ptr<RegionOfInfluence> m_regionOfInfluence;
 
 	AT_DoubleAttr* m_restLength0Attr;
 	AT_DoubleAttr* m_restLength1Attr;
@@ -49,12 +50,6 @@ private:
 	AT_DoubleAttr* m_length1Attr;
 	AT_DoubleAttr* m_orientation0Attr;
 	AT_DoubleAttr* m_orientation1Attr;
-
-	AT_DoubleAttr* m_longitudinalRadiusAttr;
-	AT_DoubleAttr* m_longitudinalRadiusBeginAttr;
-	AT_DoubleAttr* m_transversalRadiusAttr;
-	AT_DoubleAttr* m_transversalRadiusRightAttr;
-	AT_DoubleAttr* m_influenceFadeRadiusAttr;
 
 	std::vector<BezierHandle> m_bezierHandles;
 };

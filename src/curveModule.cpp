@@ -22,11 +22,6 @@ CurveModule::CurveModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module
 	, m_length1Attr(nullptr)
 	, m_orientation0Attr(nullptr)
 	, m_orientation1Attr(nullptr)
-	, m_longitudinalRadiusAttr(nullptr)
-	, m_longitudinalRadiusBeginAttr(nullptr)
-	, m_transversalRadiusAttr(nullptr)
-	, m_transversalRadiusRightAttr(nullptr)
-	, m_influenceFadeRadiusAttr(nullptr)
 {
 	loadAttributes();
 
@@ -149,12 +144,7 @@ void CurveModule::loadAttributes()
 			AttrBinding { "restingOrientation0", &CurveModule::m_restingOrientation0Attr },
 			AttrBinding { "restingOrientation1", &CurveModule::m_restingOrientation1Attr },
 			AttrBinding { "orientation0", &CurveModule::m_orientation0Attr },
-			AttrBinding { "orientation1", &CurveModule::m_orientation1Attr },
-			AttrBinding { "transversalRadius", &CurveModule::m_transversalRadiusAttr },
-			AttrBinding { "transversalRadiusRight", &CurveModule::m_transversalRadiusRightAttr },
-			AttrBinding { "longitudinalRadiusBegin", &CurveModule::m_longitudinalRadiusBeginAttr },
-			AttrBinding { "longitudinalRadius", &CurveModule::m_longitudinalRadiusAttr },
-			AttrBinding { "influenceFade", &CurveModule::m_influenceFadeRadiusAttr }
+			AttrBinding { "orientation1", &CurveModule::m_orientation1Attr }
 	);
 
 	for (const AT_AttrDesc & desc : std::as_const(attributes))
@@ -198,16 +188,8 @@ void CurveModule::loadAttributes()
 		throw std::runtime_error("missing attribute: 'orientation0' for " + modulePtr->qualifiedName().toStdString());
 	if (!m_orientation1Attr)
 		throw std::runtime_error("missing attribute: 'orientation1' for " + modulePtr->qualifiedName().toStdString());
-	if (!m_transversalRadiusAttr)
-		throw std::runtime_error("missing attribute: 'transversalRadius' for " + modulePtr->qualifiedName().toStdString());
-	if (!m_transversalRadiusRightAttr)
-		throw std::runtime_error("missing attribute: 'transversalRadiusRight' for " + modulePtr->qualifiedName().toStdString());
-	if (!m_longitudinalRadiusBeginAttr)
-		throw std::runtime_error("missing attribute: 'longitudinalRadiusBegin' for " + modulePtr->qualifiedName().toStdString());
-	if (!m_longitudinalRadiusAttr)
-		throw std::runtime_error("missing attribute: 'longitudinalRadius' for " + modulePtr->qualifiedName().toStdString());
-	if (!m_influenceFadeRadiusAttr)
-		throw std::runtime_error("missing attribute: 'influenceFade' for " + modulePtr->qualifiedName().toStdString());
+
+	m_regionOfInfluence = std::make_unique<RegionOfInfluence>(getFreezeManager(), modulePtr);
 }
 
 void CurveModule::readjustSecondary()
@@ -234,44 +216,10 @@ void CurveModule::readjustSecondary()
 
 	readjustBezierHandles(*curMacro, changeMatrix);
 	readjustOffsets(*curMacro, changeMatrix);
-	readjustRegionOfInfluence(*curMacro, changeMatrix);
+	m_regionOfInfluence->readjustSecondary(*curMacro, changeMatrix);
 
 	fm->addCommand(std::move(curMacro));
 }
-
-void CurveModule::readjustRegionOfInfluence(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix)
-{
-	Math::Point3d scale = getScale(matrix);
-	double scaleFactor = (abs(scale.x()) + abs(scale.y())) / 2;
-
-	double transversalRadius = m_transversalRadiusAttr->localValue() * scaleFactor;
-	double transversalRadiusRight = m_transversalRadiusRightAttr->localValue() * scaleFactor;
-	double longitudinalRadiusBegin = m_longitudinalRadiusBeginAttr->localValue() * scaleFactor;
-	double longitudinalRadius = m_longitudinalRadiusAttr->localValue() * scaleFactor;
-	double influenceFadeRadius = m_influenceFadeRadiusAttr->localValue() * scaleFactor;
-
-
-	FreezeManager* fm = getFreezeManagerPtr();
-
-	if (fm->isExperimentalMode())
-	{
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_transversalRadiusAttr, transversalRadius));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_transversalRadiusRightAttr, transversalRadiusRight));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_longitudinalRadiusBeginAttr, longitudinalRadiusBegin));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_longitudinalRadiusAttr, longitudinalRadius));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_influenceFadeRadiusAttr, influenceFadeRadius));
-	}
-	else
-	{
-		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ QLatin1String("transversalradius"), transversalRadius},
-			StaticAttrData{ QLatin1String("transversalradiusright"), transversalRadiusRight },
-			StaticAttrData{ QLatin1String("longitudinalradius"), longitudinalRadius },
-			StaticAttrData{ QLatin1String("longitudinalradiusbegin"), longitudinalRadiusBegin },
-			StaticAttrData{ QLatin1String("influencefade"), influenceFadeRadius });
-	}
-}
-
 
 void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, Math::Matrix4x4 matrix)
 {
