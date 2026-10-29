@@ -34,10 +34,12 @@ HarmonyFreeze is a Toon Boom Harmony plugin that lets you transform rigs or part
   - [Pegs](#pegs)
   - [Elements](#elements)
   - [Curve and Envelope Deformers](#curve-and-envelope-deformers)
+  - [Bone Deformers](#bone-deformers)
   - [Free Form Deformers](#free-form-deformers)
   - [Point Kinematic Outputs](#point-kinematic-outputs)
   - [Static Transformations](#static-transformations)
   - [OGL Controllers](#ogl-controllers)
+  - [2D Path Attributes in earlier Harmony versions](#using-2d-path-attributes-in-earlier-harmony-versions)
   - [Additional limitations (2D Mode off)](#additional-limitations-arising-from-switching-off-2d-mode-in-harmonyfreeze)
 - [Roadmap](#roadmap)
 - [Acknowledgements](#acknowledgements)
@@ -75,7 +77,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 + Elements created with non-default "Scene Settings" can now be processed properly.
   
-+ Point Kinematic Outputs and Free Form Deformers are now supported.
++ Point Kinematic Outputs, Bone Deformers and Free Form Deformers are now supported.
   
 + Settings can now be changed via a pop-up dialog.
 
@@ -427,11 +429,16 @@ Limitations for Deformers can only arise from their “Region of Influence” at
 + Currently, region of influence paths defined by “Shaped” cannot be transformed
 
 
+## Bone Deformers
+
+When the "Number of Units" in the "Scene Settings" differs between the "X" and the "Y" coordinates, bones that are attached to other bones can’t be processed entirely accurately. This is due to their length changing slightly when rotating, tracing a lemon-shaped path, which hasn’t been entirely possible to predict as the transformation is no longer completely linear.
+
+Additionally bones whose "Offset" attribute is set to "2D Path" and a value that differs from (0,0) aren’t always properly deformed in earlier versions of Harmony (H24, H25.0, H25.1).
+
+
 ## Free Form Deformers
 
 It was decided to not change the rotation attribute for now as it would only be effected by skews and non-uniform scales. However, these would also lead to modified non-uniform scale and skew attributes, which the freeform module is not able to represent. The resulting transformation did therefore not lead to a significantly closer match than keeping the original value.
-
-Apart from that, keyframes for trackers set to “2D path“ aren’t being properly discovered in Harmony 24, 25.0 and 25.1.
 
 ## Point Kinematic Outputs
 
@@ -441,7 +448,7 @@ When Point Kinematic Outputs have inputs in their auxiliary port, these inputs a
 
 There might be a Toon Boom Harmony bug when using “2D Path” attributes instead of “Separate“ for the Point Kinematic Output’s pivots, which means they are not always properly adjusted. The issue has been reported to Toon Boom and is currently under investigation.
 
-Further restrictions arise from using older Harmony versions with the auxiliary port’s frameRange not always being properly detected in Harmony 24 and 25 as well as, similar to Point Kinematic Outputs, keyframes for pivots set to “2D path“ not being properly discovered in Harmony 24, 25.0 and 25.1.
+Further restrictions arise from using older Harmony versions with the auxiliary port’s frameRange not always being properly detected in Harmony 24 and 25.
 
 
 ## Static Transformations
@@ -456,6 +463,10 @@ Static Transformation nodes without “Invert transformation” selected, or nod
 
 OGL Controllers only contain a uniform scale and no rotation. By default, transformations are passed on to the incoming drawings. When, however, this option isn’t selected or when this is not possible, the OGL Controller’s attributes will need to be used, which for rotations, non-uniform scales or skews may not always be able to recreate the transformation precisely.
 
+
+## Using 2D Path attributes in earlier Harmony versions 
+
+When choosing to use the "2D Path" option instead of "Separate" for attributes in modules like Point Kinematic Outputs or Free Form Deformers, keyframes aren't always properly discovered in Harmony 24, 25.0 and 25.1.
 
 
  
@@ -480,7 +491,7 @@ While the Static Transformation node does include three skew parameters, the thi
 
 
 
-## Curve/Envelope Deformers and Elements
+## Point Kinematic Outputs, Deformers and Elements
 
 Transformations will be orthographically projected into 2D space.
 
@@ -490,7 +501,6 @@ Transformations will be orthographically projected into 2D space.
 # Roadmap
 
 The next steps in this project are to add support for
-+ Bone Deformers
 + Shape Aware Deformers and
 + Quadmaps.
 
