@@ -80,6 +80,8 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 	, m_lengthAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("length")))
 	, m_orientationAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("orientation")))
 {
+	m_regionOfInfluence = std::make_unique<RegionOfInfluence>(getFreezeManager(), modulePtr);
+
 	if (!m_restOffsetAttr)
 		throw std::runtime_error("missing attribute: 'm_restOffsetAttr' for " + modulePtr->qualifiedName().toStdString());
 	if (!m_restRadiusAttr)
@@ -96,8 +98,8 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		throw std::runtime_error("missing attribute: 'm_lengthAttr' for " + modulePtr->qualifiedName().toStdString());
 	if (!m_orientationAttr)
 		throw std::runtime_error("missing attribute: 'm_orientationAttr' for " + modulePtr->qualifiedName().toStdString());
-	
-	m_regionOfInfluence = std::make_unique<RegionOfInfluence>(getFreezeManager(), modulePtr);
+	if (!m_regionOfInfluence)
+		throw std::runtime_error("missing attribute set: 'm_regionOfInfluence' for " + modulePtr->qualifiedName().toStdString());
 }
 
 void BoneModule::readjustSecondary()

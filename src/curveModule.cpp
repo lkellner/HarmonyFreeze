@@ -172,6 +172,8 @@ void CurveModule::loadAttributes()
 
 	MO_Module* modulePtr = getModulePtr();
 
+	m_regionOfInfluence = std::make_unique<RegionOfInfluence>(getFreezeManager(), modulePtr);
+
 	if (!m_restLength0Attr)
 		throw std::runtime_error("missing attribute: 'restLength0' for " + modulePtr->qualifiedName().toStdString());
 	if (!m_restLength1Attr)
@@ -188,8 +190,8 @@ void CurveModule::loadAttributes()
 		throw std::runtime_error("missing attribute: 'orientation0' for " + modulePtr->qualifiedName().toStdString());
 	if (!m_orientation1Attr)
 		throw std::runtime_error("missing attribute: 'orientation1' for " + modulePtr->qualifiedName().toStdString());
-
-	m_regionOfInfluence = std::make_unique<RegionOfInfluence>(getFreezeManager(), modulePtr);
+	if (!m_regionOfInfluence)
+		throw std::runtime_error("missing attribute set: 'm_regionOfInfluence' for " + modulePtr->qualifiedName().toStdString());	
 }
 
 void CurveModule::readjustSecondary()
