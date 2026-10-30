@@ -38,7 +38,8 @@ void DrawingTransformationModule::processPivotAttribute(CO_OrCommand& curMacro)
 		&& curPivot == Math::Point3d()
 		&& getFrameRange().end == -1
 		&& getStaticLocalMatrixNoPivot().isIdentity()
-		&& !canAnimate->localValue())
+		&& canAnimate
+		&&!canAnimate->localValue())
 	{
 		return;
 	}
