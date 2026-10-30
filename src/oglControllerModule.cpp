@@ -50,13 +50,11 @@ Math::Matrix4x4 OglControllerModule::getLocalMatrix(const double frameNo) const
 {
 	Math::Point3d position;
 
-	if (m_positionAttr)
-		m_positionAttr->getValue(frameNo, position);
+	m_positionAttr->getValue(frameNo, position);
 
 	double size = 1.0;
 
-	if (m_sizeAttr)
-		size = m_sizeAttr->value(frameNo);
+	size = m_sizeAttr->value(frameNo);
 
 	return constructLocalMatrix(position, size);
 }
@@ -389,79 +387,71 @@ FrameRange OglControllerModule::getFrameRange() const
 	FrameRange range;
 
 	int key;
-	if (m_positionAttr)
-	{
-		if (m_positionAttr->separateX()->getNextKey(0, &key))
-			updateFrameRange(range, key);
 
-		if (m_positionAttr->separateX()->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
+	if (m_positionAttr->separateX()->getNextKey(0, &key))
+		updateFrameRange(range, key);
 
-		if (m_positionAttr->separateY()->getNextKey(0, &key))
-			updateFrameRange(range, key);
+	if (m_positionAttr->separateX()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
-		if (m_positionAttr->separateY()->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
+	if (m_positionAttr->separateY()->getNextKey(0, &key))
+		updateFrameRange(range, key);
 
-		if (m_positionAttr->separateZ()->getNextKey(0, &key))
-			updateFrameRange(range, key);
+	if (m_positionAttr->separateY()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
-		if (m_positionAttr->separateZ()->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
+	if (m_positionAttr->separateZ()->getNextKey(0, &key))
+		updateFrameRange(range, key);
 
-		if (m_positionAttr->path3D()->getNextKey(0, &key))
-			updateFrameRange(range, key);
+	if (m_positionAttr->separateZ()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
-		if (m_positionAttr->path3D()->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
-	}
+	if (m_positionAttr->path3D()->getNextKey(0, &key))
+		updateFrameRange(range, key);
 
-	if (m_textPositionAttr)
-	{
-		if (m_textPositionAttr->separateX()->getNextKey(0, &key))
-			updateFrameRange(range, key);
+	if (m_positionAttr->path3D()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
-		if (m_textPositionAttr->separateX()->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
 
-		if (m_textPositionAttr->separateY()->getNextKey(0, &key))
-			updateFrameRange(range, key);
+	if (m_textPositionAttr->separateX()->getNextKey(0, &key))
+		updateFrameRange(range, key);
 
-		if (m_textPositionAttr->separateY()->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
+	if (m_textPositionAttr->separateX()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
-		if (m_textPositionAttr->separateZ()->getNextKey(0, &key))
-			updateFrameRange(range, key);
+	if (m_textPositionAttr->separateY()->getNextKey(0, &key))
+		updateFrameRange(range, key);
 
-		if (m_textPositionAttr->separateZ()->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
+	if (m_textPositionAttr->separateY()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
-		if (m_textPositionAttr->path3D()->getNextKey(0, &key))
-			updateFrameRange(range, key);
+	if (m_textPositionAttr->separateZ()->getNextKey(0, &key))
+		updateFrameRange(range, key);
 
-		if (m_textPositionAttr->path3D()->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
-	}
+	if (m_textPositionAttr->separateZ()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
+
+	if (m_textPositionAttr->path3D()->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_textPositionAttr->path3D()->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
 
 	//Size
-	if (m_sizeAttr)
-	{
-		if (m_sizeAttr->getNextKey(0, &key))
-			updateFrameRange(range, key);
 
-		if (m_sizeAttr->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
-	}
+	if (m_sizeAttr->getNextKey(0, &key))
+		updateFrameRange(range, key);
 
-	if (m_textSizeAttr)
-	{
-		if (m_textSizeAttr->getNextKey(0, &key))
-			updateFrameRange(range, key);
+	if (m_sizeAttr->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
-		if (m_textSizeAttr->getPrevKey(INT_MAX, &key))
-			updateFrameRange(range, key);
-	}
+
+	if (m_textSizeAttr->getNextKey(0, &key))
+		updateFrameRange(range, key);
+
+	if (m_textSizeAttr->getPrevKey(INT_MAX, &key))
+		updateFrameRange(range, key);
 
 	return range;
 }
