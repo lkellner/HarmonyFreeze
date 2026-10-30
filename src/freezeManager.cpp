@@ -211,7 +211,7 @@ void FreezeManager::initializeFileJS()
 	}
 
 	out << "function setAttr()\n{\n";
-	out << "\tscene.beginUndoRedoAccum(\"freeze pegs\"); \n";
+	out << "\tscene.beginUndoRedoAccum(\"Freeze Transformation\"); \n";
 }
 
 
