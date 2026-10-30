@@ -57,7 +57,6 @@ private:
 	bool hasComplexPort1Parent() const;
 	bool hasNoParentKeyframe(double frameNo) const;
 	bool isComplexTransform() const { return m_freezeMatrixComplexity != MatrixComplexity::Simple; } //This is different from curve module
-	void setComplexTransform(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 
 	AT_Position2dAttr* m_pivot01Attr;
 	AT_Position2dAttr* m_pivot02Attr;

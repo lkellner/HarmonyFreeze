@@ -153,7 +153,7 @@ Math::Matrix4x4 PkoModule::calculateChangeMatrix(double frameNo) const
 
 void PkoModule::readjustSecondary()
 {
-	setComplexTransform(defineMatrixComplexity(getFreezeManagerPtr()->getFreezeMatrix(), false));
+	m_freezeMatrixComplexity = getFreezeManagerPtr()->getMatrixComplexity(false);
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 

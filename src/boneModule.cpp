@@ -105,7 +105,7 @@ void BoneModule::readjustSecondary()
 	auto curMacro = std::make_shared<CO_OrCommand>();
 
 	const Math::Matrix4x4 freezeMatrix = getFreezeManagerPtr()->getFreezeMatrix();
-	setMatrixComplexity(defineMatrixComplexity(freezeMatrix, false));
+	m_freezeMatrixComplexity = getFreezeManagerPtr()->getMatrixComplexity(false);
 
 	processAttributeSet(*curMacro, true);
 	processAttributeSet(*curMacro, false);

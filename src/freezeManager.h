@@ -50,6 +50,7 @@ public:
 	Math::Matrix4x4 getFreezeMatrix() const { return m_freezeMatrix; };
 	Math::Matrix4x4 getOffsetMatrix() const { return m_offsetMatrix; };
 	Math::Matrix4x4 getUnitOffsetScaleMatrix() const { return m_unitOffsetScaleMatrix; };
+	MatrixComplexity getMatrixComplexity(bool is3D) const;
 
 
 	FrameRange getFrameRange() const;
@@ -116,6 +117,9 @@ private:
 	Math::Matrix4x4 m_freezeMatrix;
 	Math::Matrix4x4 m_offsetMatrix;
 	Math::Matrix4x4 m_unitOffsetScaleMatrix;
+
+	MatrixComplexity m_freezeMatrixComplexity2D;
+	MatrixComplexity m_freezeMatrixComplexity3D;
 
 	MO_Module* m_freezePegPtr;
 

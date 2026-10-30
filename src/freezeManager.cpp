@@ -249,6 +249,11 @@ void FreezeManager::finalizeFileJS()
 	scriptUI->callFunctionInFile(filepath, QLatin1String("setAttr"), false);
 }
 
+MatrixComplexity FreezeManager::getMatrixComplexity(bool is3D) const
+{
+	return is3D ? m_freezeMatrixComplexity3D : m_freezeMatrixComplexity2D;
+}
+
 
 void FreezeManager::setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* sceneMetrics)
 {
@@ -282,6 +287,9 @@ void FreezeManager::setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* s
 	const double unitOffsetScaleFactor = defaultXUnits  * sceneMetrics->designFieldChartY() / sceneMetrics->designFieldChartX() / defaultYUnits;
 
 	m_unitOffsetScaleMatrix = Math::Matrix4x4().scale(1, unitOffsetScaleFactor,1);
+
+	m_freezeMatrixComplexity2D = defineMatrixComplexity(m_freezeMatrix, false);
+	m_freezeMatrixComplexity3D = defineMatrixComplexity(m_freezeMatrix, true);
 }
 
 void FreezeManager::setFreezePegPtr(MO_Module* freezePegPtr)

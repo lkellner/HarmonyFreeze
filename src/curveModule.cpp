@@ -198,9 +198,7 @@ void CurveModule::readjustSecondary()
 
 	Math::Matrix4x4 changeMatrix = fm->getFreezeMatrix();
 
-	//Defining complexity before adjusting changeMatrix as
-	//altering the parent's rotation could impact transformation
-	setComplexTransform(defineMatrixComplexity(changeMatrix, false));
+	setMatrixComplexity(fm->getMatrixComplexity(false));
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 

@@ -55,7 +55,7 @@ void OffsetModule::readjustSecondary()
 
 	const Math::Matrix4x4 changeMatrix = fm->getFreezeMatrix();
 
-	setComplexTransform(defineMatrixComplexity(changeMatrix, false));
+	setMatrixComplexity(fm->getMatrixComplexity(false));
 
 	readjustOffsets(*curMacro, changeMatrix);
 	readjustOrientation(*curMacro, changeMatrix);

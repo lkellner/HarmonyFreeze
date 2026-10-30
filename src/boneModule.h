@@ -55,7 +55,6 @@ private:
 	double getStaticChainRotation(const bool isRest) const;
 	double getChainRotation(const double frameNo) const;
 
-	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 	BoneKeyframeData generateKeyframeData(const double frameNo, const bool isFirst) const;
 
 	bool isParentKeyframe(const double frameNo) const;
