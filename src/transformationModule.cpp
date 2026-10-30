@@ -738,6 +738,9 @@ void TransformationModule::setAttributesJS(const MatrixParameters & params, cons
 
 	//Need to set euler anglez if peg is in 2d mode, even if the official mode is quarternion
 
+	if (!kfData.sx && !kfData.sy && !kfData.sz && !kfData.ax && !kfData.ay && !kfData.az && !kfData.skew)
+		return;
+
 	getFreezeManagerPtr()->applyAttributes(getModulePtr()->qualifiedName(),
 		AttrData{ QLatin1String("scale.x"), params.sx, frameNo, kfData.sx && kfData.isScaleSeparate },
 		AttrData{ QLatin1String("scale.y"), params.sy, frameNo, kfData.sy && kfData.isScaleSeparate },

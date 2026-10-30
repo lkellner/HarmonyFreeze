@@ -403,21 +403,27 @@ void BoneModule::setAttributes(const Math::Point3d position, const double orient
 	else
 	{
 		//JS
-		if (m_offsetAttr->useSeparate())
+		if (isSetPosition)
+		{
+			if (m_offsetAttr->useSeparate())
+			{
+				fm->applyAttributes(getModulePtr()->qualifiedName(),
+					AttrData{ QLatin1String("offset.x"), position.x(), frameNo, isSetPosition },
+					AttrData{ QLatin1String("offset.y"), position.y(), frameNo, isSetPosition });
+			}
+			else
+			{
+				fm->applyAttributes(getModulePtr()->qualifiedName(),
+					Point2dAttrData{ QLatin1String("offset"), Math::Point2d(position.x(),position.y()) , frameNo, isSetPosition });
+			}
+		}
+		if (isSetOrientation || isSetRadius || isSetLength)
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ QLatin1String("offset.x"), position.x(), frameNo, isSetPosition },
-				AttrData{ QLatin1String("offset.y"), position.y(), frameNo, isSetPosition });
+				AttrData{ QLatin1String("orientation"), orientation, frameNo, isSetOrientation },
+				AttrData{ QLatin1String("radius"), radius, frameNo, isSetRadius },
+				AttrData{ QLatin1String("length"), length, frameNo, isSetLength });
 		}
-		else
-		{
-			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{QLatin1String("offset"), Math::Point2d(position.x(),position.y()) , frameNo, isSetPosition });
-		}
-		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			AttrData{ QLatin1String("orientation"), orientation, frameNo, isSetOrientation },
-			AttrData{ QLatin1String("radius"), radius, frameNo, isSetRadius },
-			AttrData{ QLatin1String("length"), length, frameNo, isSetLength });
 	}
 }
 

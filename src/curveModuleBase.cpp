@@ -98,9 +98,12 @@ void BezierHandle::recalculateAnimatedHandlePoint(MO_Module* modulePtr,
 	}
 	else
 	{
-		m_freezeManager->applyAttributes(modulePtr->qualifiedName(),
-			AttrData{ m_lengthAttrJS, handleInfo.radius, frameNo, isSetRadius },
-			AttrData{ m_orientationAttrJS, handleInfo.angle, frameNo, isSetAngle });
+		if (isSetRadius || isSetAngle)
+		{
+			m_freezeManager->applyAttributes(modulePtr->qualifiedName(),
+				AttrData{ m_lengthAttrJS, handleInfo.radius, frameNo, isSetRadius },
+				AttrData{ m_orientationAttrJS, handleInfo.angle, frameNo, isSetAngle });
+		}
 	}
 }
 

@@ -359,7 +359,7 @@ void OglControllerModule::setAttributes( Math::Point3d position, Math::Point3d t
 		if (isTextSizeCtrlPnt)
 			curMacro.add(Attr::Double::createSetValueCmd(m_textSizeAttr, frameNo, textSize));
 	}
-	else
+	else if (isPosCtrlPnt || isTextPosCtrlPnt || isSizeCtrlPnt || isTextSizeCtrlPnt)
 	{
 		//JS
 
