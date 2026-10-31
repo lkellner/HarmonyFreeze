@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
+using namespace Qt::StringLiterals;
 
 void UIDialog::storeSettings()
 {
@@ -45,7 +46,7 @@ void UIDialog::initializeWidgets()
 
 	QPushButton* okayButton = new QPushButton(this);
 	okayButton->setDefault(true);
-	okayButton->setText(QStringLiteral("Okay"));
+	okayButton->setText(u"Okay"_s);
 	okayButton->setFocus(Qt::ActiveWindowFocusReason);
 
 	QObject::connect(okayButton, &QPushButton::clicked, this, &UIDialog::storeSettings);
@@ -55,7 +56,7 @@ void UIDialog::initializeWidgets()
 
 	QPushButton* resetButton = new QPushButton(this);
 	resetButton->setDefault(true);
-	resetButton->setText(QStringLiteral("Reset to Default"));
+	resetButton->setText(u"Reset to Default"_s);
 
 	QObject::connect(resetButton, &QPushButton::clicked, this, &UIDialog::resetSettings);
 	QObject::connect(resetButton, &QPushButton::clicked, this, &QDialog::done);
@@ -103,12 +104,12 @@ QWidget* createWidget(QWidget* parent, Setting& setting)
 	slider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
 	auto* onLabel = new QLabel(widget);
-	onLabel->setText(QStringLiteral("ON"));
+	onLabel->setText(u"ON"_s);
 	onLabel->setEnabled(setting.value);
 	onLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
 	auto* offLabel = new QLabel(widget);
-	offLabel->setText(QStringLiteral("OFF"));
+	offLabel->setText(u"OFF"_s);
 	offLabel->setEnabled(!setting.value);
 	offLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 

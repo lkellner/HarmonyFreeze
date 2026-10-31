@@ -8,6 +8,8 @@
 
 #include <limits>
 
+using namespace Qt::StringLiterals;
+
 OffsetModule::OffsetModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType)
@@ -36,8 +38,8 @@ FrameRange OffsetModule::getFrameRange() const
 
 void OffsetModule::loadAttributes()
 {
-	m_restingOrientationAttr = findAttribute<AT_DoubleAttr>(QStringLiteral("restingOrientation"));
-	m_orientationAttr = findAttribute<AT_DoubleAttr>(QStringLiteral("orientation"));
+	m_restingOrientationAttr = findAttribute<AT_DoubleAttr>("restingOrientation"_L1);
+	m_orientationAttr = findAttribute<AT_DoubleAttr>("orientation"_L1);
 
 	MO_Module* modulePtr = getModulePtr();
 
@@ -87,8 +89,8 @@ void OffsetModule::readjustOrientation(CO_OrCommand& curMacro, const Math::Matri
 	{
 		//JS
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ QLatin1String("restingorientation"), restingHandleInfo.angle },
-			StaticAttrData{ QLatin1String("orientation"), staticHandleInfo.angle });
+			StaticAttrData{ u"restingorientation"_s, restingHandleInfo.angle },
+			StaticAttrData{ u"orientation"_s, staticHandleInfo.angle });
 	}
 
 
@@ -122,7 +124,7 @@ void OffsetModule::readjustOrientation(CO_OrCommand& curMacro, const Math::Matri
 				curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, handleInfo.angle));
 			else //JS
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-						AttrData{ QLatin1String("orientation"), handleInfo.angle, frameNo, true });
+						AttrData{ u"orientation"_s, handleInfo.angle, frameNo, true });
 		}
 	}
 }

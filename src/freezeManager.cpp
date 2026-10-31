@@ -4,6 +4,8 @@
 #include <SDKExtension/SDK_Selection.h>
 
 
+using namespace Qt::StringLiterals;
+
 FreezeManager::FreezeManager()
 	: m_settings(loadSettings())
 	, m_projection(m_settings[settingIndex("2dMode")].value ? PROJECTION::ORTHOGRAPHIC : PROJECTION::NONE)
@@ -152,7 +154,7 @@ void FreezeManager::writeAttr(QTextStream& out,const QString&, const std::vector
 		out << "\t\t\t\"drawingId\" : \"" << pivot.drawingId << "\",\n";
 		out << "\t\t\t\"elementId\" : " << pivot.elementId << ",\n";
 
-		if (pivot.layerAttr != QLatin1String(""))
+		if (pivot.layerAttr != u""_s)
 			out << "\t\t\"layer\" : \"" << pivot.layerAttr << "\"\n";
 
 		out << "\t\t};\n";
@@ -172,7 +174,6 @@ void FreezeManager::writeAttr(QTextStream& out,const QString&, const std::vector
 	}
 }
 
-
 void FreezeManager::initializeFileJS()
 {
 	PLUG_ScriptingInterface * scriptUI = PLUG_Services::getScriptingInterface();
@@ -189,13 +190,13 @@ void FreezeManager::initializeFileJS()
 
 		if (!dir.exists())
 		{
-			if (dir.mkpath(QLatin1String(".")))
+			if (dir.mkpath(u"."_s))
 				qDebug() << "Directory created";
 			else
 				qDebug() << "Failed to create directory";
 		}
 
-		m_file.setFileName(dir.filePath(QLatin1String("HarmonyFreezeDebug.js")));
+		m_file.setFileName(dir.filePath(u"HarmonyFreezeDebug.js"_s));
 
 		if (!m_file.open(QIODevice::WriteOnly | QIODevice::Text))
 			return;
@@ -246,7 +247,7 @@ void FreezeManager::finalizeFileJS()
 		m_tempFile.close();
 	}
 
-	scriptUI->callFunctionInFile(filepath, QLatin1String("setAttr"), false);
+	scriptUI->callFunctionInFile(filepath, u"setAttr"_s, false);
 }
 
 MatrixComplexity FreezeManager::getMatrixComplexity(bool is3D) const

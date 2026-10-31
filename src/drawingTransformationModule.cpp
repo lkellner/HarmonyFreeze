@@ -1,5 +1,7 @@
 #include "drawingTransformationModule.h"
 
+using namespace Qt::StringLiterals;
+
 void DrawingTransformationModule::setPositionJS(const KeyframeData& kfData,
 	const MatrixParameters& params,
 	const double frameNo) const
@@ -8,21 +10,21 @@ void DrawingTransformationModule::setPositionJS(const KeyframeData& kfData,
 	//Setting 3d path first as otherwise there are problems when executing
 
 	getFreezeManagerPtr()->applyAttributes(getModulePtr()->qualifiedName(),
-			TextAttrData{ QLatin1String("OFFSET.3DPATH.X"), params.tx, frameNo, kfData.tx && !kfData.isPosSeparate },
-			TextAttrData{ QLatin1String("OFFSET.3DPATH.Y"), params.ty, frameNo, kfData.ty && !kfData.isPosSeparate },
-			TextAttrData{ QLatin1String("OFFSET.3DPATH.Z"), params.tz, frameNo, kfData.tz && !kfData.isPosSeparate },
-			AttrData{ QLatin1String("offset.x"), params.tx, frameNo, kfData.tx && kfData.isPosSeparate },
-			AttrData{ QLatin1String("offset.y"), params.ty, frameNo, kfData.ty && kfData.isPosSeparate },
-			AttrData{ QLatin1String("offset.z"), params.tz, frameNo, kfData.tz && kfData.isPosSeparate });
+			TextAttrData{ u"OFFSET.3DPATH.X"_s, params.tx, frameNo, kfData.tx && !kfData.isPosSeparate },
+			TextAttrData{ u"OFFSET.3DPATH.Y"_s, params.ty, frameNo, kfData.ty && !kfData.isPosSeparate },
+			TextAttrData{ u"OFFSET.3DPATH.Z"_s, params.tz, frameNo, kfData.tz && !kfData.isPosSeparate },
+			AttrData{ u"offset.x"_s, params.tx, frameNo, kfData.tx && kfData.isPosSeparate },
+			AttrData{ u"offset.y"_s, params.ty, frameNo, kfData.ty && kfData.isPosSeparate },
+			AttrData{ u"offset.z"_s, params.tz, frameNo, kfData.tz && kfData.isPosSeparate });
 }
 
 
 void DrawingTransformationModule::setStaticPositionJS(const MatrixParameters& params) const
 {
 	getFreezeManagerPtr()->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ QLatin1String("offset.x"), params.tx },
-			StaticAttrData{ QLatin1String("offset.y"), params.ty },
-			StaticAttrData{ QLatin1String("offset.z"), params.tz });
+			StaticAttrData{ u"offset.x"_s, params.tx },
+			StaticAttrData{ u"offset.y"_s, params.ty },
+			StaticAttrData{ u"offset.z"_s, params.tz });
 }
 
 void DrawingTransformationModule::processPivotAttribute(CO_OrCommand& curMacro)
@@ -32,7 +34,7 @@ void DrawingTransformationModule::processPivotAttribute(CO_OrCommand& curMacro)
 	Math::Point3d curPivot;
 	getPivotAttr()->getLocalValue(curPivot);
 
-	const AT_BoolAttr* canAnimate = findAttribute<AT_BoolAttr>(QStringLiteral("CAN_ANIMATE"));
+	const AT_BoolAttr* canAnimate = findAttribute<AT_BoolAttr>("CAN_ANIMATE"_L1);
 
 	if (!fm->isMoveUnusedPivots()
 		&& curPivot == Math::Point3d()

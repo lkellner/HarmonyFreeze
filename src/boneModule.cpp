@@ -10,14 +10,15 @@
 #include <limits>
 #include <stdexcept>
 
+using namespace Qt::StringLiterals;
 
 bool hasOffset(const MO_Node* node)
 {
 	if (!node)
 		return false;
 
-	auto offsetAttr = ::findAttribute<AT_Position2dAttr>(QStringLiteral("offset"), node);
-	auto restOffsetAttr = ::findAttribute<AT_Position2dAttr>(QStringLiteral("restOffset"), node);
+	auto offsetAttr = ::findAttribute<AT_Position2dAttr>("offset"_L1, node);
+	auto restOffsetAttr = ::findAttribute<AT_Position2dAttr>("restOffset"_L1, node);
 
 	if (!offsetAttr || !restOffsetAttr)
 		return false;
@@ -71,14 +72,14 @@ BoneModule::BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType)
 	: ModuleBase(std::move(freezeManager), modulePtr, moduleType)
-	, m_restOffsetAttr(findAttribute<AT_Position2dAttr>(QStringLiteral("restOffset")))
-	, m_restRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("restRadius")))
-	, m_restLengthAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("restLength")))
-	, m_restOrientationAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("restOrientation")))
-	, m_offsetAttr(findAttribute<AT_Position2dAttr>(QStringLiteral("offset")))
-	, m_radiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("radius")))
-	, m_lengthAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("length")))
-	, m_orientationAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("orientation")))
+	, m_restOffsetAttr(findAttribute<AT_Position2dAttr>("restOffset"_L1))
+	, m_restRadiusAttr(findAttribute<AT_DoubleAttr>("restRadius"_L1))
+	, m_restLengthAttr(findAttribute<AT_DoubleAttr>("restLength"_L1))
+	, m_restOrientationAttr(findAttribute<AT_DoubleAttr>("restOrientation"_L1))
+	, m_offsetAttr(findAttribute<AT_Position2dAttr>("offset"_L1))
+	, m_radiusAttr(findAttribute<AT_DoubleAttr>("radius"_L1))
+	, m_lengthAttr(findAttribute<AT_DoubleAttr>("length"_L1))
+	, m_orientationAttr(findAttribute<AT_DoubleAttr>("orientation"_L1))
 {
 	m_regionOfInfluence = std::make_unique<RegionOfInfluence>(getFreezeManager(), modulePtr);
 
@@ -119,12 +120,8 @@ void BoneModule::readjustSecondary()
 double BoneModule::getStaticChainRotation(const bool isRest) const
 {
 	const auto orientationKeyword = isRest
-		? QStringLiteral("restOrientation")
-		: QStringLiteral("orientation");
-
-	const auto posKeyword = isRest
-		? QStringLiteral("restOffset")
-		: QStringLiteral("offset");
+		? "restOrientation"_L1
+		: "orientation"_L1;
 
 	return getRotationImpl(orientationKeyword,
 		[](const AT_DoubleAttr& a) { return a.localValue(); });
@@ -132,14 +129,12 @@ double BoneModule::getStaticChainRotation(const bool isRest) const
 
 double BoneModule::getChainRotation(const double frameNo) const
 {
-	const auto posKeyword = QStringLiteral("offset");
-
-	return getRotationImpl(QStringLiteral("orientation"),
+	return getRotationImpl("orientation"_L1,
 		[frameNo](const AT_DoubleAttr& a) { return a.value(frameNo); });
 }
 
 template <typename ValueFunc>
-double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const
+double BoneModule::getRotationImpl(const QLatin1StringView orientationKeyword, ValueFunc&& valFunc) const
 {
 	const FreezeManager* fm = getFreezeManagerPtr();
 
@@ -149,13 +144,13 @@ double BoneModule::getRotationImpl(const QString& orientationKeyword, ValueFunc&
 
 	double rotation = 0.0;
 
-	while (parent && parent->keyword() == QLatin1String("BendyBoneModule"))
+	while (parent && parent->keyword() == "BendyBoneModule"_L1)
 	{
 		AT_DoubleAttr* attr = ::findAttribute<AT_DoubleAttr>(orientationKeyword, parent);
 		if (!attr)
 			continue;
 
-		if (parent->getParentNode() && parent->getParentNode()->keyword() == QLatin1String("BendyBoneModule")
+		if (parent->getParentNode() && parent->getParentNode()->keyword() == "BendyBoneModule"_L1
 			&& !hasOffset(parent))
 		{
 			//Not the first bone in the chain
@@ -352,15 +347,15 @@ void BoneModule::setStaticAttributes(const Math::Point3d position, const double 
 	{
 		//JS
 
-		QString offsetJS = isRest ? QLatin1String("restoffset") : QLatin1String("offset");
-		QString orientationJS = isRest ? QLatin1String("restorientation") : QLatin1String("orientation");
-		QString radiusJS = isRest ? QLatin1String("restradius") : QLatin1String("radius");
-		QString lengthJS = isRest ? QLatin1String("restlength") : QLatin1String("length");
+		QString offsetJS = isRest ? u"restoffset"_s : u"offset"_s;
+		QString orientationJS = isRest ? u"restorientation"_s : u"orientation"_s;
+		QString radiusJS = isRest ? u"restradius"_s : u"radius"_s;
+		QString lengthJS = isRest ? u"restlength"_s : u"length"_s;
 
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ offsetJS + QLatin1String(".x"), position.x() },
-			StaticAttrData{ offsetJS + QLatin1String(".y"), position.y() },
+			StaticAttrData{ offsetJS + u".x"_s, position.x() },
+			StaticAttrData{ offsetJS + u".y"_s, position.y() },
 			StaticAttrData{ orientationJS, orientation },
 			StaticAttrData{ radiusJS, radius},
 			StaticAttrData{ lengthJS, length });
@@ -410,21 +405,21 @@ void BoneModule::setAttributes(const Math::Point3d position, const double orient
 			if (m_offsetAttr->useSeparate())
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					AttrData{ QLatin1String("offset.x"), position.x(), frameNo, isSetPosition },
-					AttrData{ QLatin1String("offset.y"), position.y(), frameNo, isSetPosition });
+					AttrData{ u"offset.x"_s, position.x(), frameNo, isSetPosition },
+					AttrData{ u"offset.y"_s, position.y(), frameNo, isSetPosition });
 			}
 			else
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					Point2dAttrData{ QLatin1String("offset"), Math::Point2d(position.x(),position.y()) , frameNo, isSetPosition });
+					Point2dAttrData{ u"offset"_s, Math::Point2d(position.x(),position.y()) , frameNo, isSetPosition });
 			}
 		}
 		if (isSetOrientation || isSetRadius || isSetLength)
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ QLatin1String("orientation"), orientation, frameNo, isSetOrientation },
-				AttrData{ QLatin1String("radius"), radius, frameNo, isSetRadius },
-				AttrData{ QLatin1String("length"), length, frameNo, isSetLength });
+				AttrData{ u"orientation"_s, orientation, frameNo, isSetOrientation },
+				AttrData{ u"radius"_s, radius, frameNo, isSetRadius },
+				AttrData{ u"length"_s, length, frameNo, isSetLength });
 		}
 	}
 }
@@ -436,7 +431,7 @@ bool BoneModule::hasBoneParents() const
 	if (!parent)
 		return false;
 
-	return parent->keyword() == QLatin1String("BendyBoneModule");
+	return parent->keyword() == "BendyBoneModule"_L1;
 }
 
 bool BoneModule::hasFieldsOrientation() const
@@ -492,9 +487,9 @@ FrameRange BoneModule::getFrameRange() const
 	//to force keyframes
 	MO_Node* parent = getModulePtr()->getParentNode();
 
-	while (parent && (parent->keyword() == QLatin1String("BendyBoneModule")))
+	while (parent && (parent->keyword() == "BendyBoneModule"_L1))
 	{
-		AT_DoubleAttr* attr = ::findAttribute<AT_DoubleAttr>(QStringLiteral("orientation"), parent);
+		AT_DoubleAttr* attr = ::findAttribute<AT_DoubleAttr>("orientation"_L1, parent);
 		if (!attr)
 			continue;
 
@@ -583,9 +578,9 @@ bool BoneModule::isParentKeyframe(const double frameNo) const
 
 	MO_Node* parent = getModulePtr()->getParentNode();
 
-	while (parent && parent->keyword() == QLatin1String("BendyBoneModule"))
+	while (parent && parent->keyword() == "BendyBoneModule"_L1)
 	{
-		AT_DoubleAttr* attr = ::findAttribute<AT_DoubleAttr>(QStringLiteral("orientation"), parent);
+		AT_DoubleAttr* attr = ::findAttribute<AT_DoubleAttr>("orientation"_L1, parent);
 		if (!attr)
 			continue;
 

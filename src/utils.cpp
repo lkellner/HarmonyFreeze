@@ -3,6 +3,8 @@
 #include <GraphicCore/GraphicLib/GR_ColorDict.h>
 #include <SceneCore/attribute/AT_BoolAttr.h>
 
+using namespace Qt::StringLiterals;
+
 //Caution:  Math::Matrix4x4 uses the inverse matrix multiplication order of Math::Matrix3x2
 
 void getIncomingFrameRange(const MO_Node * node, FrameRange& frameRange)
@@ -224,11 +226,11 @@ void updateFrameRange(FrameRange& range, int frame)
 
 Math::Matrix4x4 getElementFlipMatrix(MO_Module * modulePtr)
 {
-	if (!modulePtr|| modulePtr->keyword() != QLatin1String("READ"))
+	if (!modulePtr|| modulePtr->keyword() != "READ"_L1)
 		return {};
 
-	AT_BoolAttr* flipHAttr = findAttribute<AT_BoolAttr>(QLatin1String("FLIP_HOR"), modulePtr);
-	AT_BoolAttr* flipVAttr = findAttribute<AT_BoolAttr>(QLatin1String("FLIP_VERT"), modulePtr);
+	AT_BoolAttr* flipHAttr = findAttribute<AT_BoolAttr>("FLIP_HOR"_L1, modulePtr);
+	AT_BoolAttr* flipVAttr = findAttribute<AT_BoolAttr>("FLIP_VERT"_L1, modulePtr);
 
 	if (!flipHAttr || !flipVAttr)
 		return {};
@@ -701,7 +703,7 @@ static bool isAuxiliaryPort(MO_Port* port)
 	//port->id() unfortunately returns something different
 	const MO_Node::InPorts inPorts = node->getInPorts();
 	
-	if (node->keyword() == QLatin1String("DeformTransformOut") && inPorts.size() >= 2 && port == inPorts[1])
+	if (node->keyword() == "DeformTransformOut"_L1 && inPorts.size() >= 2 && port == inPorts[1])
 	{
 		return true;
 	}
@@ -772,7 +774,7 @@ void getAllInputModules_internal(MO_Module* modulePtr, std::vector<MO_Module*>& 
 		if (!inputModule->hasImageOutput())
 			continue;
 
-		if (inputModule->keyword() == QLatin1String("READ"))
+		if (inputModule->keyword() == "READ"_L1)
 			inputModules.push_back(inputModule);
 		else
 			getAllInputModules_internal(inputModule, inputModules);
@@ -790,21 +792,21 @@ AT_AttrList getAttributeList(const MO_Node* node)
 QString getLayerAttr(MO_Module* modulePtr)
 {
 	if (!modulePtr)
-		return QLatin1String("");
+		return u""_s;
 
-	const AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>(QLatin1String("ELEMENT"), modulePtr);
+	const AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>("ELEMENT"_L1, modulePtr);
 
 	if (!elementAttr)
-		return QLatin1String("");
+		return u""_s;
 
 	const AT_ElementLayerAttr* layerAttr = elementAttr->layerAttr();
 
 	if (!layerAttr)
-		return QLatin1String("");
+		return u""_s;
 
 
-	if (layerAttr->localValue() == QLatin1String(""))
-		return QLatin1String("null");
+	if (layerAttr->localValue() == ""_L1)
+		return u"null"_s;
 	else
 		return layerAttr->localValue();
 }
@@ -815,12 +817,12 @@ int getElementId(MO_Module* modulePtr)
 		return -1;
 
 
-	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>(QLatin1String("DRAWING"), modulePtr);
+	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
 
 	if (!drawingAttr)
 		return -1;
 
-	QString colName = drawingAttr->linkedColumnName(QLatin1String("ELEMENT"), false);
+	QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
 
 	if (colName.isEmpty())
 		return -1;
@@ -843,16 +845,16 @@ std::vector<CelInfo> getElementTimings(MO_Module* modulePtr)
 {
 	std::vector<CelInfo> celInfoVec;
 
-	AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>(QLatin1String("ELEMENT"), modulePtr);
+	AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>("ELEMENT"_L1, modulePtr);
 
 	if (!elementAttr)
 		return celInfoVec;
 
-	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>(QLatin1String("DRAWING"), modulePtr);
+	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
 	if (!drawingAttr)
 		return celInfoVec;
 
-	QString colName = drawingAttr->linkedColumnName(QLatin1String("ELEMENT"), false);
+	QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
 
 	if (colName.isEmpty())
 		return celInfoVec;
@@ -884,17 +886,17 @@ std::vector<CelInfo> getElementTimings(MO_Module* modulePtr)
 
 std::vector<Exposure> getExposures(MO_Module* modulePtr, FrameRange range)
 {
-	AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>(QLatin1String("ELEMENT"), modulePtr);
+	AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>("ELEMENT"_L1, modulePtr);
 
 	if (!elementAttr)
 		return {};
 
-	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>(QLatin1String("DRAWING"), modulePtr);
+	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
 
 	if (!drawingAttr)
 		return {};
 
-	QString colName = drawingAttr->linkedColumnName(QLatin1String("ELEMENT"), false);
+	QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
 
 	if (colName.isEmpty())
 		return {};
@@ -1009,10 +1011,10 @@ bool isDrawingPivotAppliedOnPeg(MO_Module* modulePtr)
 	if (!modulePtr)
 		return false;
 
-	const AT_Attr* attr = findAttribute<AT_Attr>(QLatin1String("USE_DRAWING_PIVOT"), modulePtr);
+	const AT_Attr* attr = findAttribute<AT_Attr>("USE_DRAWING_PIVOT"_L1, modulePtr);
 
 	if (attr)
-		return attr->textValue(1) == QLatin1String("Apply Embedded Pivot on Parent Peg");
+		return attr->textValue(1) == "Apply Embedded Pivot on Parent Peg"_L1;
 
 	return false;
 }
@@ -1022,10 +1024,10 @@ bool hasUsedDrawingPivots(MO_Module* modulePtr)
 	if (!modulePtr)
 		return false;
 
-	const AT_Attr* attr = findAttribute<AT_Attr>(QLatin1String("USE_DRAWING_PIVOT"), modulePtr);
+	const AT_Attr* attr = findAttribute<AT_Attr>("USE_DRAWING_PIVOT"_L1, modulePtr);
 
 	if (attr)
-		return attr->textValue(1) != QLatin1String("Don't Use Embedded Pivot");
+		return attr->textValue(1) != "Don't Use Embedded Pivot"_L1;
 
 	return false;
 }

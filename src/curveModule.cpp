@@ -12,6 +12,8 @@
 #include <tuple>
 #include <utility>
 
+using namespace Qt::StringLiterals;
+
 CurveModule::CurveModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module* modulePtr, ModuleType moduleType)
 	: CurveModuleBase(freezeManager, modulePtr, moduleType)
 	, m_restLength0Attr(nullptr)
@@ -26,16 +28,16 @@ CurveModule::CurveModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module
 	loadAttributes();
 
 	m_bezierHandles.emplace_back(getFreezeManager(), m_length0Attr, m_orientation0Attr,
-		QLatin1String("length0"), QLatin1String("orientation0"), BezierHandle::Kind::Animatable);
+		u"length0"_s, u"orientation0"_s, BezierHandle::Kind::Animatable);
 
 	m_bezierHandles.emplace_back(getFreezeManager(), m_length1Attr, m_orientation1Attr,
-		QLatin1String("length1"), QLatin1String("orientation1"), BezierHandle::Kind::Animatable);
+		u"length1"_s, u"orientation1"_s, BezierHandle::Kind::Animatable);
 
 	m_bezierHandles.emplace_back(getFreezeManager(), m_restLength0Attr, m_restingOrientation0Attr,
-		QLatin1String("restlength0"), QLatin1String("restingOrientation0"), BezierHandle::Kind::Rest);
+		u"restlength0"_s, u"restingOrientation0"_s, BezierHandle::Kind::Rest);
 
 	m_bezierHandles.emplace_back(getFreezeManager(), m_restLength1Attr, m_restingOrientation1Attr,
-		QLatin1String("restlength1"), QLatin1String("restingOrientation1"), BezierHandle::Kind::Rest);
+		u"restlength1"_s, u"restingOrientation1"_s, BezierHandle::Kind::Rest);
 }
 
 
@@ -88,8 +90,8 @@ FrameRange CurveModule::getFrameRange() const
 	//to force keyframes
 	MO_Node* parent = getModulePtr()->getParentNode();
 
-	while (parent && (parent->keyword() == QLatin1String("CurveModule")
-				|| parent->keyword() == QLatin1String("OffsetModule")))
+	while (parent && (parent->keyword() == "CurveModule"_L1
+				|| parent->keyword() == "OffsetModule"_L1))
 	{
 		AT_AttrList attributes;
 		parent->getFullAttrList(attributes);
@@ -97,7 +99,7 @@ FrameRange CurveModule::getFrameRange() const
 
 		for (const AT_AttrDesc& attribute : attributes)
 		{
-			if (attribute._pAttr->keyword() == QLatin1String("orientation1"))
+			if (attribute._pAttr->keyword() == "orientation1"_L1)
 			{
 				//Curve module
 				if (dynamic_cast<AT_DoubleAttr*>(attribute._pAttr)->getNextKey(0, &key))
@@ -107,7 +109,7 @@ FrameRange CurveModule::getFrameRange() const
 					updateFrameRange(range, key);
 			}
 
-			if (attribute._pAttr->keyword() == QLatin1String("orientation"))
+			if (attribute._pAttr->keyword() == "orientation"_L1)
 			{
 				//Offset module
 				if (dynamic_cast<AT_DoubleAttr*>(attribute._pAttr)->getNextKey(0, &key))
@@ -155,8 +157,7 @@ void CurveModule::loadAttributes()
 
 			const auto testAttr = [this, &keyword, &desc](const auto& binding)
 			{
-				//if (keyword != QLatin1StringView(binding.kw)) FIXME: QT 6.4 +
-				if (keyword != QLatin1String(binding.kw))
+				if (keyword != QLatin1StringView(binding.kw))
 					return false;
 
 				auto &ptr = this->*binding.m;

@@ -12,16 +12,17 @@
 #include <Util/pluginmanager/PLUG_Scripting.h>
 #include <Util/pluginmanager/PLUG_Services.h>
 
+using namespace Qt::StringLiterals;
 
 StaticTransformationModule::StaticTransformationModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module* modulePtr, ModuleType moduleType)
 	: ModuleBase(std::move(freezeManager), modulePtr, moduleType)
-	, m_positionAttr(findAttribute<AT_Position3dAttr>(QStringLiteral("translate")))
-	, m_scaleAttr(findAttribute<AT_Scale3dAttr>(QStringLiteral("scale")))
-	, m_rotationAttr(findAttribute<AT_Rotation3dAttr>(QStringLiteral("rotate")))
-	, m_skewXAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("skewX")))
-	, m_skewYAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("skewY")))
-	, m_skewZAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("skewZ")))
-	, m_invertedAttr(findAttribute<AT_BoolAttr>(QStringLiteral("inverted")))
+	, m_positionAttr(findAttribute<AT_Position3dAttr>("translate"_L1))
+	, m_scaleAttr(findAttribute<AT_Scale3dAttr>("scale"_L1))
+	, m_rotationAttr(findAttribute<AT_Rotation3dAttr>("rotate"_L1))
+	, m_skewXAttr(findAttribute<AT_DoubleAttr>("skewX"_L1))
+	, m_skewYAttr(findAttribute<AT_DoubleAttr>("skewY"_L1))
+	, m_skewZAttr(findAttribute<AT_DoubleAttr>("skewZ"_L1))
+	, m_invertedAttr(findAttribute<AT_BoolAttr>("inverted"_L1))
 {
 	if (!m_positionAttr)
 		throw std::runtime_error("missing attribute: 'translate' for " + modulePtr->qualifiedName().toStdString());
@@ -120,17 +121,17 @@ void StaticTransformationModule::setMatrixAsAttributesJS(const Math::Matrix4x4& 
 	FreezeManager* fm = getFreezeManagerPtr();
 
 	fm->applyAttributes(getModulePtr()->qualifiedName(),
-		StaticAttrData{ QLatin1String("translate.x"), params.tx },
-		StaticAttrData{ QLatin1String("translate.y"), params.ty },
-		StaticAttrData{ QLatin1String("translate.z"), params.tz },
-		StaticAttrData{ QLatin1String("rotate.anglex"), params.ax },
-		StaticAttrData{ QLatin1String("rotate.angley"), params.ay },
-		StaticAttrData{ QLatin1String("rotate.anglez"), params.az },
-		StaticAttrData{ QLatin1String("scale.x"), params.sx },
-		StaticAttrData{ QLatin1String("scale.y"), params.sy },
-		StaticAttrData{ QLatin1String("scale.z"), params.sz },
-		StaticAttrData{ QLatin1String("scale.xy"), params.sxy },
-		StaticAttrData{ QLatin1String("skewx"), params.skewx },
-		StaticAttrData{ QLatin1String("skewy"), params.skewy },
-		StaticAttrData{ QLatin1String("skewz"), params.skewz });
+		StaticAttrData{ u"translate.x"_s, params.tx },
+		StaticAttrData{ u"translate.y"_s, params.ty },
+		StaticAttrData{ u"translate.z"_s, params.tz },
+		StaticAttrData{ u"rotate.anglex"_s, params.ax },
+		StaticAttrData{ u"rotate.angley"_s, params.ay },
+		StaticAttrData{ u"rotate.anglez"_s, params.az },
+		StaticAttrData{ u"scale.x"_s, params.sx },
+		StaticAttrData{ u"scale.y"_s, params.sy },
+		StaticAttrData{ u"scale.z"_s, params.sz },
+		StaticAttrData{ u"scale.xy"_s, params.sxy },
+		StaticAttrData{ u"skewx"_s, params.skewx },
+		StaticAttrData{ u"skewy"_s, params.skewy },
+		StaticAttrData{ u"skewz"_s, params.skewz });
 }

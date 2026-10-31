@@ -2,9 +2,11 @@
 
 #include <QSettings>
 
+using namespace Qt::StringLiterals;
+
 SettingsDesc loadSettings()
 {
-	QSettings file(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
+	QSettings file(QSettings::IniFormat, QSettings::UserScope, u"HarmonyFreeze"_s, u"HarmonyFreeze"_s);
 
 	SettingsDesc settings = g_defaultSettings;
 	for (auto& setting : settings)
@@ -24,7 +26,7 @@ SettingsDesc loadSettings()
 
 void storeSettings(const SettingsDesc& settings)
 {
-	QSettings file(QSettings::IniFormat, QSettings::UserScope, QStringLiteral("HarmonyFreeze"), QStringLiteral("HarmonyFreeze"));
+	QSettings file(QSettings::IniFormat, QSettings::UserScope, u"HarmonyFreeze"_s, u"HarmonyFreeze"_s);
 
 	for (const auto& setting : settings)
 	{

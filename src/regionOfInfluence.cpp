@@ -2,16 +2,17 @@
 
 #include <stdexcept>
 
+using namespace Qt::StringLiterals;
 
 RegionOfInfluence::RegionOfInfluence(std::shared_ptr<FreezeManager> freezeManager,
 	MO_Module* modulePtr)
 	: m_freezeManager(std::move(freezeManager))
 	, m_modulePtr(modulePtr)
-	, m_longitudinalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadius"), modulePtr))
-	, m_longitudinalRadiusBeginAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("longitudinalRadiusBegin"), modulePtr))
-	, m_transversalRadiusAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("transversalRadius"), modulePtr))
-	, m_transversalRadiusRightAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("transversalRadiusRight"), modulePtr))
-	, m_influenceFadeAttr(findAttribute<AT_DoubleAttr>(QStringLiteral("influenceFade"), modulePtr))
+	, m_longitudinalRadiusAttr(findAttribute<AT_DoubleAttr>("longitudinalRadius"_L1, modulePtr))
+	, m_longitudinalRadiusBeginAttr(findAttribute<AT_DoubleAttr>("longitudinalRadiusBegin"_L1, modulePtr))
+	, m_transversalRadiusAttr(findAttribute<AT_DoubleAttr>("transversalRadius"_L1, modulePtr))
+	, m_transversalRadiusRightAttr(findAttribute<AT_DoubleAttr>("transversalRadiusRight"_L1, modulePtr))
+	, m_influenceFadeAttr(findAttribute<AT_DoubleAttr>("influenceFade"_L1, modulePtr))
 
 {
 	if (!m_longitudinalRadiusAttr)
@@ -52,10 +53,10 @@ void RegionOfInfluence::readjustSecondary(CO_OrCommand& curMacro, const Math::Ma
 	else
 	{
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ QLatin1String("transversalradius"), transversalRadius },
-			StaticAttrData{ QLatin1String("transversalradiusright"), transversalRadiusRight },
-			StaticAttrData{ QLatin1String("longitudinalradius"), longitudinalRadius },
-			StaticAttrData{ QLatin1String("longitudinalradiusbegin"), longitudinalRadiusBegin },
-			StaticAttrData{ QLatin1String("influencefade"), influenceFadeRadius });
+			StaticAttrData{ u"transversalradius"_s, transversalRadius },
+			StaticAttrData{ u"transversalradiusright"_s, transversalRadiusRight },
+			StaticAttrData{ u"longitudinalradius"_s, longitudinalRadius },
+			StaticAttrData{ u"longitudinalradiusbegin"_s, longitudinalRadiusBegin },
+			StaticAttrData{ u"influencefade"_s, influenceFadeRadius });
 	}
 }

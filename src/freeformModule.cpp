@@ -8,6 +8,7 @@
 #include <SceneCore/attribute/AT_Scale3dAttr.h>
 #include <SceneCore/module/MO_PortTransform.h>
 
+using namespace Qt::StringLiterals;
 
 FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
@@ -20,15 +21,15 @@ FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 	{
 		AT_ComplexAttr* cAttr;
 
-		if (attr._pAttr->typeName() != QStringLiteral("FREE-FORM-DEFORMATION-ATTRIBUTE"))
+		if (attr._pAttr->typeName() != "FREE-FORM-DEFORMATION-ATTRIBUTE"_L1)
 			continue;
 		cAttr = dynamic_cast<AT_ComplexAttr*>(attr._pAttr);
 
 		if (!cAttr)
 			continue;
 
-		AT_Position2dAttr* posAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("POSITION"));
-		AT_Position2dAttr* restingPosAttr = findSubAttribute<AT_Position2dAttr>(cAttr, QStringLiteral("RESTING_POSITION"));
+		AT_Position2dAttr* posAttr = findSubAttribute<AT_Position2dAttr>(cAttr, "POSITION"_L1);
+		AT_Position2dAttr* restingPosAttr = findSubAttribute<AT_Position2dAttr>(cAttr, "RESTING_POSITION"_L1);
 
 		//Need to use xmlKeyword() as this corresponds to the keyword used in the JS syntax
 		if(posAttr && restingPosAttr)
@@ -106,10 +107,10 @@ void FreeformModule::setStaticAttributes(FreeformPoint* point, Math::Point3d pos
 		//JS
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ point->name + QLatin1String(".restingPosition.x"), restingPos.x() },
-			StaticAttrData{ point->name + QLatin1String(".restingPosition.y"), restingPos.y() },
-			StaticAttrData{ point->name + QLatin1String(".position.x"), position.x() },
-			StaticAttrData{ point->name + QLatin1String(".position.y"), position.y() });
+			StaticAttrData{ point->name + u".restingPosition.x"_s, restingPos.x() },
+			StaticAttrData{ point->name + u".restingPosition.y"_s, restingPos.y() },
+			StaticAttrData{ point->name + u".position.x"_s, position.x() },
+			StaticAttrData{ point->name + u".position.y"_s, position.y() });
 	}
 }
 
@@ -134,13 +135,13 @@ void FreeformModule::setAttributes(FreeformPoint* point, Math::Point3d position,
 		if (point->posAttr->useSeparate())
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ point->name + QLatin1String(".position.x"), position.x(), frameNo, true },
-				AttrData{ point->name + QLatin1String(".position.y"), position.y(), frameNo, true });
+				AttrData{ point->name + u".position.x"_s, position.x(), frameNo, true },
+				AttrData{ point->name + u".position.y"_s, position.y(), frameNo, true });
 		}
 		else
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{ point->name + QLatin1String(".position"), Math::Point2d(position.x(),position.y()) , frameNo, true });
+				Point2dAttrData{ point->name + u".position"_s, Math::Point2d(position.x(),position.y()) , frameNo, true });
 		}
 	}
 }

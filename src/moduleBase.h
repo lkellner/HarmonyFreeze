@@ -54,7 +54,7 @@ public:
 	AT_AttrList getAttributeList() const;
 
 	template <typename T>
-	T* findAttribute(const QString& keyword)
+	T* findAttribute(const QLatin1StringView& keyword)
 	{
 		return ::findAttribute<T>(keyword, getModulePtr());
 	}

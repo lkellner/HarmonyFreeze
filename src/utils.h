@@ -212,7 +212,7 @@ QString getLayerAttr(MO_Module* modulePtr);
 AT_AttrList getAttributeList(const MO_Node* node);
 
 template <typename T>
-T* findAttribute(const QString& keyword, const MO_Node* node)
+T* findAttribute(const QLatin1StringView keyword, const MO_Node* node)
 {
 	if (!node)
 		return nullptr;
@@ -227,7 +227,7 @@ T* findAttribute(const QString& keyword, const MO_Node* node)
 
 
 template <typename T>
-T* findSubAttribute(const AT_ComplexAttr* parent, const QString& keyword)
+T* findSubAttribute(const AT_ComplexAttr* parent, const QLatin1StringView keyword)
 {
 	if (!parent)
 		return nullptr;
@@ -240,7 +240,7 @@ T* findSubAttribute(const AT_ComplexAttr* parent, const QString& keyword)
 
 
 template <typename T>
-T* findSubAttribute(const QString& parentKeyword, const QString& keyword, MO_Node* node)
+T* findSubAttribute(const QLatin1StringView parentKeyword, const QLatin1StringView keyword, MO_Node* node)
 {
 	if(!node)
 		return nullptr;

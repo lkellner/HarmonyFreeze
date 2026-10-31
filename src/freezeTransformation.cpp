@@ -26,6 +26,7 @@
 #include <iostream>
 #include <memory>
 
+using namespace Qt::StringLiterals;
 
 ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::shared_ptr<FreezeManager> freezeManager)
 {
@@ -39,7 +40,7 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 			continue;
 		}
 
-		if (node->keyword() == QLatin1String("READ"))
+		if (node->keyword() == "READ"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <DrawingTransformationModule>(freezeManager, node->toModule(),
 				ModuleType::DRAWING_TRANSFORMATION, false));
@@ -59,42 +60,42 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 
 		}
 
-		if (node->keyword() == QLatin1String("PEG"))
+		if (node->keyword() == "PEG"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <PegModule>(freezeManager, node->toModule(), ModuleType::PEG, false));
 		}
 
-		if (node->keyword() == QLatin1String("OffsetModule"))
+		if (node->keyword() == "OffsetModule"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <OffsetModule>(freezeManager, node->toModule(), ModuleType::CURVE_OFFSET));
 		}
 
-		if (node->keyword() == QLatin1String("CurveModule"))
+		if (node->keyword() == "CurveModule"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <CurveModule>(freezeManager, node->toModule(), ModuleType::CURVE));
 		}
 
-		if (node->keyword() == QLatin1String("StaticConstraint"))
+		if (node->keyword() == "StaticConstraint"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <StaticTransformationModule>(freezeManager, node->toModule(), ModuleType::STATIC_TRANSFORMATION));
 		}
 
-		if (node->keyword() == QLatin1String("OglController"))
+		if (node->keyword() == "OglController"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <OglControllerModule>(freezeManager, node->toModule(), ModuleType::OGL_CONTROLLER));
 		}
 
-		if (node->keyword() == QLatin1String("DeformTransformOut"))
+		if (node->keyword() == "DeformTransformOut"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <PkoModule>(freezeManager, node->toModule(), ModuleType::PKO));
 		}
 
-		if (node->keyword() == QLatin1String("FreeFormDeformation"))
+		if (node->keyword() == "FreeFormDeformation"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <FreeformModule>(freezeManager, node->toModule(), ModuleType::FREEFORM));
 		}
 
-		if (node->keyword() == QLatin1String("BendyBoneModule"))
+		if (node->keyword() == "BendyBoneModule"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <BoneModule>(freezeManager, node->toModule(), ModuleType::BONE));
 		}
@@ -119,7 +120,7 @@ void FreezeResponder::onActionFreezeTransformation()
 {
 	printf("********Freeze Transformation Start********\n");
 
-	const QString s = QStringLiteral("Freeze Transformation");
+	const QString s = u"Freeze Transformation"_s;
 
 	SDK_Drawing::UndoScope undoScope(s);
 
@@ -133,7 +134,7 @@ void FreezeResponder::onActionFreezeTransformation()
 		return;
 	}
 
-	if (nodes[0]->keyword() != QLatin1String("PEG"))
+	if (nodes[0]->keyword() != "PEG"_L1)
 	{
 		printf("The selected node is not a peg");
 		return;
@@ -283,20 +284,20 @@ extern "C"
 		{
 			shortcutAdded = true;
 
-			const QString shortcutsFilename = PLUG_Services::getPluginPath(QLatin1String("HarmonyFreeze"))
-				+ QLatin1String(NTR("/resources/shortcuts.xml"));
+			const QString shortcutsFilename = PLUG_Services::getPluginPath(u"HarmonyFreeze"_s)
+				+ QStringLiteral(NTR("/resources/shortcuts.xml"));
 
 			SDK_Responder::addShortcutsFromFile(shortcutsFilename);
 		}
 
 		// load the menu XML file and attach this new menu to the 'Animation" menu.
-		const QString menusFilename = PLUG_Services::getPluginPath(QLatin1String("HarmonyFreeze"))
-			+ QLatin1String("/resources/menu.xml");
+		const QString menusFilename = PLUG_Services::getPluginPath(u"HarmonyFreeze"_s)
+			+ QStringLiteral("/resources/menu.xml");
 
-		PLUG_Services::getMenuService()->addMenuFromFile(QLatin1String(NTR("Animation")),  menusFilename);
+		PLUG_Services::getMenuService()->addMenuFromFile(QStringLiteral(NTR("Animation")),  menusFilename);
 
 		static FreezeResponder responder;
-		responder.setObjectName(QLatin1String("FreezeResponder") );
+		responder.setObjectName(u"FreezeResponder"_s);
 
 		SDK_Responder::registerResponder(&responder);
 	}

@@ -16,7 +16,7 @@
 #include <limits>
 #include <type_traits>
 
-
+using namespace Qt::StringLiterals;
 
 TransformationModule::TransformationModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module* modulePtr, ModuleType moduleType, bool isFreeze)
 	: ModuleBase(freezeManager, modulePtr, moduleType)
@@ -44,17 +44,17 @@ TransformationModule::TransformationModule(std::shared_ptr<FreezeManager> freeze
 			}
 		};
 
-		if (keyword == QLatin1String("POSITION") || keyword == QLatin1String("OFFSET"))
+		if (keyword == "POSITION"_L1 || keyword == "OFFSET"_L1)
 			loadAttr(m_positionAttr);
-		else if (keyword == QLatin1String("SCALE"))
+		else if (keyword == "SCALE"_L1)
 			loadAttr(m_scaleAttr);
-		else if (keyword == QLatin1String("ROTATION"))
+		else if (keyword == "ROTATION"_L1)
 			loadAttr(m_rotationAttr);
-		else if (keyword == QLatin1String("SKEW"))
+		else if (keyword == "SKEW"_L1)
 			loadAttr(m_skewAttr);
-		else if (keyword == QLatin1String("PIVOT"))
+		else if (keyword == "PIVOT"_L1)
 			loadAttr(m_pivotAttr);
-		else if (keyword == QLatin1String("ENABLE_3D"))
+		else if (keyword == "ENABLE_3D"_L1)
 			loadAttr(m_is3D);
 	}
 
@@ -421,9 +421,9 @@ void TransformationModule::recalculateAllPivots()
 void TransformationModule::setPivotJS() const
 {
 	getFreezeManagerPtr()->applyAttributes(getModulePtr()->qualifiedName(),
-									StaticAttrData{ QLatin1String("pivot.x"), m_pivotAttrSurrogate.x() },
-									StaticAttrData{ QLatin1String("pivot.y"), m_pivotAttrSurrogate.y() },
-									StaticAttrData{ QLatin1String("pivot.z"), m_pivotAttrSurrogate.z() });
+									StaticAttrData{ u"pivot.x"_s, m_pivotAttrSurrogate.x() },
+									StaticAttrData{ u"pivot.y"_s, m_pivotAttrSurrogate.y() },
+									StaticAttrData{ u"pivot.z"_s, m_pivotAttrSurrogate.z() });
 }
 
 void TransformationModule::setPivot(CO_OrCommand& curMacro)
@@ -742,16 +742,16 @@ void TransformationModule::setAttributesJS(const MatrixParameters & params, cons
 		return;
 
 	getFreezeManagerPtr()->applyAttributes(getModulePtr()->qualifiedName(),
-		AttrData{ QLatin1String("scale.x"), params.sx, frameNo, kfData.sx && kfData.isScaleSeparate },
-		AttrData{ QLatin1String("scale.y"), params.sy, frameNo, kfData.sy && kfData.isScaleSeparate },
-		AttrData{ QLatin1String("scale.z"), params.sz, frameNo, kfData.sz && kfData.isScaleSeparate && m_is3D},
-		AttrData{ QLatin1String("scale.xy"), params.sxy, frameNo, (kfData.sx || kfData.sy || kfData.sz) && !kfData.isScaleSeparate},
-		AttrData{ QLatin1String("rotation.anglex"), params.ax, frameNo, kfData.ax && kfData.isRotSeparate && m_is3D },
-		AttrData{ QLatin1String("rotation.angley"), params.ay, frameNo, kfData.ay && kfData.isRotSeparate && m_is3D },
-		AttrData{ QLatin1String("rotation.anglez"), params.az, frameNo, kfData.az && (kfData.isRotSeparate || !m_is3D)},
-		QuaternionAttrData{ QLatin1String("rotation.quaternionpath"), Math::Angle3d(params.ax, params.ay, params.az),
+		AttrData{ u"scale.x"_s, params.sx, frameNo, kfData.sx && kfData.isScaleSeparate },
+		AttrData{ u"scale.y"_s, params.sy, frameNo, kfData.sy && kfData.isScaleSeparate },
+		AttrData{ u"scale.z"_s, params.sz, frameNo, kfData.sz && kfData.isScaleSeparate && m_is3D},
+		AttrData{ u"scale.xy"_s, params.sxy, frameNo, (kfData.sx || kfData.sy || kfData.sz) && !kfData.isScaleSeparate},
+		AttrData{ u"rotation.anglex"_s, params.ax, frameNo, kfData.ax && kfData.isRotSeparate && m_is3D },
+		AttrData{ u"rotation.angley"_s, params.ay, frameNo, kfData.ay && kfData.isRotSeparate && m_is3D },
+		AttrData{ u"rotation.anglez"_s, params.az, frameNo, kfData.az && (kfData.isRotSeparate || !m_is3D)},
+		QuaternionAttrData{ u"rotation.quaternionpath"_s, Math::Angle3d(params.ax, params.ay, params.az),
 							frameNo, (kfData.ax || kfData.ay || kfData.az)  && !kfData.isRotSeparate && m_is3D},
-		AttrData{ QLatin1String("skew"), params.skewx, frameNo, kfData.skew });
+		AttrData{ u"skew"_s, params.skewx, frameNo, kfData.skew });
 }
 
 void TransformationModule::setAttributes(const MatrixParameters& params, const KeyframeData& kfData, CO_OrCommand& curMacro, const double frameNo)
@@ -820,14 +820,14 @@ void TransformationModule::setStaticAttributesJS(const MatrixParameters& params)
 	setStaticPositionJS(params);
 
 	getFreezeManagerPtr()->applyAttributes(getModulePtr()->qualifiedName(),
-		StaticAttrData{ QLatin1String("rotation.anglex"), params.ax },
-		StaticAttrData{ QLatin1String("rotation.angley"), params.ay },
-		StaticAttrData{ QLatin1String("rotation.anglez"), params.az },
-		StaticAttrData{ QLatin1String("scale.x"), params.sx },
-		StaticAttrData{ QLatin1String("scale.y"), params.sy },
-		StaticAttrData{ QLatin1String("scale.z"), params.sz },
-		StaticAttrData{ QLatin1String("scale.xy"), params.sxy },
-		StaticAttrData{ QLatin1String("skew"), params.skewx });
+		StaticAttrData{ u"rotation.anglex"_s, params.ax },
+		StaticAttrData{ u"rotation.angley"_s, params.ay },
+		StaticAttrData{ u"rotation.anglez"_s, params.az },
+		StaticAttrData{ u"scale.x"_s, params.sx },
+		StaticAttrData{ u"scale.y"_s, params.sy },
+		StaticAttrData{ u"scale.z"_s, params.sz },
+		StaticAttrData{ u"scale.xy"_s, params.sxy },
+		StaticAttrData{ u"skew"_s, params.skewx });
 }
 
 void TransformationModule::setStaticAttributes(const MatrixParameters& params, CO_OrCommand& curMacro)
@@ -861,8 +861,8 @@ void TransformationModule::initDrawingPivotSources()
 
 void TransformationModule::initElementDrawingPivotSources()
 {
-	AT_Attr* attr = findAttribute<AT_Attr>(QLatin1String("USE_DRAWING_PIVOT"));
-	if (attr && attr->textValue(1) == QLatin1String("Apply Embedded Pivot on Drawing Layer"))
+	AT_Attr* attr = findAttribute<AT_Attr>("USE_DRAWING_PIVOT"_L1);
+	if (attr && attr->textValue(1) == "Apply Embedded Pivot on Drawing Layer"_L1)
 		m_drawingPivotSources.push_back(getModulePtr());
 }
 
@@ -881,7 +881,7 @@ void TransformationModule::initPegDrawingPivotSources()
 		for (auto& dstPort : dstPorts)
 		{
 			if (!dstPort->node() || !dstPort->node()->toModule()
-				|| dstPort->node()->keyword() != QLatin1String("READ"))
+				|| dstPort->node()->keyword() != "READ"_L1)
 				continue;
 
 			if (isDrawingPivotAppliedOnPeg(dstPort->node()->toModule()))

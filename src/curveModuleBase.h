@@ -128,8 +128,8 @@ private:
 	void initAttributes();
 
 	template <typename ValueFunc>
-	double getRotationImpl(const QString& curveAttrKeyword,
-			const QString& offsetAttrKeyword,
+	double getRotationImpl(const QLatin1StringView curveAttrKeyword,
+			const QLatin1StringView offsetAttrKeyword,
 			ValueFunc&& valFunc) const;
 
 	AT_Position2dAttr* m_offsetAttr;

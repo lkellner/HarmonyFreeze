@@ -6,6 +6,8 @@
 #include <limits>
 #include <stdexcept>
 
+using namespace Qt::StringLiterals;
+
 static void recalculateIndependentPoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4& matrix,
 		Math::Point2d& point)
@@ -209,10 +211,10 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 	{
 		//JS
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-				StaticAttrData{ QLatin1String("restingoffset.x"), restingOffset.x() },
-				StaticAttrData{ QLatin1String("restingoffset.y"), restingOffset.y() },
-				StaticAttrData{ QLatin1String("offset.x"), staticOffset.x() },
-				StaticAttrData{ QLatin1String("offset.y"), staticOffset.y() });
+				StaticAttrData{ u"restingoffset.x"_s, restingOffset.x() },
+				StaticAttrData{ u"restingoffset.y"_s, restingOffset.y() },
+				StaticAttrData{ u"offset.x"_s, staticOffset.x() },
+				StaticAttrData{ u"offset.y"_s, staticOffset.y() });
 	}
 
 	//Animated values
@@ -263,8 +265,8 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 		{
 			//JS
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-					AttrData{ QLatin1String("offset.x"), offset.x(), frameNo, true },
-					AttrData{ QLatin1String("offset.y"), offset.y(), frameNo, true });
+					AttrData{ u"offset.x"_s, offset.x(), frameNo, true },
+					AttrData{ u"offset.y"_s, offset.y(), frameNo, true });
 		}
 	}
 }
@@ -289,12 +291,12 @@ Math::Matrix4x4 CurveModuleBase::adjustDependentMatrix(const Math::Matrix4x4 mat
 double CurveModuleBase::getStaticChainRotation(bool isRest) const
 {
 	const auto curveAttrKeyword = isRest
-		? QStringLiteral("restingOrientation1")
-		: QStringLiteral("orientation1");
+		? "restingOrientation1"_L1
+		: "orientation1"_L1;
 
 	const auto offsetAttrKeyword = isRest
-		? QStringLiteral("restingOrientation")
-		: QStringLiteral("orientation");
+		? "restingOrientation"_L1
+		: "orientation"_L1;
 
 	return getRotationImpl(curveAttrKeyword, offsetAttrKeyword,
 			[](const AT_DoubleAttr& a) { return a.localValue(); });
@@ -302,7 +304,7 @@ double CurveModuleBase::getStaticChainRotation(bool isRest) const
 
 double CurveModuleBase::getChainRotation(const double frameNo) const
 {
-	return getRotationImpl(QStringLiteral("orientation1"), QStringLiteral("orientation"),
+	return getRotationImpl("orientation1"_L1, "orientation"_L1,
 			[frameNo](const AT_DoubleAttr& a) { return a.value(frameNo); });
 }
 
@@ -312,11 +314,11 @@ void CurveModuleBase::initAttributes()
 	{
 		const QString& kw = attrKeyword(a);
 
-		if (kw == QLatin1String("offset"))
+		if (kw == "offset"_L1)
 			m_offsetAttr = dynamic_cast<AT_Position2dAttr*>(a._pAttr);
-		else if (kw == QLatin1String("restingOffset"))
+		else if (kw == "restingOffset"_L1)
 			m_restingOffsetAttr = dynamic_cast<AT_Position2dAttr*>(a._pAttr);
-		else if (kw == QLatin1String("localReferential") && getModuleType() != ModuleType::CURVE_OFFSET)
+		else if (kw == "localReferential"_L1 && getModuleType() != ModuleType::CURVE_OFFSET)
 		{
 			const auto *attr = dynamic_cast<const AT_BoolAttr*>(a._pAttr);
 			//Even though it doesn't seem to do anything in offset modules, this attribute still exists
@@ -337,8 +339,8 @@ void CurveModuleBase::initAttributes()
 }
 
 template <typename ValueFunc>
-double CurveModuleBase::getRotationImpl(const QString& curveAttrKeyword,
-		const QString& offsetAttrKeyword,
+double CurveModuleBase::getRotationImpl(const QLatin1StringView curveAttrKeyword,
+		const QLatin1StringView offsetAttrKeyword,
 		ValueFunc&& valFunc) const
 {
 	FreezeManager* fm = getFreezeManagerPtr();
@@ -349,8 +351,8 @@ double CurveModuleBase::getRotationImpl(const QString& curveAttrKeyword,
 
 	double rotation = 0.0;
 
-	while (parent && (parent->keyword() == QLatin1String("CurveModule")
-				|| parent->keyword() == QLatin1String("OffsetModule")))
+	while (parent && (parent->keyword() == "CurveModule"_L1
+				|| parent->keyword() == "OffsetModule"_L1))
 	{
 		const AT_AttrList attributes = ::getAttributeList(parent);
 
@@ -387,16 +389,16 @@ bool CurveModuleBase::isParentKeyframe(double frameNo)
 
 	MO_Node* parent = getModulePtr()->getParentNode();
 
-	while (parent && (parent->keyword() == QLatin1String("CurveModule")
-		|| parent->keyword() == QLatin1String("OffsetModule")))
+	while (parent && (parent->keyword() == "CurveModule"_L1
+		|| parent->keyword() == "OffsetModule"_L1))
 	{
 		AT_DoubleAttr* attr;
 
-		if(parent->keyword() == QLatin1String("CurveModule"))
-			attr = ::findAttribute<AT_DoubleAttr>(QLatin1String("orientation1"), parent);
+		if(parent->keyword() == "CurveModule"_L1)
+			attr = ::findAttribute<AT_DoubleAttr>("orientation1"_L1, parent);
 
-		if (parent->keyword() == QLatin1String("OffsetModule"))
-			attr = ::findAttribute<AT_DoubleAttr>(QLatin1String("orientation"), parent);
+		if (parent->keyword() == "OffsetModule"_L1)
+			attr = ::findAttribute<AT_DoubleAttr>("orientation"_L1, parent);
 
 
 		if(attr)

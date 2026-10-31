@@ -12,6 +12,8 @@
 
 #include <optional>
 
+using namespace Qt::StringLiterals;
+
 // workaround for 24.1 SDK
 namespace Assertion
 {
@@ -248,8 +250,8 @@ struct AlignmentContext
 
 static std::optional<AlignmentContext> buildAlignmentContext(MO_Module* modulePtr)
 {
-	const auto fieldChart = findSubAttribute<AT_DoubleAttr>(QStringLiteral("CUSTOM_NAME"), QStringLiteral("FIELD_CHART"), modulePtr);
-	AT_BoolAttr* turnBeforeAttr = findAttribute<AT_BoolAttr>(QLatin1String("TURN_BEFORE_ALIGNMENT"), modulePtr);
+	const auto fieldChart = findSubAttribute<AT_DoubleAttr>("CUSTOM_NAME"_L1, "FIELD_CHART"_L1, modulePtr);
+	AT_BoolAttr* turnBeforeAttr = findAttribute<AT_BoolAttr>("TURN_BEFORE_ALIGNMENT"_L1, modulePtr);
 
 	if (!fieldChart || !turnBeforeAttr)
 		return std::nullopt;
@@ -407,7 +409,7 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix()
 	//Alignment Settings on the element modules themselves, as well as the Scene Settings (Number of Units) that
 	//were in effect during the time, the element module was being created (saved as the "FIELD_CHART" sub attribute)
 
-	AT_EnumAttrBase* alignmentAttr = findAttribute<AT_EnumAttrBase>(QLatin1String("ALIGNMENT_RULE"));
+	AT_EnumAttrBase* alignmentAttr = findAttribute<AT_EnumAttrBase>("ALIGNMENT_RULE"_L1);
 
 	if (!alignmentAttr)
 		return {};

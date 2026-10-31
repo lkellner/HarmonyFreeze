@@ -12,13 +12,15 @@
 
 #include <stdexcept>
 
+using namespace Qt::StringLiterals;
+
 PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType)
 	: ModuleBase(std::move(freezeManager), modulePtr, moduleType)
-	, m_pivot01Attr(findAttribute<AT_Position2dAttr>(QStringLiteral("PIVOT1")))
-	, m_pivot02Attr(findAttribute<AT_Position2dAttr>(QStringLiteral("PIVOT2")))
-	, m_pivot03Attr(findAttribute<AT_Position2dAttr>(QStringLiteral("PIVOT3")))
+	, m_pivot01Attr(findAttribute<AT_Position2dAttr>("PIVOT1"_L1))
+	, m_pivot02Attr(findAttribute<AT_Position2dAttr>("PIVOT2"_L1))
+	, m_pivot03Attr(findAttribute<AT_Position2dAttr>("PIVOT3"_L1))
 {
 	if (!m_pivot01Attr)
 		throw std::runtime_error("missing attribute: 'm_pivot01Attr' for " + modulePtr->qualifiedName().toStdString());
@@ -157,15 +159,15 @@ void PkoModule::readjustSecondary()
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
-	processPivot(m_pivot01Attr, QLatin1String("pivot1"), *curMacro);
-	processPivot(m_pivot02Attr, QLatin1String("pivot2"), *curMacro);
-	processPivot(m_pivot03Attr, QLatin1String("pivot3"), *curMacro);
+	processPivot(m_pivot01Attr, u"pivot1"_s, *curMacro);
+	processPivot(m_pivot02Attr, u"pivot2"_s, *curMacro);
+	processPivot(m_pivot03Attr, u"pivot3"_s, *curMacro);
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
 
-void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword, CO_OrCommand& curMacro)
+void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, const QString pivotKeyword, CO_OrCommand& curMacro)
 {
 	//In the case of DoubleFreeze or SingleFreeze this might not be accurate for the static values. 
 	//However in those cases frame 1 will have a forced keyframe
@@ -210,7 +212,7 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, QString pivotKeyword,
 	}
 }
 
-void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro) const
+void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, const QString attributeKeyword, CO_OrCommand& curMacro) const
 {
 	clampValues(position);
 
@@ -226,13 +228,13 @@ void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* a
 		//JS
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ attributeKeyword + QLatin1String(".x"), position.x() },
-			StaticAttrData{ attributeKeyword + QLatin1String(".y"), position.y() });
+			StaticAttrData{ attributeKeyword + u".x"_s, position.x() },
+			StaticAttrData{ attributeKeyword + u".y"_s, position.y() });
 	}
 }
 
 
-void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, QString attributeKeyword, CO_OrCommand& curMacro, 
+void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, const QString attributeKeyword, CO_OrCommand& curMacro, 
 	KeyframeState keyframeState, double frameNo)
 {
 	clampValues(position);
@@ -257,8 +259,8 @@ void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, Q
 		if (attr->useSeparate())
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ attributeKeyword + QLatin1String(".x"), position.x(), frameNo, true },
-				AttrData{ attributeKeyword + QLatin1String(".y"), position.y(), frameNo, true });
+				AttrData{ attributeKeyword + u".x"_s, position.x(), frameNo, true },
+				AttrData{ attributeKeyword + u".y"_s, position.y(), frameNo, true });
 		}
 		else
 		{
@@ -310,7 +312,7 @@ bool PkoModule::hasComplexPort1Parent() const
 		return false;
 	}
 
-	if (port1srcModule->keyword() != QLatin1String("PEG"))
+	if (port1srcModule->keyword() != "PEG"_L1)
 	{
 		//Only pegs are considered simple for now
 		//Might be changed in the future
@@ -334,7 +336,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 		return true;
 	}
 
-	if (parent->keyword() != QLatin1String("PEG"))
+	if (parent->keyword() != "PEG"_L1)
 	{
 		//Only pegs will be checked for now
 		//Might be changed in the future
@@ -349,7 +351,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 	Math::Point3d tempPos;
 	bool isPosCtrlPnt = false;
 
-	AT_Position3dAttr* posAttr = ::findAttribute<AT_Position3dAttr>(QLatin1String("POSITION"), parent);
+	AT_Position3dAttr* posAttr = ::findAttribute<AT_Position3dAttr>("POSITION"_L1, parent);
 
 	if (posAttr)
 		posAttr->getValue(frameNo, tempPos, &isPosCtrlPnt, &isConstSeg);
@@ -363,7 +365,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 	bool isRotYCtrlPnt = false;
 	bool isRotZCtrlPnt = false;
 
-	AT_Rotation3dAttr* rotAttr = ::findAttribute<AT_Rotation3dAttr>(QLatin1String("ROTATION"), parent);
+	AT_Rotation3dAttr* rotAttr = ::findAttribute<AT_Rotation3dAttr>("ROTATION"_L1, parent);
 
 	if (rotAttr)
 	{
@@ -399,7 +401,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 	double tempScaleY;
 	double tempScaleZ;
 
-	AT_Scale3dAttr* scaleAttr = ::findAttribute<AT_Scale3dAttr>(QLatin1String("SCALE"), parent);
+	AT_Scale3dAttr* scaleAttr = ::findAttribute<AT_Scale3dAttr>("SCALE"_L1, parent);
 
 	if(scaleAttr)
 		scaleAttr->getValue(frameNo, tempScaleX, tempScaleY, tempScaleZ, &isKeyframeX, &isKeyframeY, &isKeyframeZ,
@@ -410,7 +412,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 	
 	bool isSkewCtrlPnt = false;
 
-	AT_DoubleAttr* skewAttr = ::findAttribute<AT_DoubleAttr>(QLatin1String("SKEW"), parent);
+	AT_DoubleAttr* skewAttr = ::findAttribute<AT_DoubleAttr>("SKEW"_L1, parent);
 	
 	if(skewAttr)
 		skewAttr->value(frameNo, &isSkewCtrlPnt, &isConstSeg);

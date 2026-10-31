@@ -67,7 +67,7 @@ private:
 	}
 
 	template <typename ValueFunc>
-	double getRotationImpl(const QString& orientationKeyword, ValueFunc&& valFunc) const;
+	double getRotationImpl(const QLatin1StringView orientationKeyword, ValueFunc&& valFunc) const;
 
 	std::unique_ptr<RegionOfInfluence> m_regionOfInfluence;
 
