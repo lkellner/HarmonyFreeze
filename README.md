@@ -474,7 +474,7 @@ The next steps in this project are to add support for
 
 as well as creating a UI for the settings.
 
-# Limitations
+# Known Issues
 
 + Keyframed Curve and Envelope Deformers' offset attributes won't deform properly when set to "2D Path".
 
