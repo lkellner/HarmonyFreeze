@@ -264,9 +264,17 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 		else
 		{
 			//JS
-			fm->applyAttributes(getModulePtr()->qualifiedName(),
+			if (m_offsetAttr->useSeparate())
+			{
+				fm->applyAttributes(getModulePtr()->qualifiedName(),
 					AttrData{ u"offset.x"_s, offset.x(), frameNo, true },
 					AttrData{ u"offset.y"_s, offset.y(), frameNo, true });
+			}
+			else
+			{
+				fm->applyAttributes(getModulePtr()->qualifiedName(),
+					Point2dAttrData{ u"offset"_s, Math::Point2d(offset.x(),offset.y()) , frameNo, true });
+			}
 		}
 	}
 }
