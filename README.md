@@ -81,6 +81,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   
 + Settings can now be changed via a pop-up dialog.
 
++ Bug Fix:  Keyframed Curve Deformers were prevented from having their offset attributes transformed if they were set to "2D Path".
+
++ Minor code improvements.
+
 
 # Installation
 
@@ -231,7 +235,7 @@ If you're not sure where to start, try the "Rabbit_Demo_Rig" included with this 
 
 >[!NOTE]
 >The following nodes are currently supported:
->Pegs, Elements (Drawings)[^1], Curve Deformers, Envelope Deformers, Free Form Deformers, Point Kinematic Outputs, Static Transformations and OGL Controllers.
+>Pegs, Elements (Drawings)[^1], Curve Deformers, Envelope Deformers, Bone Deformers, Free Form Deformers, Point Kinematic Outputs, Static Transformations and OGL Controllers.
 
 [^1]: Vector drawings are fully supported, as are bitmap drawings wrapped inside a vector container (e.g. brush strokes, bitmap drawings copied into a vector layer). True bitmap drawings are only supported in Experimental Mode.
 
