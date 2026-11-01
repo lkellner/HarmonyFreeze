@@ -1,11 +1,5 @@
 #include "freeformModule.h"
 
-#include <BaseCore/maths/MT_Point4d.h>
-
-#include <GraphicCore/CinematicChain/CC_Transformation.h>
-#include <SceneCore/attribute/AT_Position2dAttr.h>
-#include <SceneCore/module/MO_PortTransform.h>
-
 using namespace Qt::StringLiterals;
 
 FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,

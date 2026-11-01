@@ -74,8 +74,8 @@ void PointModuleBase::setStaticAttributes(TransformPoint* point, Math::Point3d p
 		//JS
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ point->name + u".position.x"_s, position.x() },
-			StaticAttrData{ point->name + u".position.y"_s, position.y() });
+			StaticAttrData{ point->name + u".x"_s, position.x() },
+			StaticAttrData{ point->name + u".y"_s, position.y() });
 	}
 }
 
@@ -100,13 +100,13 @@ void PointModuleBase::setAttributes(TransformPoint* point, Math::Point3d positio
 		if (point->posAttr->useSeparate())
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ point->name + u".position.x"_s, position.x(), frameNo, true },
-				AttrData{ point->name + u".position.y"_s, position.y(), frameNo, true });
+				AttrData{ point->name + u".x"_s, position.x(), frameNo, true },
+				AttrData{ point->name + u".y"_s, position.y(), frameNo, true });
 		}
 		else
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{ point->name + u".position"_s, Math::Point2d(position.x(),position.y()) , frameNo, true });
+				Point2dAttrData{ point->name, Math::Point2d(position.x(),position.y()) , frameNo, true });
 		}
 	}
 }
