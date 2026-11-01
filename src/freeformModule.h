@@ -16,43 +16,19 @@
 #include <SceneCore/attribute/AT_BoolAttr.h>
 #include <SceneCore/module/MO_NetworkUtils.h>
 #include "SceneCore/selectable/SLB_ManipContext.h"
-#include "SceneCore/attribute/AT_AttrCmds.h"
-#include "SceneCore/attribute/AT_PositionAttrCmds.h"
 #include <Util/command/CO_OrCommand.h>
 
 #include "moduleBase.h"
-#include "utils.h"
+#include "pointModuleBase.h"
 
-struct FreeformPoint
-{
-	QString name;
-
-	AT_Position2dAttr* posAttr;
-	AT_Position2dAttr* restingPosAttr;
-
-	//Rotation attribute has been left out, see note for processPoint
-};
-
-class FreeformModule : public ModuleBase
+class FreeformModule : public PointModuleBase
 {
 public:
 	explicit FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 			MO_Module* modulePtr,
 			ModuleType moduleType);
 
-	void readjustSecondary() override;
-
-
 private:
-	FrameRange getFrameRange() const override;
-
-	void processPoint(FreeformPoint*, CO_OrCommand& curMacro);
-	void setStaticAttributes(FreeformPoint* point, Math::Point3d position, Math::Point3d restingPos,
-		CO_OrCommand& curMacro) const;
-	void setAttributes(FreeformPoint* point, Math::Point3d position, CO_OrCommand& curMacro,
-		double frameNo) const;
-	
-	std::vector<std::unique_ptr<FreeformPoint>> m_freeformPoints;
 };
 
 #endif
