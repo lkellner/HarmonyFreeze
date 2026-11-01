@@ -7,36 +7,26 @@ QuadmapModule::QuadmapModule(std::shared_ptr<FreezeManager> freezeManager,
 		ModuleType moduleType)
 	: PointModuleBase(std::move(freezeManager), modulePtr, moduleType)
 {
-	AT_AttrList attrList = getAttributeList();
+	//Quadmaps are a bit misleading at a first glance as, when they are connected underneath a peg
+	//they don't change their visual position/shape to match the pegs animation.
+	//Therefore readjusting their points in readjustSecondary will give the impression that they have
+	//moved. This transformation is however what's necessary to keep the drawings/pegs underneath in place.
 
-	//It was decided to not change the rotation attribute for now as it would only be effected
-	//by skews and non-uniform scales. However, these would also lead to modified non-uniform scale
-	//and skew attributes, which the freeform module is not able to represent. 
-	//The resulting transformation did therefor not lead to a significantly closer match than keeping
-	//the original value.
-	printAttributes(attrList);
+	AT_AttrList attrList = getAttributeList();
 
 	for (auto& attr : attrList)
 	{
-		/*
-		AT_ComplexAttr* cAttr;
+		if (attr._pAttr->typeName() == "POSITION_2D"_L1)
+		{
+			AT_Position2dAttr* pointAttr = dynamic_cast<AT_Position2dAttr*>(attr._pAttr);
 
-		if (attr._pAttr->typeName() != "FREE-FORM-DEFORMATION-ATTRIBUTE"_L1)
-			continue;
-		cAttr = dynamic_cast<AT_ComplexAttr*>(attr._pAttr);
+			if (!pointAttr)
+				continue;
 
-		if (!cAttr)
-			continue;
-
-		AT_Position2dAttr* posAttr = findSubAttribute<AT_Position2dAttr>(cAttr, "POSITION"_L1);
-
-		if(posAttr)
-			addTransformPoint(std::make_unique<TransformPoint>(cAttr->xmlKeyword()+ u".position"_s, posAttr, true));
-
-		AT_Position2dAttr* restingPosAttr = findSubAttribute<AT_Position2dAttr>(cAttr, "RESTING_POSITION"_L1);
-
-		if(restingPosAttr)
-			addTransformPoint(std::make_unique<TransformPoint>(cAttr->xmlKeyword()+ u".restingPosition"_s, restingPosAttr, false));
-			*/
+			if (pointAttr->keyword() == "PIVOT"_L1)
+				addTransformPoint(std::make_unique<TransformPoint>(pointAttr->xmlKeyword(), pointAttr, false));
+			else
+				addTransformPoint(std::make_unique<TransformPoint>(pointAttr->xmlKeyword(), pointAttr, true));
+		}
 	}
 }

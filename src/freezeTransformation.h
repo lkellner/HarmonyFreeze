@@ -16,6 +16,7 @@
 #include "pegModule.h"
 #include "pkoModule.h"
 #include "boneModule.h"
+#include "quadmapModule.h"
 #include "staticTransformationModule.h"
 #include "utils.h"
 

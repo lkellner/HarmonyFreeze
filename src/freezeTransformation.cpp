@@ -40,6 +40,8 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 			continue;
 		}
 
+		printf("Keyword %s\n", qPrintable(node->keyword()));
+
 		if (node->keyword() == "READ"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <DrawingTransformationModule>(freezeManager, node->toModule(),
@@ -98,6 +100,11 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 		if (node->keyword() == "BendyBoneModule"_L1)
 		{
 			moduleWrappers.push_back(std::make_unique <BoneModule>(freezeManager, node->toModule(), ModuleType::BONE));
+		}
+
+		if (node->keyword() == "QUADMAP"_L1)
+		{
+			moduleWrappers.push_back(std::make_unique <QuadmapModule>(freezeManager, node->toModule(), ModuleType::QUADMAP));
 		}
 
 		if (!moduleWrappers.empty())
