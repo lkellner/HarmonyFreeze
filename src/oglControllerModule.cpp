@@ -363,21 +363,23 @@ void OglControllerModule::setAttributes( Math::Point3d position, Math::Point3d t
 	else if (isPosCtrlPnt || isTextPosCtrlPnt || isSizeCtrlPnt || isTextSizeCtrlPnt)
 	{
 		//JS
+		const bool is3DPos = !m_positionAttr->useSeparate();
+		const bool is3DTextPos = !m_textPositionAttr->useSeparate();
 
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			TextAttrData{ u"position.3DPATH.X"_s, position.x(), frameNo, isPosCtrlPnt },
-			TextAttrData{ u"position.3DPATH.Y"_s, position.y(), frameNo, isPosCtrlPnt },
-			TextAttrData{ u"position.3DPATH.Z"_s, position.z(), frameNo, isPosCtrlPnt },
-			AttrData{ u"position.x"_s, position.x(), frameNo, isPosCtrlPnt },
-			AttrData{ u"position.y"_s, position.y(), frameNo, isPosCtrlPnt },
-			AttrData{ u"position.z"_s, position.z(), frameNo, isPosCtrlPnt },
+			TextAttrData{ u"position.3DPATH.X"_s, position.x(), frameNo, isPosCtrlPnt && is3DPos },
+			TextAttrData{ u"position.3DPATH.Y"_s, position.y(), frameNo, isPosCtrlPnt && is3DPos },
+			TextAttrData{ u"position.3DPATH.Z"_s, position.z(), frameNo, isPosCtrlPnt && is3DPos },
+			AttrData{ u"position.x"_s, position.x(), frameNo, isPosCtrlPnt && !is3DPos },
+			AttrData{ u"position.y"_s, position.y(), frameNo, isPosCtrlPnt && !is3DPos },
+			AttrData{ u"position.z"_s, position.z(), frameNo, isPosCtrlPnt && !is3DPos },
 			AttrData{ u"size"_s, size, frameNo, isSizeCtrlPnt },
-			TextAttrData{ u"textposition.3DPATH.X"_s, textPosition.x(), frameNo, isTextPosCtrlPnt },
-			TextAttrData{ u"textposition.3DPATH.Y"_s, textPosition.y(), frameNo, isTextPosCtrlPnt },
-			TextAttrData{ u"textposition.3DPATH.Z"_s, textPosition.z(), frameNo, isTextPosCtrlPnt },
-			AttrData{ u"textposition.x"_s, textPosition.x(), frameNo, isTextPosCtrlPnt },
-			AttrData{ u"textposition.y"_s, textPosition.y(), frameNo, isTextPosCtrlPnt },
-			AttrData{ u"textposition.z"_s, textPosition.z(), frameNo, isTextPosCtrlPnt },
+			TextAttrData{ u"textposition.3DPATH.X"_s, textPosition.x(), frameNo, isTextPosCtrlPnt && is3DTextPos },
+			TextAttrData{ u"textposition.3DPATH.Y"_s, textPosition.y(), frameNo, isTextPosCtrlPnt && is3DTextPos },
+			TextAttrData{ u"textposition.3DPATH.Z"_s, textPosition.z(), frameNo, isTextPosCtrlPnt && is3DTextPos },
+			AttrData{ u"textposition.x"_s, textPosition.x(), frameNo, isTextPosCtrlPnt && !is3DTextPos },
+			AttrData{ u"textposition.y"_s, textPosition.y(), frameNo, isTextPosCtrlPnt && !is3DTextPos },
+			AttrData{ u"textposition.z"_s, textPosition.z(), frameNo, isTextPosCtrlPnt && !is3DTextPos },
 			AttrData{ u"textsize"_s, textSize, frameNo, isTextSizeCtrlPnt });
 	}
 }
