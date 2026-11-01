@@ -36,6 +36,7 @@ HarmonyFreeze is a Toon Boom Harmony plugin that lets you transform rigs or part
   - [Static Transformations](#static-transformations)
   - [OGL Controllers](#ogl-controllers)
   - [Additional limitations (2D Mode off)](#additional-limitations-arising-from-switching-off-2d-mode-in-harmonyfreeze)
+- [Known Issues](#known-issues)
 - [Roadmap](#roadmap)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
@@ -473,7 +474,9 @@ The next steps in this project are to add support for
 
 as well as creating a UI for the settings.
 
+# Limitations
 
++ Keyframed Curve and Envelope Deformers' offset attributes won't deform properly when set to "2D Path".
 
  
 # Acknowledgements
