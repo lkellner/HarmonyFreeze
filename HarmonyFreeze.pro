@@ -82,6 +82,7 @@ HEADERS += \
 	src/pkoModule.h\
 	src/pointModuleBase.h\
 	src/freeformModule.h\
+	src/shapeAwareModule.h\
 	src/boneModule.h\
 	src/regionOfInfluence.h\
 	src/quadmapModule.h\
@@ -108,6 +109,7 @@ SOURCES += src/freezeTransformation.cpp\
 	src/pkoModule.cpp\
 	src/pointModuleBase.cpp\
 	src/freeformModule.cpp\
+	src/shapeAwareModule.cpp\
 	src/boneModule.cpp\
 	src/regionOfInfluence.cpp\
 	src/quadmapModule.cpp\

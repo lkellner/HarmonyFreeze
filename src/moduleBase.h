@@ -26,6 +26,7 @@ enum class ModuleType
 	PKO,
 	BONE,
 	FREEFORM,
+	SHAPEAWARE,
 	QUADMAP,
 };
 
