@@ -77,7 +77,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 + Elements created with non-default "Scene Settings" can now be processed properly.
   
-+ Point Kinematic Outputs, Bone Deformers and Free Form Deformers are now supported.
++ Point Kinematic Outputs, Bone Deformers, Free Form Deformers and Quadmaps are now supported.
   
 + Settings can now be changed via a pop-up dialog.
 
@@ -235,7 +235,7 @@ If you're not sure where to start, try the "Rabbit_Demo_Rig" included with this 
 
 >[!NOTE]
 >The following nodes are currently supported:
->Pegs, Elements (Drawings)[^1], Curve Deformers, Envelope Deformers, Bone Deformers, Free Form Deformers, Point Kinematic Outputs, Static Transformations and OGL Controllers.
+>Pegs, Elements (Drawings)[^1], Curve Deformers, Envelope Deformers, Bone Deformers, Free Form Deformers, Quadmaps, Point Kinematic Outputs, Static Transformations and OGL Controllers.
 
 [^1]: Vector drawings are fully supported, as are bitmap drawings wrapped inside a vector container (e.g. brush strokes, bitmap drawings copied into a vector layer). True bitmap drawings are only supported in Experimental Mode.
 
