@@ -100,6 +100,11 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 			moduleWrappers.push_back(std::make_unique <BoneModule>(freezeManager, node->toModule(), ModuleType::BONE));
 		}
 
+		if (node->keyword() == "QUADMAP"_L1)
+		{
+			moduleWrappers.push_back(std::make_unique <QuadmapModule>(freezeManager, node->toModule(), ModuleType::QUADMAP));
+		}
+
 		if (!moduleWrappers.empty())
 		{
 			freezeManager->updateFrameRange(moduleWrappers.back()->getFrameRange());
