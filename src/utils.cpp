@@ -700,7 +700,8 @@ static bool isAuxiliaryPort(MO_Port* port)
 	//port->id() unfortunately returns something different
 	const MO_Node::InPorts inPorts = node->getInPorts();
 	
-	if (node->keyword() == "DeformTransformOut"_L1 && inPorts.size() >= 2 && port == inPorts[1])
+	if ((node->keyword() == "DeformTransformOut"_L1 || node->keyword() == "ShapeAwareDeformation"_L1)
+		&& inPorts.size() >= 2 && port == inPorts[1])
 	{
 		return true;
 	}
