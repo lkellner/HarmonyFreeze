@@ -128,19 +128,21 @@ void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const
 
 void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const QuaternionAttrData& attr)
 {
-	if (attr.isKeyframe)
-	{
-		//TODO: should put this column check somewhere where it only gets called once...
-		//Need to manually create a quarternion column if it doesn't exist yet as, unlike
-		//Bezier, it isn't being generated automatically
-		out << "\t\tif(node.linkedColumn(\"" << moduleName << "\", \"" << attr.name << "\")==\"\")\n";
-		out << "\t\t{\n";
-		out << "\t\t\tvar newColumnName = column.generateAnonymousName();\n";
-		out << "\t\t\tcolumn.add(newColumnName, \"QUATERNIONPATH\");\n";
-		out << "\t\t\tnode.linkAttr(\"" << moduleName << "\", \"" << attr.name << "\", newColumnName);\n";
-		out << "\t\t}\n";
-		out << "\t\tnode.getAttr(\"" << moduleName << "\", 1, \"" << attr.name << "\").setValueAt(Point3d(" << attr.value.x() << "," << attr.value.y() << "," << attr.value.z() << "), " << attr.frameNo << "); \n";
-	}
+	if (!attr.isKeyframe)
+		return;
+
+	//Keeping this column check here for now, even though it creates more checks than necessary
+	//The other alternative would be to make sure every that every module that include quaternions
+	//adds this check on the first frame to be changed, which might be more prone to errors.
+	//Need to manually create a quarternion column if it doesn't exist yet as, unlike
+	//Bezier, it isn't being generated automatically
+	out << "\t\tif(node.linkedColumn(\"" << moduleName << "\", \"" << attr.name << "\")==\"\")\n";
+	out << "\t\t{\n";
+	out << "\t\t\tvar newColumnName = column.generateAnonymousName();\n";
+	out << "\t\t\tcolumn.add(newColumnName, \"QUATERNIONPATH\");\n";
+	out << "\t\t\tnode.linkAttr(\"" << moduleName << "\", \"" << attr.name << "\", newColumnName);\n";
+	out << "\t\t}\n";
+	out << "\t\tnode.getAttr(\"" << moduleName << "\", 1, \"" << attr.name << "\").setValueAt(Point3d(" << attr.value.x() << "," << attr.value.y() << "," << attr.value.z() << "), " << attr.frameNo << "); \n";
 }
 
 
