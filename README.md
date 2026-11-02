@@ -438,6 +438,8 @@ Limitations for Deformers can only arise from their “Region of Influence” at
 
 When the "Number of Units" in the "Scene Settings" differs between the "X" and the "Y" coordinates, bones that are attached to other bones can’t be processed entirely accurately. This is due to their length changing slightly when rotating, tracing a lemon-shaped path, which hasn’t been entirely possible to predict as the transformation is no longer completely linear.
 
+For non-uniform scales and skews the "Bias"' will also change slightly.
+
 Additionally bones whose "Offset" attribute is set to "2D Path" and a value that differs from (0,0) aren’t always properly deformed in earlier versions of Harmony (H24, H25.0, H25.1).
 
 
