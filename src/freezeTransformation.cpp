@@ -36,9 +36,7 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 	for (MO_Node* node : nodes)
 	{
 		if (!node->toModule())
-		{
 			continue;
-		}
 
 		if (node->keyword() == "READ"_L1)
 		{
@@ -61,54 +59,34 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 		}
 
 		if (node->keyword() == "PEG"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <PegModule>(freezeManager, node->toModule(), ModuleType::PEG, false));
-		}
 
 		if (node->keyword() == "OffsetModule"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <OffsetModule>(freezeManager, node->toModule(), ModuleType::CURVE_OFFSET));
-		}
 
 		if (node->keyword() == "CurveModule"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <CurveModule>(freezeManager, node->toModule(), ModuleType::CURVE));
-		}
 
 		if (node->keyword() == "StaticConstraint"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <StaticTransformationModule>(freezeManager, node->toModule(), ModuleType::STATIC_TRANSFORMATION));
-		}
 
 		if (node->keyword() == "OglController"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <OglControllerModule>(freezeManager, node->toModule(), ModuleType::OGL_CONTROLLER));
-		}
 
 		if (node->keyword() == "DeformTransformOut"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <PkoModule>(freezeManager, node->toModule(), ModuleType::PKO));
-		}
 
 		if (node->keyword() == "FreeFormDeformation"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <FreeformModule>(freezeManager, node->toModule(), ModuleType::FREEFORM));
-		}
 
 		if (node->keyword() == "BendyBoneModule"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <BoneModule>(freezeManager, node->toModule(), ModuleType::BONE));
-		}
 
 		if (node->keyword() == "QUADMAP"_L1)
-		{
 			moduleWrappers.push_back(std::make_unique <QuadmapModule>(freezeManager, node->toModule(), ModuleType::QUADMAP));
-		}
 
 		if (!moduleWrappers.empty())
-		{
 			freezeManager->updateFrameRange(moduleWrappers.back()->getFrameRange());
-		}
 	}
 
 	return moduleWrappers;
