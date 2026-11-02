@@ -141,7 +141,7 @@ void clampValue(double & value, const double reference);
 
 //Conversions
 
-double applyUnitOffset(const Math::Matrix4x4& unitOffsetMatrix, const double rotation);
+double convertRotation(const Math::Matrix4x4& unitOffsetMatrix, const double rotation);
 double fieldsToOgl(SC_SceneMetrics* sceneMetrics, double rotation);
 Math::Matrix4x4 fieldsToOgl(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 matrix);
 Math::Matrix4x4 oglToFields(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 matrix);

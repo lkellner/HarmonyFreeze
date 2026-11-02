@@ -373,7 +373,7 @@ double CurveModuleBase::getRotationImpl(const QLatin1StringView curveAttrKeyword
 				//Curve module
 				if (a)
 					//rotation += valFunc(*a);
-					rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
+					rotation += convertRotation(fm->getUnitOffsetScaleMatrix(), valFunc(*a));
 			}
 			else if (attribute._pAttr->keyword() == offsetAttrKeyword)
 			{

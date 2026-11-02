@@ -154,7 +154,7 @@ double BoneModule::getRotationImpl(const QLatin1StringView orientationKeyword, V
 			&& !hasOffset(parent))
 		{
 			//Not the first bone in the chain
-			rotation += applyUnitOffset(fm->getUnitOffsetScaleMatrix(), valFunc(*attr));
+			rotation += convertRotation(fm->getUnitOffsetScaleMatrix(), valFunc(*attr));
 		}
 		else
 		{
@@ -218,7 +218,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 	bool isHasFieldsOrientation = hasFieldsOrientation();
 
 	if (!isHasFieldsOrientation)
-		ogOglOrientation = applyUnitOffset(unitOffsetMatrix, ogOrientation);
+		ogOglOrientation = convertRotation(unitOffsetMatrix, ogOrientation);
 	else
 		ogOglOrientation = fieldsToOgl(sm, ogOrientation);
 
@@ -229,7 +229,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 	double orientation;
 
 	if (!isHasFieldsOrientation)
-		orientation = applyUnitOffset(unitOffsetMatrix.getInverse(), oglOrientation);
+		orientation = convertRotation(unitOffsetMatrix.getInverse(), oglOrientation);
 	else
 		orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
@@ -287,7 +287,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 		ogOrientation = orientationAttr->value(frameNo);
 
 		if (!isHasFieldsOrientation)
-			ogOglOrientation =  applyUnitOffset(unitOffsetMatrix, ogOrientation);
+			ogOglOrientation = convertRotation(unitOffsetMatrix, ogOrientation);
 		else
 			ogOglOrientation = fieldsToOgl(sm, ogOrientation);
 
@@ -298,7 +298,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 		oglOrientation = getAngle2d(rotationMatrix.getTransform2d());
 
 		if (!isHasFieldsOrientation)
-			orientation = applyUnitOffset(unitOffsetMatrix.getInverse(), oglOrientation);
+			orientation = convertRotation(unitOffsetMatrix.getInverse(), oglOrientation);
 		else
 			orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 

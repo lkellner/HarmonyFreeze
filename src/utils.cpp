@@ -359,7 +359,7 @@ Math::Matrix4x4 getVectorModificationMatrix(SC_SceneMetrics* sceneMetrics, Math:
 	return fromOglMatrix * modMatrix * fromOglMatrix.getInverse();
 }
 
-double applyUnitOffset(const Math::Matrix4x4 & unitOffsetMatrix, const double rotation)
+double convertRotation(const Math::Matrix4x4 & unitOffsetMatrix, const double rotation)
 {
 	Math::Matrix4x4 rotationMatrix = Math::Matrix4x4().rotateDegrees(rotation, {0,0,1});
 	rotationMatrix = unitOffsetMatrix.getInverse() * rotationMatrix * unitOffsetMatrix;
