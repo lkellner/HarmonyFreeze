@@ -84,6 +84,7 @@ HEADERS += \
 	src/freeformModule.h\
 	src/boneModule.h\
 	src/regionOfInfluence.h\
+	src/quadmapModule.h\
 	src/dialog.h\
 	src/settings.h\
 
@@ -109,6 +110,7 @@ SOURCES += src/freezeTransformation.cpp\
 	src/freeformModule.cpp\
 	src/boneModule.cpp\
 	src/regionOfInfluence.cpp\
+	src/quadmapModule.cpp\
 	src/dialog.cpp\
 	src/settings.cpp\
 
