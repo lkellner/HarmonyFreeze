@@ -36,6 +36,7 @@ HarmonyFreeze is a Toon Boom Harmony plugin that lets you transform rigs or part
   - [Curve and Envelope Deformers](#curve-and-envelope-deformers)
   - [Bone Deformers](#bone-deformers)
   - [Free Form Deformers](#free-form-deformers)
+  - [Shape Aware Deformers](#shape-aware-deformers)
   - [Point Kinematic Outputs](#point-kinematic-outputs)
   - [Static Transformations](#static-transformations)
   - [OGL Controllers](#ogl-controllers)
@@ -77,7 +78,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 + Elements created with non-default "Scene Settings" can now be processed properly.
   
-+ Point Kinematic Outputs, Bone Deformers, Free Form Deformers and Quadmaps are now supported.
++ Point Kinematic Outputs, Bone Deformers, Free Form Deformers, Shape Aware Deformers and Quadmaps are now supported.
   
 + Settings can now be changed via a pop-up dialog.
 
@@ -235,7 +236,7 @@ If you're not sure where to start, try the "Rabbit_Demo_Rig" included with this 
 
 >[!NOTE]
 >The following nodes are currently supported:
->Pegs, Elements (Drawings)[^1], Curve Deformers, Envelope Deformers, Bone Deformers, Free Form Deformers, Quadmaps, Point Kinematic Outputs, Static Transformations and OGL Controllers.
+>Pegs, Elements (Drawings)[^1], Curve Deformers, Envelope Deformers, Bone Deformers, Free Form Deformers, Shape Aware Deformers, Quadmaps, Point Kinematic Outputs, Static Transformations and OGL Controllers.
 
 [^1]: Vector drawings are fully supported, as are bitmap drawings wrapped inside a vector container (e.g. brush strokes, bitmap drawings copied into a vector layer). True bitmap drawings are only supported in Experimental Mode.
 
@@ -444,6 +445,15 @@ Additionally bones whose "Offset" attribute is set to "2D Path" and a value that
 
 It was decided to not change the rotation attribute for now as it would only be effected by skews and non-uniform scales. However, these would also lead to modified non-uniform scale and skew attributes, which the freeform module is not able to represent. The resulting transformation did therefore not lead to a significantly closer match than keeping the original value.
 
+
+## Shape Aware Deformers
+
+The Shape Aware Deformers' implementation is based on Free Form Deformers and thus present the same issue regarding the change of rotation.
+
+Additionally when using a matte drawing that doesn't fully cover the area of the drawing(s) to be deformed, the deformed drawing(s) might vary slightly after using Harmony Freeze.
+
+Keep in mind that, Shape Aware Deformers adjust their matte drawings, even if their inports aren’t connected to the Freeze Peg by themselves. If their outports however are connected to additional nodes that aren’t Shape Aware Deformers, they will not be transformed.
+
 ## Point Kinematic Outputs
 
 Point Kinematic Outputs work best with translations, rotations and uniform scales. For skews and non-uniform scales with an animated Deformer on top, the final position might differ slightly, especially when the Point Kinematic Output is not located closely to the Deformer. It mimics changes that would be observed in images places underneath an animated Deformer as well and is most likely due to changes in the triangulation of the deformed area.
@@ -505,8 +515,7 @@ Transformations will be orthographically projected into 2D space.
 # Roadmap
 
 The next steps in this project are to add support for
-+ Shape Aware Deformers and
-+ Quadmaps.
++ Transformation-Limit nodes.
 
 
 
