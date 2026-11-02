@@ -17,6 +17,7 @@
 #include "pkoModule.h"
 #include "boneModule.h"
 #include "quadmapModule.h"
+#include "shapeAwareModule.h"
 #include "staticTransformationModule.h"
 #include "utils.h"
 

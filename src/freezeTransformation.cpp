@@ -90,6 +90,9 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 		if (node->keyword() == "QUADMAP"_L1)
 			moduleWrappers.push_back(std::make_unique <QuadmapModule>(freezeManager, node->toModule(), ModuleType::QUADMAP));
 
+		if (node->keyword() == "ShapeAwareDeformation"_L1)
+			moduleWrappers.push_back(std::make_unique <ShapeAwareModule>(freezeManager, node->toModule(), ModuleType::SHAPEAWARE));
+
 		if (!moduleWrappers.empty())
 			freezeManager->updateFrameRange(moduleWrappers.back()->getFrameRange());
 	}
