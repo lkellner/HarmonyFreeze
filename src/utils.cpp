@@ -709,6 +709,38 @@ static bool isAuxiliaryPort(MO_Port* port)
 	return false;
 }
 
+bool isShapeAwareMatteOnly(MO_Node* node)
+{
+	std::vector<MO_Port*> outPorts = node->getOutPorts();
+
+	bool hasDstNode = false;
+
+	for (auto& port : outPorts)
+	{
+		std::vector<MO_Port*> dstPorts;
+		port->realDstPorts(dstPorts);
+
+		for (auto& dstPort : dstPorts)
+		{
+			if (!dstPort->node() || !dstPort->node()->toModule())
+				continue;
+
+			hasDstNode = true;
+
+			if (dstPort->node()->keyword() == "ShapeAwareDeformation"_L1 && isAuxiliaryPort(dstPort))
+				continue;
+
+			if (!isShapeAwareMatteOnly(dstPort->node()))
+				return false;
+		}
+	}
+
+	//This node is the last node and it's not a Shape-Aware Deformation node reached via the matte port
+	if (!hasDstNode)
+		return false;
+
+	return true;
+}
 
 static void getAllChildren_internal(MO_Node* node, std::vector<MO_Node*>& children, std::vector<MO_Node*>& noRecChildren)
 {
