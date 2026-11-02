@@ -375,11 +375,8 @@ Math::Matrix4x4 getFieldsModificationMatrix(SC_SceneMetrics* sceneMetrics, Math:
 
 double fieldsToOgl(SC_SceneMetrics* sceneMetrics, double rotation)
 {
-	Math::Matrix2x3 rotationMatrix = Math::Matrix2x3().Rotate(toRadians(rotation));
-	Math::Matrix2x3 toOglMatrix = Math::Matrix2x3().Scale({sceneMetrics->toOGLX(1),sceneMetrics->toOGLY(1)});
-
-	Math::Matrix2x3 fromOglMatrix = Math::Matrix2x3().Scale({sceneMetrics->fromOGLX(1),sceneMetrics->fromOGLY(1)});
-	return getAngle2d(fromOglMatrix * rotationMatrix* toOglMatrix);
+	Math::Matrix4x4 fromOglMatrix = Math::Matrix4x4().scale(sceneMetrics->fromOGLX(1), sceneMetrics->fromOGLY(1), sceneMetrics->fromOGLZ(1));
+	return convertRotation(fromOglMatrix, rotation);
 }
 
 Math::Matrix4x4 fieldsToOgl(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 matrix)
