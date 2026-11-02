@@ -40,6 +40,11 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 
 		if (node->keyword() == "READ"_L1)
 		{
+			//Drawings added to the auxiliary port of a Shape-Aware Deformer aren't being affected by their incoming matrices
+			//If the drawings need to be transformed to match the deformer's transformation, the deformer will take care of them
+			if (isShapeAwareMatteOnly(node))
+				continue;
+
 			moduleWrappers.push_back(std::make_unique <DrawingTransformationModule>(freezeManager, node->toModule(),
 				ModuleType::DRAWING_TRANSFORMATION, false));
 
