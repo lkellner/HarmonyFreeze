@@ -80,6 +80,7 @@ HEADERS += \
 	src/drawingTransformationModule.h\
 	src/pegModule.h\
 	src/pkoModule.h\
+	src/pointModuleBase.h\
 	src/freeformModule.h\
 	src/boneModule.h\
 	src/regionOfInfluence.h\
@@ -104,6 +105,7 @@ SOURCES += src/freezeTransformation.cpp\
 	src/drawingTransformationModule.cpp\
 	src/pegModule.cpp\
 	src/pkoModule.cpp\
+	src/pointModuleBase.cpp\
 	src/freeformModule.cpp\
 	src/boneModule.cpp\
 	src/regionOfInfluence.cpp\
