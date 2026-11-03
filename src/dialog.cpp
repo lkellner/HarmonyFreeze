@@ -32,6 +32,8 @@ void UIDialog::initializeWidgets()
 {
 	auto* mainLayout = new QVBoxLayout(this);
 
+
+
 	for (auto& setting : m_settings)
 	{
 		QWidget* w = createWidget(this, setting);
@@ -113,6 +115,8 @@ QWidget* createWidget(QWidget* parent, Setting& setting)
 	offLabel->setEnabled(!setting.value);
 	offLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+	
+
 	auto toggleLabels =	[onLabel, offLabel, &setting](int value)
 	{
 		const bool isEnabled = value > 0;
@@ -123,11 +127,30 @@ QWidget* createWidget(QWidget* parent, Setting& setting)
 
 	QObject::connect(slider, &QSlider::valueChanged, toggleLabels);
 
+
 	widgetHLayout->addSpacing(10);
 	widgetHLayout->addWidget(offLabel);
 	widgetHLayout->addWidget(slider);
 	widgetHLayout->addWidget(onLabel);
 	widgetHLayout->addStretch();
+
+	if(setting.name == "ExperimentalMode")
+	{
+		auto* warningLabel = new QLabel(widget);
+		warningLabel->setText(u"Warning: Undo/Redo commands are NOT available in Experimental Mode!"_s);
+		warningLabel->setWordWrap(true);
+		warningLabel->setVisible(setting.value);
+
+		auto displayWarning = [warningLabel](int value)
+		{
+			const bool isEnabled = value > 0;
+			warningLabel->setVisible(isEnabled);
+		};
+
+		QObject::connect(slider, &QSlider::valueChanged, displayWarning);
+
+		widgetVLayout->addWidget(warningLabel);
+	}
 
 	return widget;
 }
