@@ -108,7 +108,7 @@ void ElementModule::applyChangeMatrix(CA_CelPtr celPtr, Math::Matrix4x4 matrix) 
 		return;
 
 
-	matrix = getVectorModificationMatrix(getModulePtr()->sceneMetrics(), matrix, tbd);
+	matrix = oglToVectorModificationMatrix(getModulePtr()->sceneMetrics(), matrix, tbd);
 
 
 

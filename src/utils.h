@@ -141,7 +141,7 @@ Math::Matrix4x4 fieldsToOgl(const SC_SceneMetrics* sceneMetrics, const Math::Mat
 Math::Matrix4x4 oglToFields(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 matrix);
 void convertFromOGL(MatrixParameters& params, const SC_SceneMetrics* sceneMetrics);
 
-Math::Matrix4x4 getVectorModificationMatrix(const SC_SceneMetrics* sceneMetrics,
+Math::Matrix4x4 oglToVectorModificationMatrix(const SC_SceneMetrics* sceneMetrics,
 	const Math::Matrix4x4 modMatrix, const CELVEC_Tbd* tbd);
 Math::Matrix4x4 getFieldsModificationMatrix(const SC_SceneMetrics* sceneMetrics,
 	const Math::Matrix4x4 modMatrix);

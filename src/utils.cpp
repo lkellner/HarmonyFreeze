@@ -341,7 +341,7 @@ Math::Point3d vectorToOgl(const Math::Point3d point, const CA_CelPtr celPtr)
 	return tbd->getDrawingDomainScalingMatrix() * point;
 }
 
-Math::Matrix4x4 getVectorModificationMatrix(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 modMatrix,
+Math::Matrix4x4 oglToVectorModificationMatrix(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 modMatrix,
 	const CELVEC_Tbd* tbd)
 {
 	if (!tbd || !sceneMetrics)
