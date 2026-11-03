@@ -16,9 +16,12 @@
 #include <GraphicCore/GraphicLib/GR_CompositeVectorDrawingObj.h>
 #include <GraphicCore/GraphicLib/GR_VectorDrawingObj.h>
 
+#include <SceneCore/attribute/AT_DoubleAttr.h>
 #include <SceneCore/attribute/AT_DrawingAttr.h>
 #include <SceneCore/attribute/AT_ElementAttr.h>
 #include <SceneCore/attribute/AT_ElementLayerAttr.h>
+#include <SceneCore/attribute/AT_EnumAttrTemplate.h>
+#include <SceneCore/attribute/AT_Enums.h>
 #include <SceneCore/attribute/AT_TimingAttr.h>
 #include <SceneCore/celcache/CA_CelKey.h>
 #include <SceneCore/celcache/CA_CelPtr.h>
@@ -33,10 +36,6 @@
 #include <SDKExtension/SDK_Column.h>
 #include <SDKExtension/SDK_Drawing.h>
 #include <SDKExtension/SDK_Selection.h>
-
-#include <SceneCore/attribute/AT_EnumAttrTemplate.h>
-#include <SceneCore/attribute/AT_Enums.h>
-#include <SceneCore/attribute/AT_DoubleAttr.h>
 
 
 #include <vector>
@@ -55,7 +54,6 @@ struct StaticAttrData
 	double value;
 };
 
-
 struct AttrData
 {
 	QString name;
@@ -63,7 +61,6 @@ struct AttrData
 	double frameNo;
 	bool isKeyframe;
 };
-
 
 struct Point2dAttrData
 {
@@ -81,7 +78,6 @@ struct QuaternionAttrData
 	bool isKeyframe;
 };
 
-
 struct TextAttrData
 {
 	QString name;
@@ -89,7 +85,6 @@ struct TextAttrData
 	double frameNo;
 	bool isKeyframe;
 };
-
 
 struct MatrixParameters
 {
@@ -107,7 +102,6 @@ struct MatrixParameters
 	double skewy = 0;
 	double skewz = 0;
 };
-
 
 struct FrameRange
 {
@@ -134,7 +128,7 @@ struct Exposure
 //General
 
 void getIncomingFrameRange(const MO_Node* node, FrameRange& frameRange);
-void updateFrameRange(FrameRange& range, int frame);
+void updateFrameRange(FrameRange& range, const int frame);
 void clampValues(MatrixParameters& params);
 void clampValues(Math::Point3d &point);
 void clampValue(double & value, const double reference);
@@ -142,75 +136,64 @@ void clampValue(double & value, const double reference);
 //Conversions
 
 double convertRotation(const Math::Matrix4x4& unitOffsetMatrix, const double rotation);
-double fieldsToOgl(SC_SceneMetrics* sceneMetrics, double rotation);
-Math::Matrix4x4 fieldsToOgl(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 matrix);
-Math::Matrix4x4 oglToFields(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 matrix);
-void convertFromOGL(MatrixParameters& params, SC_SceneMetrics* sceneMetrics);
+double fieldsToOgl(const SC_SceneMetrics* sceneMetrics, const double rotation);
+Math::Matrix4x4 fieldsToOgl(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 matrix);
+Math::Matrix4x4 oglToFields(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 matrix);
+void convertFromOGL(MatrixParameters& params, const SC_SceneMetrics* sceneMetrics);
 
-Math::Matrix4x4 getVectorModificationMatrix(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 modMatrix, CELVEC_Tbd* tbd);
-Math::Matrix4x4 getFieldsModificationMatrix(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 modMatrix);
-Math::Matrix4x4 getElementFlipMatrix(MO_Module* modulePtr);
+Math::Matrix4x4 getVectorModificationMatrix(const SC_SceneMetrics* sceneMetrics,
+	const Math::Matrix4x4 modMatrix, const CELVEC_Tbd* tbd);
+Math::Matrix4x4 getFieldsModificationMatrix(const SC_SceneMetrics* sceneMetrics,
+	const Math::Matrix4x4 modMatrix);
+Math::Matrix4x4 getElementFlipMatrix(const MO_Module* modulePtr);
 
-Math::Matrix4x4 oglToVector(Math::Matrix4x4 matrix);
-Math::Point3d vectorToOgl(Math::Point3d point, CA_CelPtr celPtr);
-
-double toRadians(double val);
-double fromRadians(double val);
+Math::Matrix4x4 oglToVector(const Math::Matrix4x4 matrix);
+Math::Point3d vectorToOgl(const Math::Point3d point, const CA_CelPtr celPtr);
 
 double matchFullRotations(const double referenceAngle, const double angle);
 
-
 //Matrices
 
-Math::Point3d getScale(const Math::Matrix4x4 & matrix);
-Math::Matrix4x4 get2dRotationMatrix(Math::Matrix2x3 matrix);
+Math::Matrix4x4 get2dRotationMatrix(const Math::Matrix2x3 matrix);
+Math::Matrix4x4 convertToProjectionMatrix(const Math::Matrix4x4 matrix);
 
-double getAngleBetween(double angle01, double angle02);
+Math::Point3d getScale(const Math::Matrix4x4& matrix);
 double getAngle2d(const Math::Matrix2x3 matrix);
-double getAngleOffset(Math::Angle3d angle01, Math::Angle3d angle02);
-Math::Angle3d getAngles(Math::Matrix4x4 matrix, double angleZ);
-Math::Vector2d getFlip2d(const Math::Matrix2x3& matrix, double rotationZ);
-MatrixParameters getAnglesAndFlip3d(const Math::Matrix4x4& matrix, Math::Angle3d rotation);
 
-MatrixParameters matrixParameters(const Math::Matrix4x4& matrix, const Math::Point3d pivot, Math::Angle3d rotation);
-MatrixParameters matrixParameters3d(const Math::Matrix4x4& matrix, const Math::Point3d pivot, Math::Angle3d rotation);
-MatrixParameters matrixParameters2d(const Math::Matrix4x4& matrix, const Math::Point3d pivot, double rotationZ);
-void printMatrixParameters(MatrixParameters p);
+MatrixParameters matrixParameters(const Math::Matrix4x4& matrix, const Math::Point3d pivot,
+	const Math::Angle3d rotation);
+void printMatrixParameters(const MatrixParameters p);
 
-Math::Matrix4x4 convertToProjectionMatrix(Math::Matrix4x4 matrix);
-
-double getAffineDeterminant(Math::Matrix4x4 matrix);
-MatrixComplexity defineMatrixComplexity(const Math::Matrix4x4& matrix, bool is3D);
-bool isIdentity(Math::Matrix4x4 matrix);
+MatrixComplexity defineMatrixComplexity(const Math::Matrix4x4& matrix, const bool is3D);
+bool isIdentity(const Math::Matrix4x4 matrix);
 bool isScaleZero(const Math::Matrix4x4& matrix);
-bool isTransform2d(const Math::Matrix4x4& matrix);
-
 
 //Node Tree
 
-MO_Module* getSourceModule(MO_Node* node, int portIndex);
-std::vector<MO_Node*> getAllChildren(MO_Node* node);
-std::vector<MO_Module*> getAllInputModules(MO_Module* modulePtr);
-bool isShapeAwareMatteOnly(MO_Node* node);
+MO_Module* getSourceModule(const MO_Node* node, const int portIndex);
+std::vector<MO_Node*> getAllChildren(const MO_Node* node);
+std::vector<MO_Module*> getAllInputModules(const MO_Module* modulePtr);
+bool isShapeAwareMatteOnly(const MO_Node* node);
 
 //Drawing Utils
 
-std::vector<CelInfo> getElementTimings(MO_Module* modulePtr);
-std::vector<Exposure> getExposures(MO_Module* modulePtr, FrameRange range);
+std::vector<CelInfo> getElementTimings(const MO_Module* modulePtr);
+std::vector<Exposure> getExposures(const MO_Module* modulePtr, const FrameRange range);
 Math::Point2d getDrawingPivot(const CA_CelPtr cel);
 void setDrawingPivot(CA_CelPtr cel, const Math::Point3d pivot);
 
-CELVEC_Tbd* getPermTbd(CA_CelPtr celPtr);
-
+CELVEC_Tbd* getPermTbd(const CA_CelPtr celPtr);
 
 //Attributes
 
-bool hasUsedDrawingPivots(MO_Module* modulePtr);
-bool isDrawingPivotAppliedOnPeg(MO_Module* modulePtr);
+bool hasUsedDrawingPivots(const MO_Module* modulePtr);
+bool isDrawingPivotAppliedOnPeg(const MO_Module* modulePtr);
 
-QString getLayerAttr(MO_Module* modulePtr);
+QString getLayerAttr(const MO_Module* modulePtr);
 
 AT_AttrList getAttributeList(const MO_Node* node);
+int getElementId(const MO_Module* modulePtr);
+void printAttributes(const AT_AttrList attributes);
 
 template <typename T>
 T* findAttribute(const QLatin1StringView keyword, const MO_Node* node)
@@ -226,7 +209,6 @@ T* findAttribute(const QLatin1StringView keyword, const MO_Node* node)
 	return it == attributes.end() ? nullptr : dynamic_cast<T*>(it->_pAttr);
 }
 
-
 template <typename T>
 T* findSubAttribute(const AT_ComplexAttr* parent, const QLatin1StringView keyword)
 {
@@ -238,7 +220,6 @@ T* findSubAttribute(const AT_ComplexAttr* parent, const QLatin1StringView keywor
 
 	return it == parent->attrsEnd() ? nullptr : dynamic_cast<T*>(*it);
 }
-
 
 template <typename T>
 T* findSubAttribute(const QLatin1StringView parentKeyword, const QLatin1StringView keyword, MO_Node* node)
@@ -256,10 +237,6 @@ T* findSubAttribute(const QLatin1StringView parentKeyword, const QLatin1StringVi
 
 	return it == parent->attrsEnd() ? nullptr : dynamic_cast<T*>(*it);
 }
-
-int getElementId(MO_Module* modulePtr);
-void printAttributes(AT_AttrList attributes);
-
 
 template <typename T = AT_Rotation3dAttr>
 bool isQuarternionKeyframe(const T& t, double frame, Math::Angle3d& angle)

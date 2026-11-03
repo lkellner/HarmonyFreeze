@@ -49,8 +49,7 @@ void getIncomingFrameRange(const MO_Node * node, FrameRange& frameRange)
 	}
 }
 
-
-MO_Module* getSourceModule(MO_Node* node, int portIndex)
+MO_Module* getSourceModule(const MO_Node* node, const int portIndex)
 {
 	const MO_Node::InPorts inPorts = node->getInPorts();
 
@@ -83,7 +82,7 @@ double matchFullRotations(const double referenceAngle, const double angle)
 
 //There already is a Math::Matrix4x4::isIdentity() function, however it doesn't seem to account for
 //any floating point errors
-bool isIdentity(Math::Matrix4x4 matrix)
+bool isIdentity(const Math::Matrix4x4 matrix)
 {
 	constexpr double threshold = 0.0001;
 
@@ -105,7 +104,7 @@ bool isIdentity(Math::Matrix4x4 matrix)
 		std::abs(matrix(Math::Row::Row_3, Math::Column::Column_3) - 1) < threshold;
 }
 
-MatrixComplexity defineMatrixComplexity(const Math::Matrix4x4& matrix, bool is3D)
+MatrixComplexity defineMatrixComplexity(const Math::Matrix4x4& matrix, const bool is3D)
 {
 	//matrix only contains position values
 	if (isIdentity(matrix.rotation()))
@@ -115,7 +114,7 @@ MatrixComplexity defineMatrixComplexity(const Math::Matrix4x4& matrix, bool is3D
 	if (!isIdentity(matrix.rotationNormalized()))
 		return MatrixComplexity::Complex;
 
-	Math::Point3d scale = getScale(matrix);
+	const Math::Point3d scale = getScale(matrix);
 
 	constexpr double threshold = 0.0001;
 
@@ -129,12 +128,12 @@ MatrixComplexity defineMatrixComplexity(const Math::Matrix4x4& matrix, bool is3D
 }
 
 //Created new function as Math::Matrix4x4::RotationNormalized() includes skew values
-Math::Matrix4x4 get2dRotationMatrix(Math::Matrix2x3 matrix)
+Math::Matrix4x4 get2dRotationMatrix(const Math::Matrix2x3 matrix)
 {
 	return Math::Matrix4x4().rotateDegrees(getAngle2d(matrix));
 }
 
-Math::Matrix4x4 convertToProjectionMatrix(Math::Matrix4x4 matrix)
+Math::Matrix4x4 convertToProjectionMatrix(const Math::Matrix4x4 matrix)
 {
 	Math::Matrix4x4 projectionMatrix = Math::Matrix4x4();
 
@@ -149,7 +148,7 @@ Math::Point3d getScale(const Math::Matrix4x4 & matrix)
 {
 	//Math::Matrix4x4::rotation() includes rotation, scale and shear,
 	//Math::Matrix4x4::rotationNormalized() includes rotation and shear
-	Math::Matrix4x4 scaleMatrix = matrix.rotationNormalized().getInverse() * matrix.rotation();
+	const Math::Matrix4x4 scaleMatrix = matrix.rotationNormalized().getInverse() * matrix.rotation();
 
 	const double xScale = scaleMatrix(Math::Row::Row_0, Math::Column::Column_0);
 	const double yScale = scaleMatrix(Math::Row::Row_1, Math::Column::Column_1);
@@ -158,40 +157,40 @@ Math::Point3d getScale(const Math::Matrix4x4 & matrix)
 	return Math::Point3d(xScale, yScale, zScale);
 }
 
-double getAffineDeterminant(Math::Matrix4x4 matrix)
+static double getAffineDeterminant(Math::Matrix4x4 matrix)
 {
 	//Simplified version assuming the last row is 0,0,0,1
 	//There is a Math::Matrix4x4.determinant() function, however it doesn't exist in H24 and below
-	double add01 = matrix(Math::Row::Row_0, Math::Column::Column_0) *
+	const double add01 = matrix(Math::Row::Row_0, Math::Column::Column_0) *
 				matrix(Math::Row::Row_1, Math::Column::Column_1) *
 				matrix(Math::Row::Row_2, Math::Column::Column_2);
 
-	double add02 = matrix(Math::Row::Row_0, Math::Column::Column_1) *
-				matrix(Math::Row::Row_1, Math::Column::Column_2) *
-				matrix(Math::Row::Row_2, Math::Column::Column_0);
+	const double add02 = matrix(Math::Row::Row_0, Math::Column::Column_1) *
+						matrix(Math::Row::Row_1, Math::Column::Column_2) *
+						matrix(Math::Row::Row_2, Math::Column::Column_0);
 
-	double add03 = matrix(Math::Row::Row_0, Math::Column::Column_2) *
-				matrix(Math::Row::Row_1, Math::Column::Column_0) *
-				matrix(Math::Row::Row_2, Math::Column::Column_1);
+	const double add03 = matrix(Math::Row::Row_0, Math::Column::Column_2) *
+						matrix(Math::Row::Row_1, Math::Column::Column_0) *
+						matrix(Math::Row::Row_2, Math::Column::Column_1);
 
-	double sub01 = matrix(Math::Row::Row_0, Math::Column::Column_2) *
-				matrix(Math::Row::Row_1, Math::Column::Column_1) *
-				matrix(Math::Row::Row_2, Math::Column::Column_0);
+	const double sub01 = matrix(Math::Row::Row_0, Math::Column::Column_2) *
+						matrix(Math::Row::Row_1, Math::Column::Column_1) *
+						matrix(Math::Row::Row_2, Math::Column::Column_0);
 
-	double sub02 = matrix(Math::Row::Row_0, Math::Column::Column_1) *
-				matrix(Math::Row::Row_1, Math::Column::Column_0) *
-				matrix(Math::Row::Row_2, Math::Column::Column_2);
+	const double sub02 = matrix(Math::Row::Row_0, Math::Column::Column_1) *
+						matrix(Math::Row::Row_1, Math::Column::Column_0) *
+						matrix(Math::Row::Row_2, Math::Column::Column_2);
 
-	double sub03 = matrix(Math::Row::Row_0, Math::Column::Column_0) *
-				matrix(Math::Row::Row_1, Math::Column::Column_2) *
-				matrix(Math::Row::Row_2, Math::Column::Column_1);
+	const double sub03 = matrix(Math::Row::Row_0, Math::Column::Column_0) *
+						matrix(Math::Row::Row_1, Math::Column::Column_2) *
+						matrix(Math::Row::Row_2, Math::Column::Column_1);
 
 	return add01 + add02 + add03 - sub01 - sub02 - sub03;
 }
 
 //There is Math::Matrix4x4::isTransform2d() function, however it
 //seems to classify some matrices with scale z != 1 as 2d matrices
-bool isTransform2d(const Math::Matrix4x4& matrix)
+static bool isTransform2d(const Math::Matrix4x4& matrix)
 {
 	return matrix(Math::Row::Row_0, Math::Column::Column_2) == 0 &&
 		matrix(Math::Row::Row_1, Math::Column::Column_2) == 0 &&
@@ -200,17 +199,17 @@ bool isTransform2d(const Math::Matrix4x4& matrix)
 		matrix(Math::Row::Row_2, Math::Column::Column_2) == 1;
 }
 
-double toRadians(double val)
+static double toRadians(double val)
 {
 	return val * M_PI / 180;
 }
 
-double fromRadians(double val)
+static double fromRadians(double val)
 {
 	return val * 180 / M_PI;
 }
 
-void updateFrameRange(FrameRange& range, int frame)
+void updateFrameRange(FrameRange& range, const int frame)
 {
 	if (frame < 1)
 		return;
@@ -224,13 +223,13 @@ void updateFrameRange(FrameRange& range, int frame)
 	return;
 }
 
-Math::Matrix4x4 getElementFlipMatrix(MO_Module * modulePtr)
+Math::Matrix4x4 getElementFlipMatrix(const MO_Module * modulePtr)
 {
 	if (!modulePtr|| modulePtr->keyword() != "READ"_L1)
 		return {};
 
-	AT_BoolAttr* flipHAttr = findAttribute<AT_BoolAttr>("FLIP_HOR"_L1, modulePtr);
-	AT_BoolAttr* flipVAttr = findAttribute<AT_BoolAttr>("FLIP_VERT"_L1, modulePtr);
+	const AT_BoolAttr* flipHAttr = findAttribute<AT_BoolAttr>("FLIP_HOR"_L1, modulePtr);
+	const AT_BoolAttr* flipVAttr = findAttribute<AT_BoolAttr>("FLIP_VERT"_L1, modulePtr);
 
 	if (!flipHAttr || !flipVAttr)
 		return {};
@@ -275,7 +274,7 @@ bool isScaleZero(const Math::Matrix4x4& matrix)
 	return true;
 }
 
-void convertFromOGL(MatrixParameters &params, SC_SceneMetrics* sceneMetrics)
+void convertFromOGL(MatrixParameters &params, const SC_SceneMetrics* sceneMetrics)
 {
 	params.tx = sceneMetrics->fromOGLX(params.tx);
 	params.ty = sceneMetrics->fromOGLY(params.ty);
@@ -325,9 +324,10 @@ void clampValues(MatrixParameters& params)
 	clampValue(params.skewz, 0);
 }
 
-Math::Point3d vectorToOgl(Math::Point3d point, CA_CelPtr celPtr)
+Math::Point3d vectorToOgl(const Math::Point3d point, const CA_CelPtr celPtr)
 {
-	CELVEC_Tbd* tbd = getPermTbd(celPtr);
+	const CELVEC_Tbd* tbd = getPermTbd(celPtr);
+
 	if (!tbd)
 	{
 		//This seems to be the default value of domain scaling.
@@ -341,7 +341,8 @@ Math::Point3d vectorToOgl(Math::Point3d point, CA_CelPtr celPtr)
 	return tbd->getDrawingDomainScalingMatrix() * point;
 }
 
-Math::Matrix4x4 getVectorModificationMatrix(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 modMatrix, CELVEC_Tbd* tbd)
+Math::Matrix4x4 getVectorModificationMatrix(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 modMatrix,
+	const CELVEC_Tbd* tbd)
 {
 	if (!tbd || !sceneMetrics)
 		return modMatrix;
@@ -353,9 +354,7 @@ Math::Matrix4x4 getVectorModificationMatrix(SC_SceneMetrics* sceneMetrics, Math:
 	//There are other matrices avaible via tbd, that also match these values. However these are influenced by tbd's applied
 	//matrix that doesn't seem to have any influence on the vector drawings.
 
-	Math::Matrix4x4 fromOglMatrix = tbd->getDrawingDomainScalingMatrix().getInverse();
-
-
+	const Math::Matrix4x4 fromOglMatrix = tbd->getDrawingDomainScalingMatrix().getInverse();
 	return fromOglMatrix * modMatrix * fromOglMatrix.getInverse();
 }
 
@@ -367,32 +366,36 @@ double convertRotation(const Math::Matrix4x4 & unitOffsetMatrix, const double ro
 }
 
 
-Math::Matrix4x4 getFieldsModificationMatrix(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 modMatrix)
+Math::Matrix4x4 getFieldsModificationMatrix(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 modMatrix)
 {
-	Math::Matrix4x4 fromOglMatrix = Math::Matrix4x4().scale(sceneMetrics->fromOGLX(1), sceneMetrics->fromOGLY(1), sceneMetrics->fromOGLZ(1));
+	const Math::Matrix4x4 fromOglMatrix = Math::Matrix4x4().scale(sceneMetrics->fromOGLX(1),
+		sceneMetrics->fromOGLY(1), sceneMetrics->fromOGLZ(1));
 	return fromOglMatrix * modMatrix * fromOglMatrix.getInverse();
 }
 
-double fieldsToOgl(SC_SceneMetrics* sceneMetrics, double rotation)
+double fieldsToOgl(const SC_SceneMetrics* sceneMetrics, const double rotation)
 {
-	Math::Matrix4x4 fromOglMatrix = Math::Matrix4x4().scale(sceneMetrics->fromOGLX(1), sceneMetrics->fromOGLY(1), sceneMetrics->fromOGLZ(1));
+	const Math::Matrix4x4 fromOglMatrix = Math::Matrix4x4().scale(sceneMetrics->fromOGLX(1),
+		sceneMetrics->fromOGLY(1), sceneMetrics->fromOGLZ(1));
 	return convertRotation(fromOglMatrix, rotation);
 }
 
-Math::Matrix4x4 fieldsToOgl(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 matrix)
+Math::Matrix4x4 fieldsToOgl(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 matrix)
 {
-	Math::Matrix4x4 toOglMatrix = Math::Matrix4x4().scale(sceneMetrics->toOGLX(1), sceneMetrics->toOGLY(1), sceneMetrics->toOGLZ(1));
+	const Math::Matrix4x4 toOglMatrix = Math::Matrix4x4().scale(sceneMetrics->toOGLX(1), 
+		sceneMetrics->toOGLY(1), sceneMetrics->toOGLZ(1));
 	return toOglMatrix * matrix;
 }
 
 
-Math::Matrix4x4 oglToFields(SC_SceneMetrics* sceneMetrics, Math::Matrix4x4 matrix)
+Math::Matrix4x4 oglToFields(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 matrix)
 {
-	Math::Matrix4x4 fromOglMatrix = Math::Matrix4x4().scale(sceneMetrics->fromOGLX(1), sceneMetrics->fromOGLY(1), sceneMetrics->fromOGLZ(1));
+	const Math::Matrix4x4 fromOglMatrix = Math::Matrix4x4().scale(sceneMetrics->fromOGLX(1),
+		sceneMetrics->fromOGLY(1), sceneMetrics->fromOGLZ(1));
 	return fromOglMatrix * matrix;
 }
 
-Math::Angle3d getAngles(const Math::Matrix4x4 matrix, const double angleZ)
+static Math::Angle3d getAngles(const Math::Matrix4x4 matrix, const double angleZ)
 {
 	Math::Angle3d angle;
 
@@ -437,7 +440,7 @@ double getAngle2d(const Math::Matrix2x3 matrix)
 	return fromRadians(atan2(nX.y(), nX.x()));
 }
 
-double getAngleBetween(double angle01, double angle02)
+static double getAngleBetween(const double angle01, const double angle02)
 {
 	double difference01 = std::fmod(angle01 - angle02, 360);
 
@@ -452,7 +455,7 @@ double getAngleBetween(double angle01, double angle02)
 	return difference01 < difference02 ? difference01 : difference02;
 }
 
-double getAngleOffset(Math::Angle3d angle01, Math::Angle3d angle02)
+static double getAngleOffset(const Math::Angle3d angle01, const Math::Angle3d angle02)
 {
 	double offset = getAngleBetween(angle01.x(), angle02.x());
 	offset += getAngleBetween(angle01.y(), angle02.y());
@@ -461,7 +464,7 @@ double getAngleOffset(Math::Angle3d angle01, Math::Angle3d angle02)
 	return offset;
 }
 
-MatrixParameters getAnglesAndFlip3d(const Math::Matrix4x4& matrix, Math::Angle3d rotation)
+static MatrixParameters getAnglesAndFlip3d(const Math::Matrix4x4& matrix, const Math::Angle3d rotation)
 {
 	MatrixParameters p;
 
@@ -472,18 +475,18 @@ MatrixParameters getAnglesAndFlip3d(const Math::Matrix4x4& matrix, Math::Angle3d
 	{
 		Math::Matrix4x4 matrixXFlip = matrix;
 		matrixXFlip.scale(-1, 1, 1);
-		Math::Angle3d angleXFlip = getAngles(matrixXFlip, rotation.z());
-		double angleOffsetX = getAngleOffset(angleXFlip, rotation);
+		const Math::Angle3d angleXFlip = getAngles(matrixXFlip, rotation.z());
+		const double angleOffsetX = getAngleOffset(angleXFlip, rotation);
 
 		Math::Matrix4x4 matrixYFlip = matrix;
 		matrixYFlip.scale(1, -1, 1);
-		Math::Angle3d angleYFlip = getAngles(matrixYFlip, rotation.z());
-		double angleOffsetY = getAngleOffset(angleYFlip, rotation);
+		const Math::Angle3d angleYFlip = getAngles(matrixYFlip, rotation.z());
+		const double angleOffsetY = getAngleOffset(angleYFlip, rotation);
 
 		Math::Matrix4x4 matrixZFlip = matrix;
 		matrixZFlip.scale(1, 1, -1);
-		Math::Angle3d angleZFlip = getAngles(matrixZFlip, rotation.z());
-		double angleOffsetZ = getAngleOffset(angleZFlip, rotation);
+		const Math::Angle3d angleZFlip = getAngles(matrixZFlip, rotation.z());
+		const double angleOffsetZ = getAngleOffset(angleZFlip, rotation);
 
 
 		if (angleOffsetX <= angleOffsetY && angleOffsetX <= angleOffsetZ)
@@ -515,84 +518,52 @@ MatrixParameters getAnglesAndFlip3d(const Math::Matrix4x4& matrix, Math::Angle3d
 	return p;
 }
 
-Math::Vector2d getFlip2d(const Math::Matrix2x3& matrix, double rotationZ)
+static Math::Vector2d getFlip2d(const Math::Matrix2x3& matrix, double rotationZ)
 {
-	Math::Vector2d p = Math::Vector2d(1,1);
+	Math::Vector2d flip = Math::Vector2d(1,1);
 
 	if (matrix.Determinant() < 0)
 	{
 		Math::Matrix2x3 matrixXFlip = matrix;
 		matrixXFlip.Scale(Math::Vector2d(-1, 1));
 
-		double angleXFlip = getAngle2d(matrixXFlip);
-		double angleOffsetX = getAngleBetween(angleXFlip, rotationZ);
+		const double angleXFlip = getAngle2d(matrixXFlip);
+		const double angleOffsetX = getAngleBetween(angleXFlip, rotationZ);
 
 		Math::Matrix2x3 matrixYFlip = matrix;
 		matrixYFlip.Scale(Math::Vector2d(1, -1));
-		double angleYFlip = getAngle2d(matrixYFlip);
-		double angleOffsetY = getAngleBetween(angleYFlip, rotationZ);
+		const double angleYFlip = getAngle2d(matrixYFlip);
+		const double angleOffsetY = getAngleBetween(angleYFlip, rotationZ);
 
 
 		if (angleOffsetX <= angleOffsetY)
-			p.setX(-1);
+			flip.setX(-1);
 		else
-			p.setY(-1);
+			flip.setY(-1);
 	}
 	else
 	{
-		double angleNoFlip = getAngle2d(matrix);
-		double angleOffsetNoFlip = getAngleBetween(angleNoFlip, rotationZ);
+		const double angleNoFlip = getAngle2d(matrix);
+		const double angleOffsetNoFlip = getAngleBetween(angleNoFlip, rotationZ);
 
 
 		Math::Matrix2x3 matrixDoubleFlip = matrix;
 		matrixDoubleFlip.Scale(Math::Vector2d(-1, -1));
-		double angleDoubleFlip = getAngle2d(matrixDoubleFlip);
-		double angleOffsetDoubleFlip = getAngleBetween(angleDoubleFlip, rotationZ);
+		const double angleDoubleFlip = getAngle2d(matrixDoubleFlip);
+		const double angleOffsetDoubleFlip = getAngleBetween(angleDoubleFlip, rotationZ);
 
 		if (angleOffsetNoFlip > angleOffsetDoubleFlip)
 		{
-			p.setX(-1);
-			p.setY(-1);
+			flip.setX(-1);
+			flip.setY(-1);
 		}
 	}
 
 
-	return p;
+	return flip;
 }
 
-MatrixParameters matrixParameters(const Math::Matrix4x4& matrix, const Math::Point3d pivot, Math::Angle3d rotation)
-{
-
-	if (isTransform2d(matrix))
-		return matrixParameters2d(matrix, pivot, rotation.z());
-	else
-		return matrixParameters3d(matrix, pivot, rotation);
-}
-
-MatrixParameters matrixParameters2d(const Math::Matrix4x4& matrix, const Math::Point3d pivot, double rotationZ)
-{
-	Math::Vector2d flipValues;
-
-	//Determining which flip combination leads to the rotation values closest to the original value
-	flipValues = getFlip2d(matrix.getTransform2d(), rotationZ);
-
-	MatrixParameters p;
-
-	if (flipValues.x() == 1 && flipValues.y() == 1)
-		matrix.extractParameters(true, true, pivot.x(), pivot.y(), p.tx, p.ty, p.tz, p.sx, p.sy, p.az, p.skewx);
-	else if (flipValues.x() == -1 && flipValues.y() == 1)
-		matrix.extractParameters(false, true, pivot.x(), pivot.y(), p.tx, p.ty, p.tz, p.sx, p.sy, p.az, p.skewx);
-	else if (flipValues.x() == 1 && flipValues.y() == -1)
-		matrix.extractParameters(true, false, pivot.x(), pivot.y(), p.tx, p.ty, p.tz, p.sx, p.sy, p.az, p.skewx);
-	else
-		matrix.extractParameters(false, false, pivot.x(), pivot.y(), p.tx, p.ty, p.tz, p.sx, p.sy, p.az, p.skewx);
-
-	p.az = matchFullRotations(rotationZ, p.az);
-
-	return p;
-}
-
-MatrixParameters matrixParameters3d(const Math::Matrix4x4& matrix, const Math::Point3d pivot, Math::Angle3d rotation)
+static MatrixParameters matrixParameters3d(const Math::Matrix4x4& matrix, const Math::Point3d pivot, Math::Angle3d rotation)
 {
 	MatrixParameters p;
 
@@ -620,21 +591,21 @@ MatrixParameters matrixParameters3d(const Math::Matrix4x4& matrix, const Math::P
 	//Reconstructing original rotation matrix
 
 
-	Math::Angle3d angle = Math::Angle3d(p.ax, p.ay, p.az);
+	const Math::Angle3d angle = Math::Angle3d(p.ax, p.ay, p.az);
 
 	Math::Matrix4x4 rotSkewMatrix = angle.toRotationMatrix();
 
 	//Getting skew/shear value
 
 	const Math::Vector3d X = Math::Vector3d(decompMatrix(Math::Row::Row_0, Math::Column::Column_0),
-		decompMatrix(Math::Row::Row_1, Math::Column::Column_0),
-		decompMatrix(Math::Row::Row_2, Math::Column::Column_0));
+											decompMatrix(Math::Row::Row_1, Math::Column::Column_0),
+											decompMatrix(Math::Row::Row_2, Math::Column::Column_0));
 	const Math::Vector3d Y = Math::Vector3d(decompMatrix(Math::Row::Row_0, Math::Column::Column_1),
-		decompMatrix(Math::Row::Row_1, Math::Column::Column_1),
-		decompMatrix(Math::Row::Row_2, Math::Column::Column_1));
+											decompMatrix(Math::Row::Row_1, Math::Column::Column_1),
+											decompMatrix(Math::Row::Row_2, Math::Column::Column_1));
 	const Math::Vector3d Z = Math::Vector3d(decompMatrix(Math::Row::Row_0, Math::Column::Column_2),
-		decompMatrix(Math::Row::Row_1, Math::Column::Column_2),
-		decompMatrix(Math::Row::Row_2, Math::Column::Column_2));
+											decompMatrix(Math::Row::Row_1, Math::Column::Column_2),
+											decompMatrix(Math::Row::Row_2, Math::Column::Column_2));
 
 	p.skewx = X.getDotProduct(Y) / (X.length() * Y.length());
 
@@ -672,13 +643,46 @@ MatrixParameters matrixParameters3d(const Math::Matrix4x4& matrix, const Math::P
 	return p;
 }
 
-void printMatrixParameters(MatrixParameters p)
+static MatrixParameters matrixParameters2d(const Math::Matrix4x4& matrix, const Math::Point3d pivot,
+	const double rotationZ)
+{
+	Math::Vector2d flipValues;
+
+	//Determining which flip combination leads to the rotation values closest to the original value
+	flipValues = getFlip2d(matrix.getTransform2d(), rotationZ);
+
+	MatrixParameters p;
+
+	if (flipValues.x() == 1 && flipValues.y() == 1)
+		matrix.extractParameters(true, true, pivot.x(), pivot.y(), p.tx, p.ty, p.tz, p.sx, p.sy, p.az, p.skewx);
+	else if (flipValues.x() == -1 && flipValues.y() == 1)
+		matrix.extractParameters(false, true, pivot.x(), pivot.y(), p.tx, p.ty, p.tz, p.sx, p.sy, p.az, p.skewx);
+	else if (flipValues.x() == 1 && flipValues.y() == -1)
+		matrix.extractParameters(true, false, pivot.x(), pivot.y(), p.tx, p.ty, p.tz, p.sx, p.sy, p.az, p.skewx);
+	else
+		matrix.extractParameters(false, false, pivot.x(), pivot.y(), p.tx, p.ty, p.tz, p.sx, p.sy, p.az, p.skewx);
+
+	p.az = matchFullRotations(rotationZ, p.az);
+
+	return p;
+}
+
+MatrixParameters matrixParameters(const Math::Matrix4x4& matrix, const Math::Point3d pivot,
+	const Math::Angle3d rotation)
+{
+	if (isTransform2d(matrix))
+		return matrixParameters2d(matrix, pivot, rotation.z());
+	else
+		return matrixParameters3d(matrix, pivot, rotation);
+}
+
+void printMatrixParameters(const MatrixParameters p)
 {
 	printf("matrix: \n translation %f %f %f \n scale: %f %f %f \n rotation %f %f %f \n skew %f %f %f\n\n",
 	p.tx, p.ty, p.tz, p.sx, p.sy, p.sz, p.ax, p.ay, p.az, p.skewx, p.skewy, p.skewz);
 }
 
-void printAttributes(AT_AttrList attributes)
+void printAttributes(const AT_AttrList attributes)
 {
 	for (const AT_AttrDesc & attribute : attributes)
 	{
@@ -690,10 +694,10 @@ void printAttributes(AT_AttrList attributes)
 	}
 }
 
-static bool isAuxiliaryPort(MO_Port* port)
+static bool isAuxiliaryPort(const MO_Port* port)
 {
 	//Already checked before that node() is not nullptr
-	MO_Node* node = port->node();
+	const MO_Node* node = port->node();
 	//TODO: there are most likely other cases where this should return true (e.g ogl controllers with no port 0 input)
 
 	//TODO: there must be a better way to get the port index
@@ -709,9 +713,9 @@ static bool isAuxiliaryPort(MO_Port* port)
 	return false;
 }
 
-bool isShapeAwareMatteOnly(MO_Node* node)
+bool isShapeAwareMatteOnly(const MO_Node* node)
 {
-	std::vector<MO_Port*> outPorts = node->getOutPorts();
+	const std::vector<MO_Port*> outPorts = node->getOutPorts();
 
 	bool hasDstNode = false;
 
@@ -742,9 +746,10 @@ bool isShapeAwareMatteOnly(MO_Node* node)
 	return true;
 }
 
-static void getAllChildren_internal(MO_Node* node, std::vector<MO_Node*>& children, std::vector<MO_Node*>& noRecChildren)
+static void getAllChildren_internal(const MO_Node* node, std::vector<MO_Node*>& children, std::vector<MO_Node*>& noRecChildren)
 {
 	std::vector<MO_Port*> outPorts = node->getOutPorts();
+
 	for (auto& port : outPorts)
 	{
 		if (!port->isMatrixPort())
@@ -776,7 +781,7 @@ static void getAllChildren_internal(MO_Node* node, std::vector<MO_Node*>& childr
 	}
 }
 
-std::vector<MO_Node*> getAllChildren(MO_Node* node)
+std::vector<MO_Node*> getAllChildren(const MO_Node* node)
 {
 	std::vector<MO_Node*> children;
 	std::vector<MO_Node*> noRecChildren;
@@ -792,7 +797,7 @@ std::vector<MO_Node*> getAllChildren(MO_Node* node)
 	return children;
 }
 
-void getAllInputModules_internal(MO_Module* modulePtr, std::vector<MO_Module*>& inputModules)
+static void getAllInputModules_internal(const MO_Module* modulePtr, std::vector<MO_Module*>& inputModules)
 {
 	for (unsigned int i = 0; i < modulePtr->nInPorts(); i++)
 	{
@@ -811,6 +816,13 @@ void getAllInputModules_internal(MO_Module* modulePtr, std::vector<MO_Module*>& 
 	}
 }
 
+std::vector<MO_Module*> getAllInputModules(const MO_Module* modulePtr)
+{
+	std::vector<MO_Module*> inputModules;
+	getAllInputModules_internal(modulePtr, inputModules);
+	return inputModules;
+}
+
 AT_AttrList getAttributeList(const MO_Node* node)
 {
 	AT_AttrList attributes;
@@ -819,7 +831,7 @@ AT_AttrList getAttributeList(const MO_Node* node)
 	return attributes;
 }
 
-QString getLayerAttr(MO_Module* modulePtr)
+QString getLayerAttr(const MO_Module* modulePtr)
 {
 	if (!modulePtr)
 		return u""_s;
@@ -834,25 +846,24 @@ QString getLayerAttr(MO_Module* modulePtr)
 	if (!layerAttr)
 		return u""_s;
 
-
 	if (layerAttr->localValue() == ""_L1)
 		return u"null"_s;
 	else
 		return layerAttr->localValue();
 }
 
-int getElementId(MO_Module* modulePtr)
+int getElementId(const MO_Module* modulePtr)
 {
 	if (!modulePtr)
 		return -1;
 
 
-	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
+	const AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
 
 	if (!drawingAttr)
 		return -1;
 
-	QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
+	const QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
 
 	if (colName.isEmpty())
 		return -1;
@@ -864,39 +875,33 @@ int getElementId(MO_Module* modulePtr)
 	return getElementIdOfColumn(SDK_Column::Descriptor(colName));
 }
 
-std::vector<MO_Module*> getAllInputModules(MO_Module* modulePtr)
-{
-	std::vector<MO_Module*> inputModules;
-	getAllInputModules_internal(modulePtr, inputModules);
-	return inputModules;
-}
-
-std::vector<CelInfo> getElementTimings(MO_Module* modulePtr)
+std::vector<CelInfo> getElementTimings(const MO_Module* modulePtr)
 {
 	std::vector<CelInfo> celInfoVec;
 
-	AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>("ELEMENT"_L1, modulePtr);
+	const AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>("ELEMENT"_L1, modulePtr);
 
 	if (!elementAttr)
 		return celInfoVec;
 
-	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
+	const AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
+
 	if (!drawingAttr)
 		return celInfoVec;
 
-	QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
+	const QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
 
 	if (colName.isEmpty())
 		return celInfoVec;
 
-	QString currentEm = elementAttr->getElementName();
+	const QString currentEm = elementAttr->getElementName();
 
 	if (!isElementColumn(SDK_Column::Descriptor(colName)))
 		return celInfoVec;
 
-	int elementId = getElementIdOfColumn(SDK_Column::Descriptor(colName));
+	const int elementId = getElementIdOfColumn(SDK_Column::Descriptor(colName));
 
-	AT_ElementLayerAttr* layerAttr = elementAttr->layerAttr();
+	const AT_ElementLayerAttr* layerAttr = elementAttr->layerAttr();
 
 	if (!layerAttr)
 		return celInfoVec;
@@ -914,31 +919,31 @@ std::vector<CelInfo> getElementTimings(MO_Module* modulePtr)
 	return celInfoVec;
 }
 
-std::vector<Exposure> getExposures(MO_Module* modulePtr, FrameRange range)
+std::vector<Exposure> getExposures(const MO_Module* modulePtr, const FrameRange range)
 {
-	AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>("ELEMENT"_L1, modulePtr);
+	const AT_ElementAttr* elementAttr = findAttribute<AT_ElementAttr>("ELEMENT"_L1, modulePtr);
 
 	if (!elementAttr)
 		return {};
 
-	AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
+	const AT_DrawingAttr* drawingAttr = findAttribute<AT_DrawingAttr>("DRAWING"_L1, modulePtr);
 
 	if (!drawingAttr)
 		return {};
 
-	QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
+	const QString colName = drawingAttr->linkedColumnName(u"ELEMENT"_s, false);
 
 	if (colName.isEmpty())
 		return {};
 
-	QString currentEm = elementAttr->getElementName();
+	const QString currentEm = elementAttr->getElementName();
 
 	if (!isElementColumn(SDK_Column::Descriptor(colName)))
 		return {};
 
 	int elementId = getElementIdOfColumn(SDK_Column::Descriptor(colName));
 
-	AT_ElementLayerAttr* layerAttr = elementAttr->layerAttr();
+	const AT_ElementLayerAttr* layerAttr = elementAttr->layerAttr();
 
 	if (!layerAttr)
 		return {};
@@ -969,14 +974,14 @@ std::vector<Exposure> getExposures(MO_Module* modulePtr, FrameRange range)
 	return ret;
 }
 
-CELVEC_Tbd* getPermTbd(CA_CelPtr celPtr)
+CELVEC_Tbd* getPermTbd(const CA_CelPtr celPtr)
 {
-	CEL_Cel* cel = celPtr.cel();
+	const CEL_Cel* cel = celPtr.cel();
 
 	if (!cel)
 		return nullptr;
 
-	CEL_Rep rep = cel->findRepresentation(CEL_Representation::TBD);
+	const CEL_Rep rep = cel->findRepresentation(CEL_Representation::TBD);
 
 	if (!rep.GetPtr())
 		return nullptr;
@@ -1011,13 +1016,13 @@ Math::Point2d getDrawingPivot(const CA_CelPtr cel)
 
 void setDrawingPivot(CA_CelPtr cel, const Math::Point3d pivot)
 {
-	CELVEC_Tbd* tbd = getPermTbd(cel);
+	const CELVEC_Tbd* tbd = getPermTbd(cel);
 
 	if (!tbd)
 		return;
 
 
-	GR_CompositeVectorDrawingObj* compDrawing = tbd->getDrawingObject();
+	const GR_CompositeVectorDrawingObj* compDrawing = tbd->getDrawingObject();
 
 	if (!compDrawing)
 		return;
@@ -1030,13 +1035,13 @@ void setDrawingPivot(CA_CelPtr cel, const Math::Point3d pivot)
 	info->SetPivotPoint(Math::Point2d(pivot.x(), pivot.y()));
 }
 
-Math::Matrix4x4 oglToVector(Math::Matrix4x4 matrix)
+Math::Matrix4x4 oglToVector(const Math::Matrix4x4 matrix)
 {
-	Math::Matrix4x4 scaleMatrix = Math::Matrix4x4().scale(1875, 1875, 1875);
+	const Math::Matrix4x4 scaleMatrix = Math::Matrix4x4().scale(1875, 1875, 1875);
 	return scaleMatrix * matrix * scaleMatrix.getInverse();
 }
 
-bool isDrawingPivotAppliedOnPeg(MO_Module* modulePtr)
+bool isDrawingPivotAppliedOnPeg(const MO_Module* modulePtr)
 {
 	if (!modulePtr)
 		return false;
@@ -1049,7 +1054,7 @@ bool isDrawingPivotAppliedOnPeg(MO_Module* modulePtr)
 	return false;
 }
 
-bool hasUsedDrawingPivots(MO_Module* modulePtr)
+bool hasUsedDrawingPivots(const MO_Module* modulePtr)
 {
 	if (!modulePtr)
 		return false;
