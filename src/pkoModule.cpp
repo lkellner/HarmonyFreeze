@@ -36,7 +36,7 @@ PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 
 void PkoModule::identifyTransformationType()
 {
-	MO_Module* port1srcModule = getSourceModule(getModulePtr(), 1);
+	MO_Module* port1srcModule = getModulePtr()->inputModule(1);
 
 	if (!port1srcModule)
 	{
@@ -56,7 +56,7 @@ void PkoModule::identifyTransformationType()
 		return;
 	}
 
-	MO_Module* port0srcModule = getSourceModule(getModulePtr(), 0);
+	MO_Module* port0srcModule = getModulePtr()->inputModule(0);
 
 	if (port0srcModule && freezeModule->isLinkedTo(port0srcModule))
 	{
@@ -189,7 +189,7 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, const QString pivotKe
 		//getIncomingFrameRange() can only be used with H27 and higher
 		if constexpr (supportsKeysRange())
 		{
-			getIncomingFrameRange(getSourceModule(getModulePtr(), 1), range);
+			getIncomingFrameRange(getModulePtr()->inputModule(1), range);
 		}
 		else
 		{
@@ -304,7 +304,7 @@ KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double fr
 
 bool PkoModule::hasComplexPort1Parent() const
 {
-	MO_Module* port1srcModule = getSourceModule(getModulePtr(), 1);
+	MO_Module* port1srcModule = getModulePtr()->inputModule(1);
 
 	if (!port1srcModule)
 	{
@@ -328,7 +328,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 	//TODO: there is quite a bit of intersection with transformationModule's generateKeyframeData
 	//It might be worth consolidating the two
 
-	MO_Module* parent = getSourceModule(getModulePtr(), 1);
+	MO_Module* parent = getModulePtr()->inputModule(1);
 
 	if (!parent)
 	{

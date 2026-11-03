@@ -170,7 +170,6 @@ bool isScaleZero(const Math::Matrix4x4& matrix);
 
 //Node Tree
 
-MO_Module* getSourceModule(const MO_Node* node, const int portIndex);
 std::vector<MO_Node*> getAllChildren(const MO_Node* node);
 std::vector<MO_Module*> getAllInputModules(const MO_Module* modulePtr);
 bool isShapeAwareMatteOnly(const MO_Node* node);
