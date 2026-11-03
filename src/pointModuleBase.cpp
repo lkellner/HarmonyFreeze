@@ -147,6 +147,17 @@ FrameRange PointModuleBase::getFrameRange() const
 		}
 	}
 
+	if (!supportsKeysRange())
+	{
+		//This is a workaround for H24 and H25 when not Path2D keyframes aren't properly detected
+		//As the freezeRange might not equal the module's own range, it is still possible that some
+		//keyframes go undetected
+		const FrameRange freezeRange = getFreezeManagerPtr()->getFrameRange();
+		updateFrameRange(range, freezeRange.start);
+		updateFrameRange(range, freezeRange.end);
+	}
+		
+
 	return range;
 }
 
