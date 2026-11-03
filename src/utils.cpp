@@ -677,15 +677,26 @@ void printAttributes(const AT_AttrList attributes)
 
 static bool isAuxiliaryPort(const MO_Port* port)
 {
-	//Already checked before that node() is not nullptr
+	if (!port)
+		return false;
+
 	const MO_Node* node = port->node();
-	//TODO: there are most likely other cases where this should return true (e.g ogl controllers with no port 0 input)
+	
+	if(!node)
+		return false;
 
 	//TODO: there must be a better way to get the port index
 	//port->id() unfortunately returns something different
 	const MO_Node::InPorts inPorts = node->getInPorts();
 	
-	if ((node->keyword() == "DeformTransformOut"_L1 || node->keyword() == "ShapeAwareDeformation"_L1)
+	//For the original usage of this function in getAllChildren_internal it would be enough
+	//To only check for "DeformTransformOut" as this is the only matrix auxiliary port
+	//As the function is being used in other instances as well, "ShapeAwareDeformation", "READ"
+	//and "OglController" have been included as well
+	if ((node->keyword() == "DeformTransformOut"_L1 
+		|| node->keyword() == "ShapeAwareDeformation"_L1
+		|| node->keyword() == "OglController"_L1
+		|| node->keyword() == "READ"_L1)
 		&& inPorts.size() >= 2 && port == inPorts[1])
 	{
 		return true;
