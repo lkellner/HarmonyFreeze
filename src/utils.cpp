@@ -365,8 +365,7 @@ double convertRotation(const Math::Matrix4x4 & unitOffsetMatrix, const double ro
 	return getAngle2d(rotationMatrix.getTransform2d());
 }
 
-
-Math::Matrix4x4 getFieldsModificationMatrix(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 modMatrix)
+Math::Matrix4x4 oglToFieldsModificationMatrix(const SC_SceneMetrics* sceneMetrics, const Math::Matrix4x4 modMatrix)
 {
 	const Math::Matrix4x4 fromOglMatrix = Math::Matrix4x4().scale(sceneMetrics->fromOGLX(1),
 		sceneMetrics->fromOGLY(1), sceneMetrics->fromOGLZ(1));

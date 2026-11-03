@@ -178,7 +178,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 	SC_SceneMetrics* sm = getModulePtr()->sceneMetrics();
 
 	const Math::Matrix4x4 changeMatrix = convertToProjectionMatrix(getFreezeManagerPtr()->getFreezeMatrix());
-	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(sm, changeMatrix);
+	Math::Matrix4x4 fieldsChangeMatrix = oglToFieldsModificationMatrix(sm, changeMatrix);
 	Math::Matrix4x4 scaleShearChangeMatrix = get2dRotationMatrix(changeMatrix.getTransform2d()).getInverse() * changeMatrix.rotation();
 	const Math::Matrix4x4 unitOffsetMatrix = getFreezeManagerPtr()->getUnitOffsetScaleMatrix();
 
@@ -198,7 +198,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 		newParentRotationMatrix = get2dRotationMatrix((changeMatrix * oldParentRotationMatrix).getTransform2d());
 
 		adjChangeMatrix = (newParentRotationMatrix.getInverse() * changeMatrix * oldParentRotationMatrix).rotation();
-		fieldsChangeMatrix = getFieldsModificationMatrix(sm, adjChangeMatrix);
+		fieldsChangeMatrix = oglToFieldsModificationMatrix(sm, adjChangeMatrix);
 	}
 
 
@@ -231,7 +231,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 	if (!isHasFieldsOrientation)
 		orientation = convertRotation(unitOffsetMatrix.getInverse(), oglOrientation);
 	else
-		orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
+		orientation = getAngle2d(oglToFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
 	double referenceAngle = getAngle2d(changeMatrix.getTransform2d()) + ogOrientation;
 	orientation = matchFullRotations(referenceAngle, orientation);
@@ -272,7 +272,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 			newParentRotationMatrix = get2dRotationMatrix((changeMatrix * oldParentRotationMatrix).getTransform2d());
 
 			adjChangeMatrix = (newParentRotationMatrix.getInverse() * changeMatrix * oldParentRotationMatrix).rotation();
-			fieldsChangeMatrix = getFieldsModificationMatrix(sm, adjChangeMatrix);
+			fieldsChangeMatrix = oglToFieldsModificationMatrix(sm, adjChangeMatrix);
 		}
 
 		//OFFSET
@@ -300,7 +300,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 		if (!isHasFieldsOrientation)
 			orientation = convertRotation(unitOffsetMatrix.getInverse(), oglOrientation);
 		else
-			orientation = getAngle2d(getFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
+			orientation = getAngle2d(oglToFieldsModificationMatrix(sm, rotationMatrix).getTransform2d());
 
 		referenceAngle = getAngle2d(changeMatrix.getTransform2d()) + ogOrientation;
 		orientation = matchFullRotations(referenceAngle, orientation);

@@ -30,7 +30,7 @@ void PointModuleBase::readjustSecondary()
 
 void PointModuleBase::processPoint(TransformPoint* point, CO_OrCommand& curMacro)
 {
-	Math::Matrix4x4 changeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), 
+	Math::Matrix4x4 changeMatrix = oglToFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
 		getFreezeManagerPtr()->getFreezeMatrix());
 
 	Math::Point2d position;

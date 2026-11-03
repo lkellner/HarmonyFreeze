@@ -171,7 +171,7 @@ void OglControllerModule::readjustSecondary()
 
 	double scaleFactor = getScaleFactor(oglChangeMatrix, fm->getSelFrame());
 
-	Math::Matrix4x4 fieldsChangeMatrix = getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
+	Math::Matrix4x4 fieldsChangeMatrix = oglToFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
 
 
 	//Static attributes

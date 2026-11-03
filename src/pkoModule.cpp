@@ -149,7 +149,7 @@ Math::Matrix4x4 PkoModule::calculateChangeMatrix(double frameNo) const
 		break;
 	}
 
-	return getFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
+	return oglToFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
 }
 
 

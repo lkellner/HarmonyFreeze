@@ -143,7 +143,7 @@ void convertFromOGL(MatrixParameters& params, const SC_SceneMetrics* sceneMetric
 
 Math::Matrix4x4 oglToVectorModificationMatrix(const SC_SceneMetrics* sceneMetrics,
 	const Math::Matrix4x4 modMatrix, const CELVEC_Tbd* tbd);
-Math::Matrix4x4 getFieldsModificationMatrix(const SC_SceneMetrics* sceneMetrics,
+Math::Matrix4x4 oglToFieldsModificationMatrix(const SC_SceneMetrics* sceneMetrics,
 	const Math::Matrix4x4 modMatrix);
 Math::Matrix4x4 getElementFlipMatrix(const MO_Module* modulePtr);
 
