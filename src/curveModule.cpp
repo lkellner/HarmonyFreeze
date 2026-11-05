@@ -93,33 +93,21 @@ FrameRange CurveModule::getFrameRange() const
 	while (parent && (parent->keyword() == "CurveModule"_L1
 				|| parent->keyword() == "OffsetModule"_L1))
 	{
-		AT_AttrList attributes;
-		parent->getFullAttrList(attributes);
-		//TODO: replace with findAttr
+		AT_DoubleAttr* orientationAttr  = nullptr;
 
-		for (const AT_AttrDesc& attribute : attributes)
+		if (parent->keyword() == "OffsetModule"_L1)
+			orientationAttr = ::findAttribute<AT_DoubleAttr>("orientation"_L1, parent);
+		else
+			orientationAttr = ::findAttribute<AT_DoubleAttr>("orientation1"_L1, parent);
+
+		if (orientationAttr)
 		{
-			if (attribute._pAttr->keyword() == "orientation1"_L1)
-			{
-				//Curve module
-				if (dynamic_cast<AT_DoubleAttr*>(attribute._pAttr)->getNextKey(0, &key))
-					updateFrameRange(range, key);
+			if (orientationAttr->getNextKey(0, &key))
+				updateFrameRange(range, key);				
 
-				if (dynamic_cast<AT_DoubleAttr*>(attribute._pAttr)->getPrevKey(std::numeric_limits<int>::max(), &key))
-					updateFrameRange(range, key);
-			}
-
-			if (attribute._pAttr->keyword() == "orientation"_L1)
-			{
-				//Offset module
-				if (dynamic_cast<AT_DoubleAttr*>(attribute._pAttr)->getNextKey(0, &key))
-					updateFrameRange(range, key);
-
-				if (dynamic_cast<AT_DoubleAttr*>(attribute._pAttr)->getPrevKey(std::numeric_limits<int>::max(), &key))
-					updateFrameRange(range, key);
-			}
+			if (orientationAttr->getPrevKey(std::numeric_limits<int>::max(), &key))
+				updateFrameRange(range, key);
 		}
-
 
 		parent = parent->getParentNode();
 	}
