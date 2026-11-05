@@ -41,6 +41,12 @@ struct BezKeyframeData
 	KeyframeState orientation;
 };
 
+struct BezierHandleInfo
+{
+	double radius;
+	double angle;
+};
+
 class BezierHandle
 {
 public:
@@ -77,6 +83,11 @@ public:
 	const AT_DoubleAttr* getOrientationAttr() const { return m_orientationAttr; }
 
 private:
+	BezierHandleInfo getRecalculatedHandleInfo(const MO_Module* modulePtr,
+												const Math::Matrix4x4& changeMatrix,
+												const double length,
+												const double angle) const;
+
 	std::shared_ptr<FreezeManager> m_freezeManager;
 
 	AT_DoubleAttr* m_lengthAttr;
@@ -90,12 +101,6 @@ private:
 
 	Kind m_kind;
 	bool m_isIndependent;
-};
-
-struct BezierHandleInfo
-{
-	double radius;
-	double angle;
 };
 
 class CurveModuleBase : public ModuleBase
@@ -141,10 +146,6 @@ private:
 	bool m_isIndependent;
 };
 
-BezierHandleInfo getRecalculatedHandleInfo(SC_SceneMetrics* sceneMetrics,
-		const Math::Matrix4x4& changeMatrix,
-		const double length,
-		const double angle,
-		const bool isIndependent);
-
+Math::Matrix4x4 recalculateIndependentHandleMatrix(const SC_SceneMetrics* sceneMetrics,
+	Math::Matrix4x4 handleMatrix, const Math::Matrix4x4& changeMatrix);
 #endif

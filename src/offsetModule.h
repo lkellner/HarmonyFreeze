@@ -33,6 +33,7 @@ protected:
 private:
 	void loadAttributes();
 	void readjustOrientation(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix);
+	double recalculateOrientation(const Math::Matrix4x4 changeMatrix, const double angle) const;
 
 	AT_DoubleAttr* m_restingOrientationAttr;
 	AT_DoubleAttr* m_orientationAttr;

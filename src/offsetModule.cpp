@@ -65,32 +65,42 @@ void OffsetModule::readjustSecondary()
 	fm->addCommand(std::move(curMacro));
 }
 
+double OffsetModule::recalculateOrientation(const Math::Matrix4x4 changeMatrix, const double angle) const
+{
+	Math::Matrix4x4 rotMatrix = Math::Matrix4x4().rotateDegrees(angle);
+	rotMatrix = recalculateIndependentHandleMatrix(getModulePtr()->sceneMetrics(), rotMatrix, changeMatrix);
+
+	//Rougly estimated angle used as a reference know whether to add n*360 degrees
+	//to final angle. This is to make sure that animations don't break
+	const double referenceAngle = getAngle2d(changeMatrix.getTransform2d()) + angle;
+
+	return matchFullRotations(referenceAngle, getAngle2d(rotMatrix.getTransform2d()));
+}
+
 
 void OffsetModule::readjustOrientation(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix)
 {
 	//Resting and local (static) values
 
-	BezierHandleInfo restingHandleInfo = getRecalculatedHandleInfo(getModulePtr()->sceneMetrics(), changeMatrix,
-			0, m_restingOrientationAttr->localValue(), true);
-	BezierHandleInfo staticHandleInfo = getRecalculatedHandleInfo(getModulePtr()->sceneMetrics(), changeMatrix,
-			0, m_orientationAttr->localValue(), true);
+	const double restingAngle = recalculateOrientation(changeMatrix, m_restingOrientationAttr->localValue());
+	const double staticAngle = recalculateOrientation(changeMatrix, m_orientationAttr->localValue());
 
-	double prevOrientation = staticHandleInfo.angle;
+	double prevOrientation = staticAngle;
 
 	FreezeManager* fm = getFreezeManagerPtr();
 
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_restingOrientationAttr, restingHandleInfo.angle));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_orientationAttr, staticHandleInfo.angle));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_restingOrientationAttr, restingAngle));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(m_orientationAttr, staticAngle));
 	}
 	else
 	{
 		//JS
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ u"restingorientation"_s, restingHandleInfo.angle },
-			StaticAttrData{ u"orientation"_s, staticHandleInfo.angle });
+			StaticAttrData{ u"restingorientation"_s, restingAngle },
+			StaticAttrData{ u"orientation"_s, staticAngle });
 	}
 
 
@@ -103,28 +113,23 @@ void OffsetModule::readjustOrientation(CO_OrCommand& curMacro, const Math::Matri
 	{
 		const double frameNo = curFrame;
 
-		const BezierHandleInfo handleInfo = getRecalculatedHandleInfo(getModulePtr()->sceneMetrics(),
-				changeMatrix,
-				0,
-				m_orientationAttr->value(frameNo),
-				true);
-
+		const double angle = recalculateOrientation(changeMatrix, m_orientationAttr->value(frameNo));
 
 		bool isCtrlPnt = false;
 
-		bool isAdjustKeyframe = prevOrientation != handleInfo.angle && isComplexTransform() && fm->isSetInbetweenKfMode();
+		bool isAdjustKeyframe = prevOrientation != angle && isComplexTransform() && fm->isSetInbetweenKfMode();
 
-		prevOrientation = handleInfo.angle;
+		prevOrientation = angle;
 
 		m_orientationAttr->value(frameNo, &isCtrlPnt);
 
 		if (isCtrlPnt || isAdjustKeyframe)
 		{
 			if (fm->isExperimentalMode()) //C++
-				curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, handleInfo.angle));
+				curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, angle));
 			else //JS
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-						AttrData{ u"orientation"_s, handleInfo.angle, frameNo, true });
+						AttrData{ u"orientation"_s, angle, frameNo, true });
 		}
 	}
 }

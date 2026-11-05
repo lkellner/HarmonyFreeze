@@ -46,8 +46,8 @@ void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 	if (!modulePtr)
 		return;
 
-	BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr->sceneMetrics(), changeMatrix,
-			m_lengthAttr->localValue(), m_orientationAttr->localValue(), m_isIndependent);
+	BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr, changeMatrix,
+			m_lengthAttr->localValue(), m_orientationAttr->localValue());
 
 	m_prevRadius = handleInfo.radius; //Saving the current value for the first animated keyframe
 	m_prevAngle = handleInfo.angle;
@@ -74,8 +74,8 @@ void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 	if (!modulePtr)
 		return;
 
-	const BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr->sceneMetrics(), changeMatrix,
-			m_lengthAttr->value(frameNo), m_orientationAttr->value(frameNo), m_isIndependent);
+	const BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr, changeMatrix,
+			m_lengthAttr->value(frameNo), m_orientationAttr->value(frameNo));
 
 
 	//Sometimes it might be necessary to add an extra keyframe to the radius/length as it also depends on the orientation.
@@ -108,11 +108,10 @@ void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 	}
 }
 
-BezierHandleInfo getRecalculatedHandleInfo(SC_SceneMetrics* sceneMetrics,
-		const Math::Matrix4x4& changeMatrix,
-		const double length,
-		const double angle,
-		const bool isIndependent) // FIXME: remove bool if possible
+BezierHandleInfo BezierHandle::getRecalculatedHandleInfo(const MO_Module* modulePtr,
+														const Math::Matrix4x4& changeMatrix,
+														const double length,
+														const double angle) const
 {
 	const Math::Matrix4x4 transMatrix = Math::Matrix4x4().translate(length, 0, 0);
 
@@ -120,12 +119,8 @@ BezierHandleInfo getRecalculatedHandleInfo(SC_SceneMetrics* sceneMetrics,
 
 	rotMatrix *= transMatrix;
 
-	if(isIndependent)
-	{
-		rotMatrix = fieldsToOgl(sceneMetrics, rotMatrix);
-		rotMatrix = changeMatrix.rotation() * rotMatrix;
-		rotMatrix = oglToFields(sceneMetrics, rotMatrix);
-	}
+	if(m_isIndependent)
+		rotMatrix = recalculateIndependentHandleMatrix(modulePtr->sceneMetrics(), rotMatrix, changeMatrix);
 	else
 		rotMatrix = changeMatrix.rotation() * rotMatrix;
 
@@ -139,7 +134,6 @@ BezierHandleInfo getRecalculatedHandleInfo(SC_SceneMetrics* sceneMetrics,
 
 	return { origin.toVector().length(), orientation};
 }
-
 
 CurveModuleBase::CurveModuleBase(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
@@ -294,7 +288,6 @@ Math::Matrix4x4 CurveModuleBase::adjustDependentMatrix(const Math::Matrix4x4 mat
 	return fm->getUnitOffsetScaleMatrix() * newParentMatrix.getInverse() *  matrix  * parentMatrix * fm->getUnitOffsetScaleMatrix().getInverse();
 }
 
-
 double CurveModuleBase::getStaticChainRotation(bool isRest) const
 {
 	const auto curveAttrKeyword = isRest
@@ -418,4 +411,12 @@ bool CurveModuleBase::isParentKeyframe(const double frameNo) const
 	}
 
 	return false;
+}
+
+Math::Matrix4x4 recalculateIndependentHandleMatrix(const SC_SceneMetrics* sceneMetrics,
+	Math::Matrix4x4 handleMatrix, const Math::Matrix4x4& changeMatrix)
+{
+	handleMatrix = fieldsToOgl(sceneMetrics, handleMatrix);
+	handleMatrix = changeMatrix.rotation() * handleMatrix;
+	return oglToFields(sceneMetrics, handleMatrix);
 }
