@@ -1,15 +1,5 @@
 #include "boneModule.h"
 
-#include <BaseCore/maths/MT_Point4d.h>
-#include <GraphicCore/CinematicChain/CC_Transformation.h>
-#include <SceneCore/attribute/AT_Position2dAttr.h>
-#include <SceneCore/attribute/AT_Position3dAttr.h>
-#include <SceneCore/attribute/AT_Scale3dAttr.h>
-#include <SceneCore/module/MO_PortTransform.h>
-
-#include <limits>
-#include <stdexcept>
-
 using namespace Qt::StringLiterals;
 
 bool hasOffset(const MO_Node* node)

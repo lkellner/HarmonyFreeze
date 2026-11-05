@@ -11,18 +11,8 @@
 #include "regionOfInfluence.h"
 #include "utils.h"
 
-#include "SceneCore/attribute/AT_AttrCmds.h"
-#include "SceneCore/attribute/AT_PositionAttrCmds.h"
-#include "SceneCore/selectable/SLB_ManipContext.h"
-#include <SceneCore/attribute/AT_BoolAttr.h>
-#include <SceneCore/attribute/AT_DoubleAttr.h>
+#include <SceneCore/attribute/AT_PositionAttrCmds.h>
 #include <SceneCore/attribute/AT_Position2dAttr.h>
-#include <SceneCore/module/MO_Module.h>
-#include <SceneCore/module/MO_NetworkUtils.h>
-#include <SceneCore/module/MO_Port.h>
-#include <SceneCore/module/MO_SoftContext.h>
-#include <Util/command/CO_OrCommand.h>
-
 
 struct BoneKeyframeData
 {
