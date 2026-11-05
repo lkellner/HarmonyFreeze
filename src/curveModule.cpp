@@ -1,17 +1,5 @@
 #include "curveModule.h"
 
-#include <SceneCore/module/MO_PortTransform.h>
-
-#include <GraphicCore/CinematicChain/CC_Transformation.h>
-
-#include <Util/pluginmanager/PLUG_Services.h>
-
-#include <QString>
-
-#include <limits>
-#include <tuple>
-#include <utility>
-
 using namespace Qt::StringLiterals;
 
 CurveModule::CurveModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module* modulePtr, ModuleType moduleType)
@@ -39,7 +27,6 @@ CurveModule::CurveModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module
 	m_bezierHandles.emplace_back(getFreezeManager(), m_restLength1Attr, m_restingOrientation1Attr,
 		u"restlength1"_s, u"restingOrientation1"_s, BezierHandle::Kind::Rest);
 }
-
 
 FrameRange CurveModule::getFrameRange() const
 {

@@ -12,16 +12,6 @@
 #include "regionOfInfluence.h"
 #include "utils.h"
 
-#include <SceneCore/attribute/AT_BoolAttr.h>
-#include <SceneCore/attribute/AT_DoubleAttr.h>
-#include <SceneCore/attribute/AT_Position2dAttr.h>
-#include <SceneCore/module/MO_Module.h>
-#include <SceneCore/module/MO_NetworkUtils.h>
-#include <SceneCore/module/MO_Port.h>
-#include <SceneCore/module/MO_SoftContext.h>
-#include <SceneCore/selectable/SLB_CmdManipulator.h>
-#include <SceneCore/selectable/SLB_ManipContext.h>
-
 class CurveModule : public CurveModuleBase
 {
 public:
