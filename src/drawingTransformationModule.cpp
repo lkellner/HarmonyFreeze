@@ -27,7 +27,7 @@ void DrawingTransformationModule::setStaticPositionJS(const MatrixParameters& pa
 			StaticAttrData{ u"offset.z"_s, params.tz });
 }
 
-void DrawingTransformationModule::processPivotAttribute(CO_OrCommand& curMacro)
+void DrawingTransformationModule::processPivotAttribute(CO_OrCommand& curMacro) const
 {
 	FreezeManager* fm = getFreezeManagerPtr();
 

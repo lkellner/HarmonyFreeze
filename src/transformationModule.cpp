@@ -201,7 +201,7 @@ FrameRange TransformationModule::getFrameRange() const
 	return range;
 }
 
-Math::Matrix4x4 TransformationModule::getStaticLocalMatrixNoPivot()
+Math::Matrix4x4 TransformationModule::getStaticLocalMatrixNoPivot() const
 {
 	Math::Matrix4x4 matrix = Math::Matrix4x4();
 
@@ -426,9 +426,9 @@ void TransformationModule::setPivotJS() const
 									StaticAttrData{ u"pivot.z"_s, m_pivotAttrSurrogate.z() });
 }
 
-void TransformationModule::setPivot(CO_OrCommand& curMacro)
+void TransformationModule::setPivot(CO_OrCommand& curMacro) const
 {
-	SC_SceneCommon* sceneCommon = getModulePtr()->sceneCommon();
+	const SC_SceneCommon* sceneCommon = getModulePtr()->sceneCommon();
 
 	if (!sceneCommon)
 		return;

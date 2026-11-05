@@ -17,7 +17,7 @@ public:
 private:
 	void setPositionJS(const KeyframeData& kfData, const MatrixParameters& params, const double frameNo) const override;
 	void setStaticPositionJS(const MatrixParameters& params) const override;
-	void processPivotAttribute(CO_OrCommand& curMacro) override;
+	void processPivotAttribute(CO_OrCommand& curMacro) const override;
 };
 
 #endif

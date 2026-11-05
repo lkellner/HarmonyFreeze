@@ -41,10 +41,10 @@ public:
 
 protected:
 	AT_Position3dAttr* getPivotAttr() const { return m_pivotAttr; };
-	void setPivot(CO_OrCommand& curMacro);
+	void setPivot(CO_OrCommand& curMacro) const;
 	void setPivotJS() const;
 
-	Math::Matrix4x4 getStaticLocalMatrixNoPivot();
+	Math::Matrix4x4 getStaticLocalMatrixNoPivot() const;
 
 private:
 
@@ -63,7 +63,7 @@ private:
 	virtual void setPositionJS(const KeyframeData & kfData, const MatrixParameters& params, const double frameNo) const = 0;
 	virtual void setStaticPositionJS(const MatrixParameters & params) const = 0;
 
-	virtual void processPivotAttribute(CO_OrCommand& curMacro) = 0;
+	virtual void processPivotAttribute(CO_OrCommand& curMacro) const = 0;
 	void initDrawingPivotSources();
 	void initElementDrawingPivotSources();
 	void initPegDrawingPivotSources();

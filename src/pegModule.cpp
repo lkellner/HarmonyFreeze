@@ -27,7 +27,7 @@ void PegModule::setStaticPositionJS(const MatrixParameters& params) const
 									StaticAttrData{ u"position.z"_s, params.tz });
 }
 
-void PegModule::processPivotAttribute(CO_OrCommand& curMacro)
+void PegModule::processPivotAttribute(CO_OrCommand& curMacro) const
 {
 	if (getFreezeManagerPtr()->isExperimentalMode())
 		setPivot(curMacro);
