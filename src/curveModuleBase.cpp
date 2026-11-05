@@ -215,8 +215,9 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 		double frameNo = curFrame;
 		Math::Point2d offset;
 
+		//Decided not to split this for now, as the individual values are connected
+		//in case of a rotation, etc
 		m_offsetAttr->getValue(frameNo, offset, &isCtrlPnt);
-		//TODO: could maybe split this one up
 
 		//Set keyframe either way
 		bool isForceKeyframe = curFrame == range.start && isComplexTransform();
