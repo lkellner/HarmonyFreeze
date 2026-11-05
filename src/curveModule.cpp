@@ -218,7 +218,7 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 			if(!bezierHandle.isAnimatable())
 				continue;
 
-			BezKeyframeData kfData = generateKeyframeData(bezierHandle, frameNo, curFrame == range.start);
+			CurveModuleBase::KeyframeData kfData = generateKeyframeData(bezierHandle, frameNo, curFrame == range.start);
 
 			if (kfData.length == KeyframeState::NoKeyframe && kfData.orientation == KeyframeState::NoKeyframe)
 				continue;
@@ -232,10 +232,10 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 	}
 }
 
-BezKeyframeData CurveModule::generateKeyframeData(const BezierHandle& bezierHandle,
+CurveModuleBase::KeyframeData CurveModule::generateKeyframeData(const BezierHandle& bezierHandle,
 	const double frameNo, const bool isFirst) const
 {
-	BezKeyframeData kfData;
+	CurveModuleBase::KeyframeData kfData;
 	//Check if there is a keyframe on the attributes
 
 	if(isFirst && isComplexTransform())

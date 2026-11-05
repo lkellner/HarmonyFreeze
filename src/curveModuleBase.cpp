@@ -62,7 +62,7 @@ void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4 changeMatrix,
 		CO_OrCommand& curMacro,
-		const BezKeyframeData& kfData,
+		const CurveModuleBase::KeyframeData& kfData,
 		const double frameNo)
 {
 	if (!modulePtr)

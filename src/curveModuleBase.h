@@ -22,17 +22,61 @@
 */
 
 
-//TODO: is it possible to make this an inner class?
-struct BezKeyframeData
-{
-	KeyframeState length;
-	KeyframeState orientation;
-};
-
 struct BezierHandleInfo
 {
 	double radius;
 	double angle;
+};
+
+class CurveModuleBase : public ModuleBase
+{
+public:
+	struct KeyframeData
+	{
+		KeyframeState length;
+		KeyframeState orientation;
+	};
+
+	explicit CurveModuleBase(std::shared_ptr<FreezeManager> freezeManager,
+		MO_Module* modulePtr,
+		ModuleType moduleType);
+
+	bool isIndependent() const { return m_isIndependent; }
+
+	FrameRange getFrameRange() const override;
+
+	Math::Matrix4x4 adjustDependentMatrix(const Math::Matrix4x4 matrix,
+		const bool isAnimated,
+		const bool isRest,
+		const double frameNo = 1.0) const;
+
+	double getChainRotation(const double frameNo) const;
+	double getStaticChainRotation(const bool isRest) const;
+
+protected:
+	void readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix);
+	bool isParentKeyframe(const double frameNo) const;
+	bool isComplexTransform() const {
+		return m_freezeMatrixComplexity == MatrixComplexity::Complex
+			|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly;
+	}
+	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
+
+private:
+	void initAttributes();
+
+	template <typename ValueFunc>
+	double getRotationImpl(const QLatin1StringView curveAttrKeyword,
+		const QLatin1StringView offsetAttrKeyword,
+		ValueFunc&& valFunc) const;
+
+	AT_Position2dAttr* m_offsetAttr;
+	AT_Position2dAttr* m_restingOffsetAttr;
+
+	Math::Point2d m_prevOffset;
+	MatrixComplexity m_freezeMatrixComplexity;
+
+	bool m_isIndependent;
 };
 
 class BezierHandle
@@ -59,7 +103,7 @@ public:
 	void recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 			const Math::Matrix4x4 changeMatrix,
 			CO_OrCommand& curMacro,
-			const BezKeyframeData& kfData,
+			const CurveModuleBase::KeyframeData& kfData,
 			const double frameNo);
 
 	Kind kind() const { return m_kind; }
@@ -91,48 +135,7 @@ private:
 	bool m_isIndependent;
 };
 
-class CurveModuleBase : public ModuleBase
-{
-public:
-	explicit CurveModuleBase(std::shared_ptr<FreezeManager> freezeManager,
-			MO_Module* modulePtr,
-			ModuleType moduleType);
 
-	bool isIndependent() const { return m_isIndependent; }
-
-	FrameRange getFrameRange() const override;
-
-	Math::Matrix4x4 adjustDependentMatrix(const Math::Matrix4x4 matrix,
-			const bool isAnimated,
-			const bool isRest,
-			const double frameNo = 1.0) const;
-
-	double getChainRotation(const double frameNo) const;
-	double getStaticChainRotation(const bool isRest) const;
-
-protected:
-	void readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix);
-	bool isParentKeyframe(const double frameNo) const;
-	bool isComplexTransform() const { return m_freezeMatrixComplexity == MatrixComplexity::Complex 
-		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly; }
-	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
-
-private:
-	void initAttributes();
-
-	template <typename ValueFunc>
-	double getRotationImpl(const QLatin1StringView curveAttrKeyword,
-			const QLatin1StringView offsetAttrKeyword,
-			ValueFunc&& valFunc) const;
-
-	AT_Position2dAttr* m_offsetAttr;
-	AT_Position2dAttr* m_restingOffsetAttr;
-
-	Math::Point2d m_prevOffset;
-	MatrixComplexity m_freezeMatrixComplexity;
-
-	bool m_isIndependent;
-};
 
 Math::Matrix4x4 recalculateIndependentHandleMatrix(const SC_SceneMetrics* sceneMetrics,
 	Math::Matrix4x4 handleMatrix, const Math::Matrix4x4& changeMatrix);

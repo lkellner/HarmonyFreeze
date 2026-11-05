@@ -23,7 +23,7 @@ public:
 private:
 	void loadAttributes();
 
-	BezKeyframeData generateKeyframeData(const BezierHandle& bezierHandle,
+	CurveModuleBase::KeyframeData generateKeyframeData(const BezierHandle& bezierHandle,
 		const double frameNo, const bool isFirst) const;
 
 	FrameRange getFrameRange() const override;
