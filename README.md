@@ -82,7 +82,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   
 + Settings can now be changed via a pop-up dialog.
 
-+ Bug Fix:  Keyframed Curve Deformers were prevented from having their offset attributes transformed if they were set to "2D Path".
++ Bug Fix: Keyframed Curve Deformers were prevented from having their offset attributes transformed if they were set to "2D Path".
+  
++ Bug Fix: When the resting parameters differed from the local animated parameters, Curve Deformers in "Curve Mode" wouldn't properly deform.
 
 + Minor code improvements.
 
