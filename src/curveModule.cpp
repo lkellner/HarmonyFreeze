@@ -16,16 +16,16 @@ CurveModule::CurveModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module
 	loadAttributes();
 
 	m_bezierHandles.emplace_back(getFreezeManager(), m_length0Attr, m_orientation0Attr,
-		u"length0"_s, u"orientation0"_s, BezierHandle::Kind::Animatable);
+		u"length0"_s, u"orientation0"_s, BezierHandle::Kind::Animatable, isIndependent());
 
 	m_bezierHandles.emplace_back(getFreezeManager(), m_length1Attr, m_orientation1Attr,
-		u"length1"_s, u"orientation1"_s, BezierHandle::Kind::Animatable);
+		u"length1"_s, u"orientation1"_s, BezierHandle::Kind::Animatable, isIndependent());
 
 	m_bezierHandles.emplace_back(getFreezeManager(), m_restLength0Attr, m_restingOrientation0Attr,
-		u"restlength0"_s, u"restingOrientation0"_s, BezierHandle::Kind::Rest);
+		u"restlength0"_s, u"restingOrientation0"_s, BezierHandle::Kind::Rest, isIndependent());
 
 	m_bezierHandles.emplace_back(getFreezeManager(), m_restLength1Attr, m_restingOrientation1Attr,
-		u"restlength1"_s, u"restingOrientation1"_s, BezierHandle::Kind::Rest);
+		u"restlength1"_s, u"restingOrientation1"_s, BezierHandle::Kind::Rest, isIndependent());
 }
 
 FrameRange CurveModule::getFrameRange() const
@@ -202,9 +202,9 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 	for (auto& bezierHandle : m_bezierHandles)
 	{
 		if (!isIndependent())
-			bezierHandle.recalculateStaticHandlePoint(getModulePtr(), adjustDependentMatrix(matrix, false, bezierHandle.isRest()), curMacro, isIndependent());
+			bezierHandle.recalculateStaticHandlePoint(getModulePtr(), adjustDependentMatrix(matrix, false, bezierHandle.isRest()), curMacro);
 		else
-			bezierHandle.recalculateStaticHandlePoint(getModulePtr(), matrix, curMacro, isIndependent());
+			bezierHandle.recalculateStaticHandlePoint(getModulePtr(), matrix, curMacro);
 	}
 
 	FrameRange range = getFrameRange();
@@ -225,9 +225,9 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 
 			if (!isIndependent())
 				bezierHandle.recalculateAnimatedHandlePoint(getModulePtr(), adjustDependentMatrix(matrix, true, frameNo),
-					curMacro, kfData, frameNo, isIndependent());
+					curMacro, kfData, frameNo);
 			else
-				bezierHandle.recalculateAnimatedHandlePoint(getModulePtr(), matrix, curMacro, kfData, frameNo, isIndependent());
+				bezierHandle.recalculateAnimatedHandlePoint(getModulePtr(), matrix, curMacro, kfData, frameNo);
 		}
 	}
 }

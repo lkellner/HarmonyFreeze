@@ -27,26 +27,27 @@ BezierHandle::BezierHandle(std::shared_ptr<FreezeManager> freezeManager,
 		AT_DoubleAttr* orientationAttr,
 		QString lengthAttrJS,
 		QString orientationAttrJS,
-		Kind kind)
+		Kind kind,
+		bool isIndependent)
 	: m_freezeManager(std::move(freezeManager))
 	, m_lengthAttr(lengthAttr)
 	, m_orientationAttr(orientationAttr)
 	, m_lengthAttrJS(std::move(lengthAttrJS))
 	, m_orientationAttrJS(std::move(orientationAttrJS))
 	, m_kind(kind)
+	, m_isIndependent(isIndependent)
 {
 }
 
 void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4& changeMatrix,
-		CO_OrCommand& curMacro,
-		const bool isIndependent)
+		CO_OrCommand& curMacro)
 {
 	if (!modulePtr)
 		return;
 
 	BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr->sceneMetrics(), changeMatrix,
-			m_lengthAttr->localValue(), m_orientationAttr->localValue(), isIndependent);
+			m_lengthAttr->localValue(), m_orientationAttr->localValue(), m_isIndependent);
 
 	m_prevRadius = handleInfo.radius; //Saving the current value for the first animated keyframe
 	m_prevAngle = handleInfo.angle;
@@ -64,19 +65,17 @@ void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 	}
 }
 
-// FIXME: get rid of these bools
 void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4 changeMatrix,
 		CO_OrCommand& curMacro,
 		const BezKeyframeData& kfData,
-		const double frameNo,
-		const bool isIndependent)
+		const double frameNo)
 {
 	if (!modulePtr)
 		return;
 
 	const BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr->sceneMetrics(), changeMatrix,
-			m_lengthAttr->value(frameNo), m_orientationAttr->value(frameNo), isIndependent);
+			m_lengthAttr->value(frameNo), m_orientationAttr->value(frameNo), m_isIndependent);
 
 
 	//Sometimes it might be necessary to add an extra keyframe to the radius/length as it also depends on the orientation.

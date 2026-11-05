@@ -55,19 +55,18 @@ public:
 			AT_DoubleAttr* orientationAttr,
 			QString lengthAttrJS,
 			QString orientationAttrJS,
-			Kind kind);
+			Kind kind,
+			bool isIndependent);
 
 	void recalculateStaticHandlePoint(const MO_Module* modulePtr,
 			const Math::Matrix4x4& changeMatrix,
-			CO_OrCommand& curMacro,
-			const bool isIndependent);
+			CO_OrCommand& curMacro);
 
 	void recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 			const Math::Matrix4x4 changeMatrix,
 			CO_OrCommand& curMacro,
 			const BezKeyframeData& kfData,
-			const double frameNo,
-			const bool isIndependent);
+			const double frameNo);
 
 	Kind kind() const { return m_kind; }
 
@@ -90,6 +89,7 @@ private:
 	double m_prevAngle;
 
 	Kind m_kind;
+	bool m_isIndependent;
 };
 
 struct BezierHandleInfo
