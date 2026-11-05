@@ -35,13 +35,12 @@ FrameRange OffsetModule::getFrameRange() const
 	return range;
 }
 
-
 void OffsetModule::loadAttributes()
 {
 	m_restingOrientationAttr = findAttribute<AT_DoubleAttr>("restingOrientation"_L1);
 	m_orientationAttr = findAttribute<AT_DoubleAttr>("orientation"_L1);
 
-	MO_Module* modulePtr = getModulePtr();
+	const MO_Module* modulePtr = getModulePtr();
 
 	if (!m_restingOrientationAttr)
 		throw std::runtime_error("missing attribute: 'restingOrientation' for " + modulePtr->qualifiedName().toStdString());
@@ -76,7 +75,6 @@ double OffsetModule::recalculateOrientation(const Math::Matrix4x4 changeMatrix, 
 
 	return matchFullRotations(referenceAngle, getAngle2d(rotMatrix.getTransform2d()));
 }
-
 
 void OffsetModule::readjustOrientation(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix)
 {
@@ -117,7 +115,7 @@ void OffsetModule::readjustOrientation(CO_OrCommand& curMacro, const Math::Matri
 
 		bool isCtrlPnt = false;
 
-		bool isAdjustKeyframe = prevOrientation != angle && isComplexTransform() && fm->isSetInbetweenKfMode();
+		const bool isAdjustKeyframe = prevOrientation != angle && isComplexTransform() && fm->isSetInbetweenKfMode();
 
 		prevOrientation = angle;
 
