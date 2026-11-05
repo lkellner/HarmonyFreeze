@@ -23,11 +23,12 @@ public:
 private:
 	void loadAttributes();
 
-	BezKeyframeData generateKeyframeData(BezierHandle& bezierHandle, double frameNo, bool isFirst);
+	BezKeyframeData generateKeyframeData(const BezierHandle& bezierHandle,
+		const double frameNo, const bool isFirst) const;
 
 	FrameRange getFrameRange() const override;
 
-	void readjustBezierHandles(CO_OrCommand& curMacro, Math::Matrix4x4 matrix);
+	void readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matrix4x4 matrix);
 
 	std::unique_ptr<RegionOfInfluence> m_regionOfInfluence;
 

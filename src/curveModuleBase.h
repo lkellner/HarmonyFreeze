@@ -57,25 +57,25 @@ public:
 			QString orientationAttrJS,
 			Kind kind);
 
-	void recalculateStaticHandlePoint(MO_Module* modulePtr,
+	void recalculateStaticHandlePoint(const MO_Module* modulePtr,
 			const Math::Matrix4x4& changeMatrix,
 			CO_OrCommand& curMacro,
-			bool isIndependent);
+			const bool isIndependent);
 
-	void recalculateAnimatedHandlePoint(MO_Module* modulePtr,
-			Math::Matrix4x4 changeMatrix,
+	void recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
+			const Math::Matrix4x4 changeMatrix,
 			CO_OrCommand& curMacro,
 			const BezKeyframeData& kfData,
-			double frameNo,
-			bool isIndependent);
+			const double frameNo,
+			const bool isIndependent);
 
 	Kind kind() const { return m_kind; }
 
 	bool isAnimatable() const { return m_kind == Kind::Animatable; }
 	bool isRest() const { return m_kind == Kind::Rest; }
 
-	const AT_DoubleAttr* getLengthAttr() { return m_lengthAttr; }
-	const AT_DoubleAttr* getOrientationAttr() { return m_orientationAttr; }
+	const AT_DoubleAttr* getLengthAttr() const { return m_lengthAttr; }
+	const AT_DoubleAttr* getOrientationAttr() const { return m_orientationAttr; }
 
 private:
 	std::shared_ptr<FreezeManager> m_freezeManager;
@@ -119,8 +119,8 @@ public:
 
 protected:
 	void readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix);
-	bool isParentKeyframe(double frameNo);
-	bool isComplexTransform() { return m_freezeMatrixComplexity == MatrixComplexity::Complex 
+	bool isParentKeyframe(const double frameNo) const;
+	bool isComplexTransform() const { return m_freezeMatrixComplexity == MatrixComplexity::Complex 
 		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly; }
 	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 
@@ -143,8 +143,8 @@ private:
 
 BezierHandleInfo getRecalculatedHandleInfo(SC_SceneMetrics* sceneMetrics,
 		const Math::Matrix4x4& changeMatrix,
-		double length,
-		double angle,
-		bool isIndependent);
+		const double length,
+		const double angle,
+		const bool isIndependent);
 
 #endif

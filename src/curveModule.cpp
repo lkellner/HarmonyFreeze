@@ -197,7 +197,7 @@ void CurveModule::readjustSecondary()
 	fm->addCommand(std::move(curMacro));
 }
 
-void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, Math::Matrix4x4 matrix)
+void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matrix4x4 matrix)
 {
 	for (auto& bezierHandle : m_bezierHandles)
 	{
@@ -232,7 +232,8 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, Math::Matrix4x4 
 	}
 }
 
-BezKeyframeData CurveModule::generateKeyframeData(BezierHandle& bezierHandle, double frameNo, bool isFirst)
+BezKeyframeData CurveModule::generateKeyframeData(const BezierHandle& bezierHandle,
+	const double frameNo, const bool isFirst) const
 {
 	BezKeyframeData kfData;
 	//Check if there is a keyframe on the attributes

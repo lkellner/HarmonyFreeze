@@ -37,10 +37,10 @@ BezierHandle::BezierHandle(std::shared_ptr<FreezeManager> freezeManager,
 {
 }
 
-void BezierHandle::recalculateStaticHandlePoint(MO_Module* modulePtr,
+void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4& changeMatrix,
 		CO_OrCommand& curMacro,
-		bool isIndependent)
+		const bool isIndependent)
 {
 	if (!modulePtr)
 		return;
@@ -65,12 +65,12 @@ void BezierHandle::recalculateStaticHandlePoint(MO_Module* modulePtr,
 }
 
 // FIXME: get rid of these bools
-void BezierHandle::recalculateAnimatedHandlePoint(MO_Module* modulePtr,
-		Math::Matrix4x4 changeMatrix,
+void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
+		const Math::Matrix4x4 changeMatrix,
 		CO_OrCommand& curMacro,
 		const BezKeyframeData& kfData,
-		double frameNo,
-		bool isIndependent)
+		const double frameNo,
+		const bool isIndependent)
 {
 	if (!modulePtr)
 		return;
@@ -111,9 +111,9 @@ void BezierHandle::recalculateAnimatedHandlePoint(MO_Module* modulePtr,
 
 BezierHandleInfo getRecalculatedHandleInfo(SC_SceneMetrics* sceneMetrics,
 		const Math::Matrix4x4& changeMatrix,
-		double length,
-		double angle,
-		bool isIndependent) // FIXME: remove bool if possible
+		const double length,
+		const double angle,
+		const bool isIndependent) // FIXME: remove bool if possible
 {
 	const Math::Matrix4x4 transMatrix = Math::Matrix4x4().translate(length, 0, 0);
 
@@ -133,7 +133,7 @@ BezierHandleInfo getRecalculatedHandleInfo(SC_SceneMetrics* sceneMetrics,
 	const Math::Point3d origin = rotMatrix.origin();
 
 	//Rougly estimated angle used as a reference know whether to add n*360 degrees
-	//to final angle. This is to make sure that animatio don't break
+	//to final angle. This is to make sure that animations don't break
 	const double referenceAngle = getAngle2d(changeMatrix.getTransform2d()) + angle;
 
 	const double orientation = matchFullRotations(referenceAngle, getAngle2d(rotMatrix.getTransform2d()));
@@ -391,7 +391,7 @@ double CurveModuleBase::getRotationImpl(const QLatin1StringView curveAttrKeyword
 	return rotation;
 }
 
-bool CurveModuleBase::isParentKeyframe(double frameNo)
+bool CurveModuleBase::isParentKeyframe(const double frameNo) const
 {
 	bool isKeyframe = false;
 
