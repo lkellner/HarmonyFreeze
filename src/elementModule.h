@@ -10,15 +10,8 @@
 #include "moduleBase.h"
 #include "utils.h"
 
-#include <GraphicCore/ColorManagerLib/CM_Palette.h>
 #include <GraphicCore/GraphicLib/GR_DrawingAccess.h>
-#include <GraphicCore/GraphicLib/GR_PaletteInfo.h>
-#include <GraphicCore/GraphicLib/GR_StrokeData.h>
-
 #include <SceneCore/attribute/AT_BoolAttr.h>
-#include <SceneCore/module/MO_Module.h>
-#include <SceneCore/module/MO_NetworkUtils.h>
-#include <SceneCore/module/MO_Port.h>
 #include <SceneCore/module/MO_PortTransform.h>
 
 class BitmapListener : public GR_Listener

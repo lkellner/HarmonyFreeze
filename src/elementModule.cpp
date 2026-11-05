@@ -1,14 +1,7 @@
 #include "elementModule.h"
 
-#include <GraphicCore/ColorManagerLib/CM_Texture.h>
-
-#include <GraphicCore/GraphicLib/GR_ColorDict.h>
-#include <GraphicCore/GraphicLib/GR_BitmapLayer.h>
-#include <GraphicCore/GraphicLib/GR_StrokeAccess.h>
 #include <GraphicCore/GraphicLib/GR_BitmapAccess.h>
-#include <GraphicCore/GraphicLib/GR_ColorTransform.h>
-
-#include <SceneCore/attribute/AT_Enums.h>
+#include <GraphicCore/GraphicLib/GR_ColorDict.h>
 
 #include <optional>
 
