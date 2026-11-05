@@ -477,6 +477,7 @@ as well as creating a UI for the settings.
 # Known Issues
 
 + Keyframed Curve and Envelope Deformers' offset attributes won't deform properly when set to "2D Path".
++ When the resting parameters differ from the local animated parameters, Curve Deformers in "Curve Mode" won't properly deform.
 
  
 # Acknowledgements
