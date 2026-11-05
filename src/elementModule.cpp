@@ -56,17 +56,13 @@ void ElementModule::processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVec
 		if (!drawingLayer->hasBitmapLayers())
 			continue;
 
-		GR_BitmapAccess * bitmapAccess = new GR_BitmapAccess();
-		bitmapAccess->SetCurrentDrawing(drawingLayer);
-
-		GR_DrawingAccess* drawingAccess = reinterpret_cast<GR_DrawingAccess*>(bitmapAccess);
-		SDK_Drawing::ChangeScope bitmapScope;
+		GR_BitmapAccess bitmapAccess;
+		bitmapAccess.SetCurrentDrawing(drawingLayer);
 
 		//Custom GR_Listener to test if the cast GR_DrawingAccess is still working
-		BitmapListener listener = BitmapListener(*drawingAccess);
+		BitmapListener listener = BitmapListener(bitmapAccess);
 
-		bitmapScope.listenForChanges(*drawingAccess, celPtr, i);
-		bitmapAccess->beginOperations();
+		bitmapAccess.beginOperations();
 
 		GR_BitmapNode* curBitmapNode = drawingLayer->topBitmapNode();
 		GR_BitmapNode* prevBitmapNode = nullptr;
@@ -77,13 +73,12 @@ void ElementModule::processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVec
 
 			GR_BitmapLayer& bitmapLayer = curBitmapNode->bitmapLayer();
 
-			bitmapAccess->transformBitmap(&bitmapLayer, matrix.getTransform2d());
+			bitmapAccess.transformBitmap(&bitmapLayer, matrix.getTransform2d());
 
 			curBitmapNode = prevBitmapNode;
 		}
 
-		bitmapAccess->endOperations();
-		bitmapScope.stopListeningForChanges(*drawingAccess);
+		bitmapAccess.endOperations();
 	}
 }
 
