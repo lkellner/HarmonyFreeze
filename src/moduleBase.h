@@ -46,7 +46,7 @@ public:
 	virtual ~ModuleBase() = default;
 
 	virtual void readjustSecondary() = 0;
-	virtual void readjustTertiary() {};
+	virtual void readjustTertiary() const {};
 
 	ModuleType getModuleType() const;
 	MO_Module* getModulePtr() const;

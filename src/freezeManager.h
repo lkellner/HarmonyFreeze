@@ -94,7 +94,7 @@ public:
 
 	bool isProcessedElement(int curId, const QString& layerAttr) const;
 	void updateDrawingPivotStatus(int curId, const QString& layerAttr, bool hasUsedDrawingPivots);
-	bool getDrawingPivotStatus(int curId, const QString& layerAttr);
+	bool getDrawingPivotStatus(int curId, const QString& layerAttr) const;
 	void addElement(int curId, const QString& layerAttr, bool hasUsedDrawingPivots);
 	bool isExperimentalMode() const { return m_settings[settingIndex("ExperimentalMode")].value; }
 	bool isMultithreadingMode() const { return m_settings[settingIndex("UseMultithreading")].value; }

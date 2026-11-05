@@ -30,7 +30,7 @@ ElementModule::ElementModule(std::shared_ptr<FreezeManager> freezeManager, MO_Mo
 }
 
 
-void ElementModule::modifyTimings()
+void ElementModule::modifyTimings() const
 {
 	const std::vector<CelInfo> celInfoVec = getElementTimings(getModulePtr());
 
@@ -41,7 +41,7 @@ void ElementModule::modifyTimings()
 }
 
 
-void ElementModule::processBitmaps(const CA_CelPtr celPtr, GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
+void ElementModule::processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
 {
 	//This part of the code is currently only available in experimental mode as there hasn't been found
 	//a way to undo bitmap transformations for now.
@@ -88,13 +88,13 @@ void ElementModule::processBitmaps(const CA_CelPtr celPtr, GR_CompositeVectorDra
 }
 
 
-void ElementModule::applyChangeMatrix(CA_CelPtr celPtr, Math::Matrix4x4 matrix) const
+void ElementModule::applyChangeMatrix(const CA_CelPtr celPtr, Math::Matrix4x4 matrix) const
 {
 	if (!celPtr.isValid())
 		return;
 
 
-	CELVEC_Tbd* tbd = getPermTbd(celPtr);
+	const CELVEC_Tbd* tbd = getPermTbd(celPtr);
 
 
 	if (!tbd)
@@ -105,7 +105,7 @@ void ElementModule::applyChangeMatrix(CA_CelPtr celPtr, Math::Matrix4x4 matrix) 
 
 
 
-	GR_CompositeVectorDrawingObj* compDrawing = tbd->getDrawingObject();
+	const GR_CompositeVectorDrawingObj* compDrawing = tbd->getDrawingObject();
 
 	if (!compDrawing)
 		return;
@@ -117,7 +117,7 @@ void ElementModule::applyChangeMatrix(CA_CelPtr celPtr, Math::Matrix4x4 matrix) 
 
 
 void ElementModule::transformColor(GR_VectorStroke* ogStroke, GR_StrokeData & data, std::map<GR_Color*, GR_StrokeData::GR_ColorPtr_t> & colorLookUp,
-	const Math::Matrix4x4& matrix, GR_StrokeData::StrokeSide sideData, const GR_VectorStroke::StrokeSide sideVector) const
+	const Math::Matrix4x4& matrix, const GR_StrokeData::StrokeSide sideData, const GR_VectorStroke::StrokeSide sideVector) const
 {
 	GR_Color* color = ogStroke->GetColor(sideVector);
 
@@ -174,7 +174,7 @@ void ElementModule::processVectorDrawingLayers(GR_DrawingAccess &drawingAccess,c
 }
 
 
-void ElementModule::processVectorData(const CA_CelPtr celPtr, GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
+void ElementModule::processVectorData(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
 {
 	GR_DrawingAccess drawingAccess;
 	GR_ColorDict dict;
@@ -219,10 +219,10 @@ void ElementModule::processVectorData(const CA_CelPtr celPtr, GR_CompositeVector
 
 void ElementModule::updateDrawingPivotConversionStatus()
 {
-	int curId = getElementId(getModulePtr());
-	QString layerAttr = getLayerAttr(getModulePtr());
+	const int curId = getElementId(getModulePtr());
+	const QString layerAttr = getLayerAttr(getModulePtr());
 
-	FreezeManager* fm = getFreezeManagerPtr();
+	const FreezeManager* fm = getFreezeManagerPtr();
 
 	if (!fm->isMoveUnusedPivots() && !fm->getDrawingPivotStatus(curId, layerAttr))
 		m_isConvertDrawingPivots = false;
@@ -396,7 +396,7 @@ static void centerFirstPage(AlignmentContext& ctx)
 }
 
 
-Math::Matrix4x4 ElementModule::getAlignmentMatrix()
+Math::Matrix4x4 ElementModule::getAlignmentMatrix() const
 {
 	//The aligmentMatrix depends on a variety of factors: Alignment Scene Settings, 
 	//Alignment Settings on the element modules themselves, as well as the Scene Settings (Number of Units) that
@@ -508,7 +508,7 @@ void ElementModule::recalculateDrawingPivots(const Math::Matrix4x4& matrix)
 	}
 }
 
-void ElementModule::setDrawingPivots()
+void ElementModule::setDrawingPivots() const
 {
 	if (!m_isConvertDrawingPivots)
 		return;
@@ -520,7 +520,7 @@ void ElementModule::setDrawingPivots()
 	//TODO: had a setDirty() here, removed because of multithreading, but need to make sure its not needed. Could call it from elsewhere
 }
 
-void ElementModule::readjustTertiary()
+void ElementModule::readjustTertiary() const
 {
 	modifyTimings();
 }

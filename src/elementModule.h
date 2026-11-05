@@ -26,24 +26,24 @@ class ElementModule : public ModuleBase
 public:
 	explicit ElementModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module* modulePtr, ModuleType moduleType);
 
-	void modifyTimings();
+	void modifyTimings() const;
 	void readjustSecondary() override;
-	void readjustTertiary() override;
-	void setDrawingPivots();
+	void readjustTertiary() const override;
+	void setDrawingPivots() const;
 	void setChangeMatrix(const Math::Matrix4x4 matrix) { m_changeMatrix = matrix; };
-	Math::Matrix4x4 getAlignmentMatrix();
+	Math::Matrix4x4 getAlignmentMatrix() const;
 
 private:
 	void saveDrawingPivots();
 	void recalculateDrawingPivots(const Math::Matrix4x4& matrix);
 	void updateDrawingPivotConversionStatus();
 
-	void applyChangeMatrix(CA_CelPtr celPtr, Math::Matrix4x4 matrix) const;
-	void processBitmaps(const CA_CelPtr celPtr, GR_CompositeVectorDrawingObj* compDrawing, const Math::Matrix4x4& matrix) const;
-	void processVectorData(const CA_CelPtr celPtr, GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const;
+	void applyChangeMatrix(const CA_CelPtr celPtr, Math::Matrix4x4 matrix) const;
+	void processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing, const Math::Matrix4x4& matrix) const;
+	void processVectorData(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const;
 	void processVectorDrawingLayers(GR_DrawingAccess& drawingAccess, const Math::Matrix4x4& matrix, GR_LayerNode* curLayerNode) const;
 	void transformColor(GR_VectorStroke* ogStroke, GR_StrokeData& data, std::map<GR_Color*, GR_StrokeData::GR_ColorPtr_t>& colorLookUp,
-			const Math::Matrix4x4& matrix, GR_StrokeData::StrokeSide sideData, const GR_VectorStroke::StrokeSide sideVector) const;
+			const Math::Matrix4x4& matrix, const GR_StrokeData::StrokeSide sideData, const GR_VectorStroke::StrokeSide sideVector) const;
 
 	std::vector<CelInfo> m_drawingPivots;
 

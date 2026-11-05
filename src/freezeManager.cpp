@@ -39,7 +39,7 @@ void FreezeManager::updateDrawingPivotStatus(int curId, const QString& layerAttr
 }
 
 
-bool FreezeManager::getDrawingPivotStatus(int curId, const QString& layerAttr)
+bool FreezeManager::getDrawingPivotStatus(int curId, const QString& layerAttr) const
 {
 	const auto it = std::find_if(m_processedElements.begin(), m_processedElements.end(),
 		[curId](const auto& val) { return val.m_elementId == curId; });
@@ -48,10 +48,10 @@ bool FreezeManager::getDrawingPivotStatus(int curId, const QString& layerAttr)
 	if (it == m_processedElements.end())
 		return false;
 
-	ElementRegistry& registry = *it;
+	const ElementRegistry& registry = *it;
 
 	//element has already been included
-	auto regIt = std::find_if(registry.m_layerAttrInfoVec.begin(), registry.m_layerAttrInfoVec.end(),
+	const auto regIt = std::find_if(registry.m_layerAttrInfoVec.begin(), registry.m_layerAttrInfoVec.end(),
 		[&layerAttr](const auto& val) { return val.m_layerAttr == layerAttr; });
 
 	if (regIt == registry.m_layerAttrInfoVec.end())
