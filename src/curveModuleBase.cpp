@@ -239,7 +239,7 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 		isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
 
 		if (!isIndependent())
-			offset *= adjustDependentMatrix(changeMatrix, true, frameNo).getTransform2d();
+			offset *= adjustDependentMatrix(changeMatrix, true, false, frameNo).getTransform2d();
 		else
 			recalculateIndependentPoint(getModulePtr(), changeMatrix, offset);
 
@@ -281,8 +281,8 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 
 Math::Matrix4x4 CurveModuleBase::adjustDependentMatrix(const Math::Matrix4x4 matrix,
 		const bool isAnimated,
-		const double frameNo,
-		const bool isRest) const
+		const bool isRest,
+		const double frameNo) const
 {
 	const Math::Matrix4x4 parentMatrix = isAnimated
 		?  Math::Matrix4x4().rotateDegrees(getChainRotation(frameNo))

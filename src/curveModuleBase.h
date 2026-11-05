@@ -111,8 +111,8 @@ public:
 
 	Math::Matrix4x4 adjustDependentMatrix(const Math::Matrix4x4 matrix,
 			const bool isAnimated,
-			const double frameNo = 1.0,
-			const bool isRest = false) const;
+			const bool isRest,
+			const double frameNo = 1.0) const;
 
 	double getChainRotation(const double frameNo) const;
 	double getStaticChainRotation(const bool isRest) const;
