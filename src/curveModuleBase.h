@@ -3,29 +3,17 @@
  * Copyright 2026 Laura Kellner
  */
 
-
 #ifndef CURVEMODULEBASE_H
 #define CURVEMODULEBASE_H
 
-#include <cstdint>
-#include <cstdio>
-
-#include <SceneCore/module/MO_Module.h>
-#include <SceneCore/module/MO_SoftContext.h>
-#include <SceneCore/module/MO_Port.h>
-
-#include <SceneCore/attribute/AT_DoubleAttr.h>
-#include <SceneCore/attribute/AT_Position2dAttr.h>
-#include <SceneCore/attribute/AT_BoolAttr.h>
-#include <SceneCore/module/MO_NetworkUtils.h>
-#include "SceneCore/selectable/SLB_CmdManipulator.h"
-#include "SceneCore/selectable/SLB_ManipContext.h"
-#include "SceneCore/attribute/AT_AttrCmds.h"
-#include "SceneCore/attribute/AT_PositionAttrCmds.h"
-#include <Util/command/CO_OrCommand.h>
-
 #include "moduleBase.h"
 #include "utils.h"
+
+#include <SceneCore/attribute/AT_AttrCmds.h>
+#include <SceneCore/attribute/AT_BoolAttr.h>
+#include <SceneCore/attribute/AT_Position2dAttr.h>
+#include <SceneCore/attribute/AT_PositionAttrCmds.h>
+
 
 /*
  * Notes on curve and offset modules:

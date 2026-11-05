@@ -1,11 +1,5 @@
 #include "curveModuleBase.h"
 
-#include <SceneCore/module/MO_PortTransform.h>
-#include <GraphicCore/CinematicChain/CC_Transformation.h>
-
-#include <limits>
-#include <stdexcept>
-
 using namespace Qt::StringLiterals;
 
 static void recalculateIndependentPoint(const MO_Module* modulePtr,
