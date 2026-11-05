@@ -3,10 +3,10 @@
 
 #include <QSlider>
 #include <QGridLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 
 using namespace Qt::StringLiterals;
 
