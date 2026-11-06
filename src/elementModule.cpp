@@ -40,8 +40,15 @@ void ElementModule::modifyTimings() const
 	}
 }
 
+static Math::Box2di recalculateCanvasBox(const GR_BitmapLayer& layer, const Math::Matrix2x3& matrix)
+{
+	Math::Matrix2x3 pixelTransformationMatrix =  layer.pixelToModelMatrix() * matrix * layer.modelToPixelMatrix();
 
-void ElementModule::processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
+	return pixelTransformationMatrix.Transform(layer.canvasBox());
+}
+
+void ElementModule::processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing,
+	const Math::Matrix4x4& matrix) const
 {
 	//This part of the code is currently only available in experimental mode as there hasn't been found
 	//a way to undo bitmap transformations for now.
@@ -73,8 +80,10 @@ void ElementModule::processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVec
 
 			GR_BitmapLayer& bitmapLayer = curBitmapNode->bitmapLayer();
 
+			bitmapAccess.setCanvasBox(&bitmapLayer, recalculateCanvasBox(bitmapLayer, matrix.getTransform2d()));
 			bitmapAccess.transformBitmap(&bitmapLayer, matrix.getTransform2d());
 
+			bitmapAccess.applyCanvasBoxOnBitmap(&bitmapLayer);
 			curBitmapNode = prevBitmapNode;
 		}
 
@@ -88,17 +97,12 @@ void ElementModule::applyChangeMatrix(const CA_CelPtr celPtr, Math::Matrix4x4 ma
 	if (!celPtr.isValid())
 		return;
 
-
 	const CELVEC_Tbd* tbd = getPermTbd(celPtr);
-
 
 	if (!tbd)
 		return;
 
-
 	matrix = oglToVectorModificationMatrix(getModulePtr()->sceneMetrics(), matrix, tbd);
-
-
 
 	const GR_CompositeVectorDrawingObj* compDrawing = tbd->getDrawingObject();
 
