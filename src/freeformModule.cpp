@@ -17,7 +17,7 @@ FreeformModule::FreeformModule(std::shared_ptr<FreezeManager> freezeManager,
 
 	for (auto& attr : attrList)
 	{
-		AT_ComplexAttr* cAttr;
+		const AT_ComplexAttr* cAttr;
 
 		if (attr._pAttr->typeName() != "FREE-FORM-DEFORMATION-ATTRIBUTE"_L1)
 			continue;
