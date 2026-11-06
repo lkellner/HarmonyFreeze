@@ -18,7 +18,7 @@ ShapeAwareModule::ShapeAwareModule(std::shared_ptr<FreezeManager> freezeManager,
 
 	for (auto& attr : attrList)
 	{
-		AT_ComplexAttr* cAttr;
+		const AT_ComplexAttr* cAttr;
 
 		if (attr._pAttr->typeName() != "FREE-FORM-DEFORMATION-ATTRIBUTE"_L1)
 			continue;
@@ -76,7 +76,7 @@ void ShapeAwareModule::processeInputModuls() const
 
 		fm->addElement(curId, layerAttr, hasUsedDrawingPivots(inputModule));
 
-		std::shared_ptr<ElementModule> elementModule = std::make_shared<ElementModule>(fm, inputModule, ModuleType::ELEMENT);
+		const std::shared_ptr<ElementModule> elementModule = std::make_shared<ElementModule>(fm, inputModule, ModuleType::ELEMENT);
 
 		const Math::Matrix4x4 alignmentMatrix = elementModule->getAlignmentMatrix();
 
