@@ -19,7 +19,6 @@ void BitmapListener::Notify(const GR_VectorDrawingObj&, const UT_Node& i_node, c
 	printf("type: %d \n", i_message.m_type);
 }
 
-
 ElementModule::ElementModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module* modulePtr, ModuleType moduleType)
 	: ModuleBase(freezeManager, modulePtr, moduleType)
 	, m_isConvertDrawingPivots(true)
@@ -28,7 +27,6 @@ ElementModule::ElementModule(std::shared_ptr<FreezeManager> freezeManager, MO_Mo
 	//there is another clone that might use them
 	saveDrawingPivots();
 }
-
 
 void ElementModule::modifyTimings() const
 {
@@ -66,8 +64,8 @@ void ElementModule::processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVec
 		GR_BitmapAccess bitmapAccess;
 		bitmapAccess.SetCurrentDrawing(drawingLayer);
 
-		//Custom GR_Listener to test if the cast GR_DrawingAccess is still working
-		BitmapListener listener = BitmapListener(bitmapAccess);
+		//Custom GR_Listener for testing
+		//BitmapListener listener = BitmapListener(bitmapAccess);
 
 		bitmapAccess.beginOperations();
 
@@ -91,7 +89,6 @@ void ElementModule::processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVec
 	}
 }
 
-
 void ElementModule::applyChangeMatrix(const CA_CelPtr celPtr, Math::Matrix4x4 matrix) const
 {
 	if (!celPtr.isValid())
@@ -113,7 +110,6 @@ void ElementModule::applyChangeMatrix(const CA_CelPtr celPtr, Math::Matrix4x4 ma
 
 	processBitmaps(celPtr, compDrawing, matrix);
 }
-
 
 void ElementModule::transformColor(GR_VectorStroke* ogStroke, GR_StrokeData & data, std::map<GR_Color*, GR_StrokeData::GR_ColorPtr_t> & colorLookUp,
 	const Math::Matrix4x4& matrix, const GR_StrokeData::StrokeSide sideData, const GR_VectorStroke::StrokeSide sideVector) const
@@ -139,7 +135,6 @@ void ElementModule::transformColor(GR_VectorStroke* ogStroke, GR_StrokeData & da
 		data.Color(sideData) = color;
 	}
 }
-
 
 void ElementModule::processVectorDrawingLayers(GR_DrawingAccess &drawingAccess,const Math::Matrix4x4& matrix, GR_LayerNode* curLayerNode) const
 {
@@ -171,7 +166,6 @@ void ElementModule::processVectorDrawingLayers(GR_DrawingAccess &drawingAccess,c
 		drawingAccess.Insert(newData, &curLayer);
 	}
 }
-
 
 void ElementModule::processVectorData(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const
 {
@@ -215,7 +209,6 @@ void ElementModule::processVectorData(const CA_CelPtr celPtr, const GR_Composite
 	}
 }
 
-
 void ElementModule::updateDrawingPivotConversionStatus()
 {
 	const int curId = getElementId(getModulePtr());
@@ -226,7 +219,6 @@ void ElementModule::updateDrawingPivotConversionStatus()
 	if (!fm->isMoveUnusedPivots() && !fm->getDrawingPivotStatus(curId, layerAttr))
 		m_isConvertDrawingPivots = false;
 }
-
 
 struct AlignmentContext
 {
@@ -394,7 +386,6 @@ static void centerFirstPage(AlignmentContext& ctx)
 	}
 }
 
-
 Math::Matrix4x4 ElementModule::getAlignmentMatrix() const
 {
 	//The aligmentMatrix depends on a variety of factors: Alignment Scene Settings, 
@@ -462,7 +453,6 @@ Math::Matrix4x4 ElementModule::getAlignmentMatrix() const
 	return getElementFlipMatrix(getModulePtr()) * ctx.alignmentMatrix;
 }
 
-
 void ElementModule::readjustSecondary()
 {
 	updateDrawingPivotConversionStatus();
@@ -516,7 +506,6 @@ void ElementModule::setDrawingPivots() const
 	{
 		setDrawingPivot(cel.celPtr, cel.pivot);
 	}
-	//TODO: had a setDirty() here, removed because of multithreading, but need to make sure its not needed. Could call it from elsewhere
 }
 
 void ElementModule::readjustTertiary() const
