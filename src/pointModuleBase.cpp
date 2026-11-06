@@ -1,12 +1,5 @@
 #include "pointModuleBase.h"
 
-#include <BaseCore/maths/MT_Point4d.h>
-
-#include <GraphicCore/CinematicChain/CC_Transformation.h>
-#include <SceneCore/attribute/AT_Position2dAttr.h>
-#include <SceneCore/attribute/AT_Position3dAttr.h>
-#include <SceneCore/module/MO_PortTransform.h>
-
 using namespace Qt::StringLiterals;
 
 PointModuleBase::PointModuleBase(std::shared_ptr<FreezeManager> freezeManager,
@@ -15,7 +8,6 @@ PointModuleBase::PointModuleBase(std::shared_ptr<FreezeManager> freezeManager,
 	: ModuleBase(std::move(freezeManager), modulePtr, moduleType)
 {
 }
-
 
 void PointModuleBase::readjustSecondary()
 {
@@ -27,8 +19,7 @@ void PointModuleBase::readjustSecondary()
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
-
-void PointModuleBase::processPoint(TransformPoint* point, CO_OrCommand& curMacro)
+void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& curMacro) const
 {
 	Math::Matrix4x4 changeMatrix = oglToFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
 		getFreezeManagerPtr()->getFreezeMatrix());
@@ -57,7 +48,7 @@ void PointModuleBase::processPoint(TransformPoint* point, CO_OrCommand& curMacro
 	}
 }
 
-void PointModuleBase::setStaticAttributes(TransformPoint* point, Math::Point3d position,
+void PointModuleBase::setStaticAttributes(const TransformPoint* point, Math::Point3d position,
 	CO_OrCommand& curMacro) const
 {
 	clampValues(position);
@@ -79,9 +70,8 @@ void PointModuleBase::setStaticAttributes(TransformPoint* point, Math::Point3d p
 	}
 }
 
-
-void PointModuleBase::setAttributes(TransformPoint* point, Math::Point3d position,
-	CO_OrCommand& curMacro, double frameNo) const
+void PointModuleBase::setAttributes(const TransformPoint* point, Math::Point3d position,
+	CO_OrCommand& curMacro, const double frameNo) const
 {
 	clampValues(position);
 
@@ -110,7 +100,6 @@ void PointModuleBase::setAttributes(TransformPoint* point, Math::Point3d positio
 		}
 	}
 }
-
 
 FrameRange PointModuleBase::getFrameRange() const
 {
