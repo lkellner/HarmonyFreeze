@@ -1,14 +1,10 @@
 #include "pkoModule.h"
 #include "src/utils.h"
 
-#include <BaseCore/maths/MT_Point4d.h>
-
-#include <GraphicCore/CinematicChain/CC_Transformation.h>
 #include <SceneCore/attribute/AT_Position2dAttr.h>
 #include <SceneCore/attribute/AT_Position3dAttr.h>
 #include <SceneCore/attribute/AT_Rotation3dAttr.h>
 #include <SceneCore/attribute/AT_Scale3dAttr.h>
-#include <SceneCore/module/MO_PortTransform.h>
 
 #include <stdexcept>
 
@@ -31,8 +27,6 @@ PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 
 	identifyTransformationType();
 }
-
-
 
 void PkoModule::identifyTransformationType()
 {
@@ -70,7 +64,7 @@ void PkoModule::identifyTransformationType()
 	m_transformationType = TransformationType::Simple;
 }
 
-Math::Matrix4x4 PkoModule::calculateChangeMatrix(double frameNo) const
+Math::Matrix4x4 PkoModule::calculateChangeMatrix(const double frameNo) const
 {
 	/*
 	How point kinematic outputs work:
@@ -128,7 +122,7 @@ Math::Matrix4x4 PkoModule::calculateChangeMatrix(double frameNo) const
 	//This module depends on all the attributes being set at once in the end
 	//if this is no longer true, the offsetMatrix would need to be saved in the
 	//constructor
-	Math::Matrix4x4 offsetMatrix = getIncomingMatrix(1, frameNo, true);
+	const Math::Matrix4x4 offsetMatrix = getIncomingMatrix(1, frameNo, true);
 	Math::Matrix4x4 oglChangeMatrix;
 
 	switch (m_transformationType)
@@ -152,7 +146,6 @@ Math::Matrix4x4 PkoModule::calculateChangeMatrix(double frameNo) const
 	return oglToFieldsModificationMatrix(getModulePtr()->sceneMetrics(), oglChangeMatrix);
 }
 
-
 void PkoModule::readjustSecondary()
 {
 	m_freezeMatrixComplexity = getFreezeManagerPtr()->getMatrixComplexity(false);
@@ -165,7 +158,6 @@ void PkoModule::readjustSecondary()
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
-
 
 void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, const QString pivotKeyword, CO_OrCommand& curMacro)
 {
@@ -233,9 +225,8 @@ void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* a
 	}
 }
 
-
 void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, const QString attributeKeyword, CO_OrCommand& curMacro, 
-	KeyframeState keyframeState, double frameNo)
+	const KeyframeState keyframeState, const double frameNo)
 {
 	clampValues(position);
 
@@ -270,8 +261,7 @@ void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, c
 	}
 }
 
-
-KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, double frameNo, bool isFirst) const
+KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, const double frameNo, const bool isFirst) const
 {
 	Math::Point2d tempPoint; 
 	bool isPosCtrlPnt = false;
@@ -343,9 +333,6 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 		return false;
 	}
 
-	bool isConstSeg;
-
-
 	//POSITION
 
 	Math::Point3d tempPos;
@@ -354,7 +341,7 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 	AT_Position3dAttr* posAttr = ::findAttribute<AT_Position3dAttr>("POSITION"_L1, parent);
 
 	if (posAttr)
-		posAttr->getValue(frameNo, tempPos, &isPosCtrlPnt, &isConstSeg);
+		posAttr->getValue(frameNo, tempPos);
 
 
 	//ROTATION
@@ -372,13 +359,13 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 		if (rotAttr->useSeparate())
 		{
 			if (rotAttr->separateX())
-				rotAttr->separateX()->value(frameNo, &isRotXCtrlPnt, &isConstSeg);
+				rotAttr->separateX()->value(frameNo, &isRotXCtrlPnt);
 
 			if (rotAttr->separateY())
-				rotAttr->separateY()->value(frameNo, &isRotYCtrlPnt, &isConstSeg);
+				rotAttr->separateY()->value(frameNo, &isRotYCtrlPnt);
 
 			if (rotAttr->separateZ())
-				rotAttr->separateZ()->value(frameNo, &isRotZCtrlPnt, &isConstSeg);
+				rotAttr->separateZ()->value(frameNo, &isRotZCtrlPnt);
 		}
 		else
 		{
@@ -415,13 +402,12 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 	AT_DoubleAttr* skewAttr = ::findAttribute<AT_DoubleAttr>("SKEW"_L1, parent);
 	
 	if(skewAttr)
-		skewAttr->value(frameNo, &isSkewCtrlPnt, &isConstSeg);
+		skewAttr->value(frameNo, &isSkewCtrlPnt);
 
 
 	return !(isPosCtrlPnt || isRotCtrlPnt || isRotXCtrlPnt || isRotYCtrlPnt || isRotZCtrlPnt 
 		|| isKeyframeX || isKeyframeY || isKeyframeZ || isSkewCtrlPnt);
 }
-
 
 FrameRange PkoModule::getFrameRange() const
 {
