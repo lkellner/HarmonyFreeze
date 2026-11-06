@@ -1,13 +1,5 @@
 #include "offsetModule.h"
 
-#include <GraphicCore/CinematicChain/CC_Transformation.h>
-
-#include <Util/pluginmanager/PLUG_Services.h>
-
-#include <SceneCore/module/MO_PortTransform.h>
-
-#include <limits>
-
 using namespace Qt::StringLiterals;
 
 OffsetModule::OffsetModule(std::shared_ptr<FreezeManager> freezeManager,
@@ -76,7 +68,7 @@ double OffsetModule::recalculateOrientation(const Math::Matrix4x4 changeMatrix, 
 	return matchFullRotations(referenceAngle, getAngle2d(rotMatrix.getTransform2d()));
 }
 
-void OffsetModule::readjustOrientation(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix)
+void OffsetModule::readjustOrientation(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix) const
 {
 	//Resting and local (static) values
 

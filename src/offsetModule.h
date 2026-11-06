@@ -8,16 +8,6 @@
 #define OFFSETMODULE_H
 
 #include "curveModuleBase.h"
-#include "utils.h"
-
-#include <SceneCore/attribute/AT_BoolAttr.h>
-#include <SceneCore/attribute/AT_DoubleAttr.h>
-#include <SceneCore/attribute/AT_Position2dAttr.h>
-
-#include <SceneCore/module/MO_Module.h>
-#include <SceneCore/module/MO_NetworkUtils.h>
-#include <SceneCore/module/MO_Port.h>
-#include <SceneCore/module/MO_SoftContext.h>
 
 class OffsetModule : public CurveModuleBase
 {
@@ -32,7 +22,7 @@ protected:
 
 private:
 	void loadAttributes();
-	void readjustOrientation(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix);
+	void readjustOrientation(CO_OrCommand& curMacro, const Math::Matrix4x4& changeMatrix) const;
 	double recalculateOrientation(const Math::Matrix4x4 changeMatrix, const double angle) const;
 
 	AT_DoubleAttr* m_restingOrientationAttr;
