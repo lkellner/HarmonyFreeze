@@ -115,13 +115,12 @@ Math::Matrix4x4 PkoModule::calculateChangeMatrix(const double frameNo) const
 
 	FreezeManager* fm = getFreezeManagerPtr();
 
-	//TODO: Will need to check if "true" is the correct parameter to pass here 
-	//after quadmaps have been implemented. (It doesn't seem to matter with 
-	//curve deformers)
-
 	//This module depends on all the attributes being set at once in the end
 	//if this is no longer true, the offsetMatrix would need to be saved in the
 	//constructor
+
+	//Passing true or false doesn't seem to matter for curve deformers. Quadmaps are
+	//ignoring the point kinematic output alltogether.
 	const Math::Matrix4x4 offsetMatrix = getIncomingMatrix(1, frameNo, true);
 	Math::Matrix4x4 oglChangeMatrix;
 
@@ -315,8 +314,10 @@ bool PkoModule::hasComplexPort1Parent() const
 
 bool PkoModule::hasNoParentKeyframe(double frameNo) const
 {
-	//TODO: there is quite a bit of intersection with transformationModule's generateKeyframeData
-	//It might be worth consolidating the two
+	//This is somewhat similar to generateKeyframeData in TransformationModule.
+	//However for now the decision was made not to consolidate the two as this is
+	//a somewhat special case for the PKO module that would create a lot of overhead
+	//for the far more used TransformationModule
 
 	MO_Module* parent = getModulePtr()->inputModule(1);
 
