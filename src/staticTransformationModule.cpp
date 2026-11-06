@@ -1,16 +1,9 @@
 #include "staticTransformationModule.h"
 
-#include <BaseCore/maths/MT_Matrix4x4.h>
 #include <SceneCore/attribute/AT_AttrCmds.h>
 #include <SceneCore/attribute/AT_PositionAttrCmds.h>
 #include <SceneCore/attribute/AT_Rotation3dAttrCmds.h>
 #include <SceneCore/attribute/AT_Scale3dAttrCmds.h>
-#include <SceneCore/attribute/AT_ScaleAttrCmds.h>
-#include <SceneCore/selectable/SLB_CmdManipulator.h>
-#include <SceneCore/selectable/SLB_ManipContext.h>
-#include <Util/command/CO_OrCommand.h>
-#include <Util/pluginmanager/PLUG_Scripting.h>
-#include <Util/pluginmanager/PLUG_Services.h>
 
 using namespace Qt::StringLiterals;
 
@@ -80,10 +73,9 @@ Math::Matrix4x4 StaticTransformationModule::getLocalMatrix(const double frameNo)
 		: parent.getInverse() * child;
 }
 
-
 void StaticTransformationModule::readjustSecondary()
 {
-	FreezeManager* fm = getFreezeManagerPtr();
+	const FreezeManager* fm = getFreezeManagerPtr();
 
 	Math::Matrix4x4 newStaticLocalMatrix = fm->getFreezeMatrix()
 		* getLocalMatrix(fm->getSelFrame()) * fm->getFreezeMatrix().getInverse();
@@ -95,7 +87,7 @@ void StaticTransformationModule::readjustSecondary()
 	setMatrixAsAttributesJS(newStaticLocalMatrix);
 }
 
-void StaticTransformationModule::setMatrixAsAttributes(const Math::Matrix4x4& matrix)
+void StaticTransformationModule::setMatrixAsAttributes(const Math::Matrix4x4& matrix) const
 {
 	auto curMacro = std::make_shared<CO_OrCommand>();
 
@@ -110,7 +102,6 @@ void StaticTransformationModule::setMatrixAsAttributes(const Math::Matrix4x4& ma
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
-
 
 void StaticTransformationModule::setMatrixAsAttributesJS(const Math::Matrix4x4& matrix) const
 {

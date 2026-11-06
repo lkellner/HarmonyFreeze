@@ -7,21 +7,15 @@
 #ifndef STATICTRANSFORMATIONMODULE_H
 #define STATICTRANSFORMATIONMODULE_H
 
-#include "utils.h"
 #include "moduleBase.h"
 
 #include <SceneCore/attribute/AT_DoubleAttr.h>
-#include <SceneCore/attribute/AT_Path3dAttr.h>
 #include <SceneCore/attribute/AT_Position3dAttr.h>
-#include <SceneCore/attribute/AT_QuaternionPathAttr.h>
 #include <SceneCore/attribute/AT_Rotation3dAttr.h>
 #include <SceneCore/attribute/AT_Scale3dAttr.h>
-#include <SceneCore/module/MO_Module.h>
-#include <SceneCore/module/MO_Port.h>
 
 class StaticTransformationModule : public ModuleBase
 {
-
 public:
 	explicit StaticTransformationModule(std::shared_ptr<FreezeManager> freezeManager,
 			MO_Module* modulePtr, ModuleType moduleType);
@@ -33,7 +27,7 @@ private:
 
 	Math::Matrix4x4 getLocalMatrix(const double frameNo) const;
 
-	void setMatrixAsAttributes(const Math::Matrix4x4& matrix);
+	void setMatrixAsAttributes(const Math::Matrix4x4& matrix) const;
 	void setMatrixAsAttributesJS(const Math::Matrix4x4& matrix) const;
 
 	AT_Position3dAttr* m_positionAttr;
