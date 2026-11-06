@@ -1,7 +1,6 @@
 #include "freezeManager.h"
 
 #include <Util/pluginmanager/PLUG_Scripting.h>
-#include <SDKExtension/SDK_Selection.h>
 
 
 using namespace Qt::StringLiterals;
@@ -14,8 +13,7 @@ FreezeManager::FreezeManager()
 	m_selFrame = m_frameRange.start;
 }
 
-
-void FreezeManager::updateDrawingPivotStatus(int curId, const QString& layerAttr, bool hasUsedDrawingPivots)
+void FreezeManager::updateDrawingPivotStatus(const int curId, const QString& layerAttr, const bool hasUsedDrawingPivots)
 {
 	const auto it = std::find_if(m_processedElements.begin(), m_processedElements.end(),
 		[curId](const auto& val) { return val.m_elementId == curId; });
@@ -38,8 +36,7 @@ void FreezeManager::updateDrawingPivotStatus(int curId, const QString& layerAttr
 	return;
 }
 
-
-bool FreezeManager::getDrawingPivotStatus(int curId, const QString& layerAttr) const
+bool FreezeManager::getDrawingPivotStatus(const int curId, const QString& layerAttr) const
 {
 	const auto it = std::find_if(m_processedElements.begin(), m_processedElements.end(),
 		[curId](const auto& val) { return val.m_elementId == curId; });
@@ -60,8 +57,7 @@ bool FreezeManager::getDrawingPivotStatus(int curId, const QString& layerAttr) c
 	return (*regIt).m_isUseDrawingPivot;
 }
 
-
-bool FreezeManager::isProcessedElement(int curId, const QString& layerAttr) const
+bool FreezeManager::isProcessedElement(const int curId, const QString& layerAttr) const
 {
 	const auto it = std::find_if(m_processedElements.begin(), m_processedElements.end(),
 							 [curId](const auto& val) { return val.m_elementId == curId; });
@@ -79,8 +75,7 @@ bool FreezeManager::isProcessedElement(int curId, const QString& layerAttr) cons
 	return regIt != registry.m_layerAttrInfoVec.end();
 }
 
-
-void FreezeManager::addElement(int curId, const QString& layerAttr, bool hasUsedDrawingPivots)
+void FreezeManager::addElement(const int curId, const QString& layerAttr, const bool hasUsedDrawingPivots)
 {
 	const auto it = std::find_if(m_processedElements.begin(), m_processedElements.end(),
 						   [curId](const auto& val) { return val.m_elementId == curId; });
@@ -100,7 +95,6 @@ void FreezeManager::addElement(int curId, const QString& layerAttr, bool hasUsed
 		registry.m_layerAttrInfoVec.emplace_back(layerAttr, hasUsedDrawingPivots);
 }
 
-
 void FreezeManager::writeAttr(QTextStream &out, const QString& moduleName, const StaticAttrData& attr)
 {
 	out << "\t\tnode.getAttr(\"" << moduleName << "\", 1, \"" << attr.name <<"\").setValue(" << attr.value << ");\n";
@@ -111,7 +105,6 @@ void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const
 	if (attr.isKeyframe)
 		out << "\t\tnode.setTextAttr(\"" << moduleName << "\", \"" << attr.name << "\", " << attr.frameNo << "," << attr.value << "); \n";
 }
-
 
 void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const AttrData& attr)
 {
@@ -124,7 +117,6 @@ void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const
 	if (attr.isKeyframe)
 		out << "\t\tnode.getAttr(\"" << moduleName << "\", 1, \"" << attr.name << "\").setValueAt(Point2d(" << attr.value.x() << "," << attr.value.y() << ")," << attr.frameNo << ");\n";
 }
-
 
 void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const QuaternionAttrData& attr)
 {
@@ -144,7 +136,6 @@ void FreezeManager::writeAttr(QTextStream& out, const QString& moduleName, const
 	out << "\t\t}\n";
 	out << "\t\tnode.getAttr(\"" << moduleName << "\", 1, \"" << attr.name << "\").setValueAt(Point3d(" << attr.value.x() << "," << attr.value.y() << "," << attr.value.z() << "), " << attr.frameNo << "); \n";
 }
-
 
 void FreezeManager::writeAttr(QTextStream& out,const QString&, const std::vector<CelInfo>& pivots)
 {
@@ -217,7 +208,6 @@ void FreezeManager::initializeFileJS()
 	out << "\tscene.beginUndoRedoAccum(\"Freeze Transformation\"); \n";
 }
 
-
 void FreezeManager::finalizeFileJS()
 {
 	PLUG_ScriptingInterface* scriptUI = PLUG_Services::getScriptingInterface();
@@ -257,8 +247,7 @@ MatrixComplexity FreezeManager::getMatrixComplexity(bool is3D) const
 	return is3D ? m_freezeMatrixComplexity3D : m_freezeMatrixComplexity2D;
 }
 
-
-void FreezeManager::setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* sceneMetrics)
+void FreezeManager::setMatrices(const Math::Matrix4x4 matrix, const SC_SceneMetrics* sceneMetrics)
 {
 	switch (m_projection)
 	{
@@ -305,24 +294,20 @@ FrameRange FreezeManager::getFrameRange() const
 	return m_frameRange;
 }
 
-
 void FreezeManager::setFrameRange(const FrameRange frameRange)
 {
 	m_frameRange = frameRange;
 }
-
 
 double FreezeManager::getSelFrame() const
 {
 	return m_selFrame;
 }
 
-
 void FreezeManager::setSelFrame(const double frameNo)
 {
 	m_selFrame = frameNo;
 }
-
 
 void FreezeManager::updateFrameRange(const FrameRange& newRange)
 {
@@ -335,12 +320,10 @@ void FreezeManager::updateFrameRange(const FrameRange& newRange)
 	return;
 }
 
-
 void FreezeManager::addCommand(std::shared_ptr<CO_OrCommand> command)
 {
 	commands.push_back(std::move(command));
 }
-
 
 void FreezeManager::executeCommands()
 {

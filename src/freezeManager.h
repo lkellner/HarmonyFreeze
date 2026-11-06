@@ -24,20 +24,17 @@ struct LayerAttrInfo
 	bool m_isUseDrawingPivot;
 };
 
-
 struct ElementRegistry
 {
 	int m_elementId;
 	std::vector<LayerAttrInfo> m_layerAttrInfoVec;
 };
 
-
 enum class PROJECTION
 {
 	NONE,
 	ORTHOGRAPHIC
 };
-
 
 class FreezeManager
 {
@@ -46,7 +43,7 @@ public:
 
 	void setFreezePegPtr(MO_Module* freezePegPtr);
 	MO_Module* getFreezePegPtr() { return m_freezePegPtr; };
-	void setMatrices(const Math::Matrix4x4 matrix, SC_SceneMetrics* sceneMetrics);
+	void setMatrices(const Math::Matrix4x4 matrix, const SC_SceneMetrics* sceneMetrics);
 	Math::Matrix4x4 getFreezeMatrix() const { return m_freezeMatrix; };
 	Math::Matrix4x4 getOffsetMatrix() const { return m_offsetMatrix; };
 	Math::Matrix4x4 getUnitOffsetScaleMatrix() const { return m_unitOffsetScaleMatrix; };
@@ -60,12 +57,23 @@ public:
 	double getSelFrame() const;
 	void setSelFrame(const double frameNo);
 
-	void addCommand(std::shared_ptr<CO_OrCommand> command); //threadsafe
+	void addCommand(std::shared_ptr<CO_OrCommand> command);
 	void executeCommands();
 
 
 	void initializeFileJS();
 	void finalizeFileJS();
+
+	bool isProcessedElement(const int curId, const QString& layerAttr) const;
+	void updateDrawingPivotStatus(const int curId, const QString& layerAttr, const bool hasUsedDrawingPivots);
+	bool getDrawingPivotStatus(const int curId, const QString& layerAttr) const;
+	void addElement(const int curId, const QString& layerAttr, const bool hasUsedDrawingPivots);
+	bool isExperimentalMode() const { return m_settings[settingIndex("ExperimentalMode")].value; }
+	bool isMultithreadingMode() const { return m_settings[settingIndex("UseMultithreading")].value; }
+	bool isDebugMode() const { return m_settings[settingIndex("DebugMode")].value; }
+	bool isPassOnOgl() const { return m_settings[settingIndex("PassOnOglControllerTransformation")].value; }
+	bool isMoveUnusedPivots() const { return m_settings[settingIndex("MoveUnusedPivots")].value; }
+	bool isSetInbetweenKfMode() const { return m_settings[settingIndex("SetInbetweenKeyframesMode")].value; }
 
 	template <typename ...Args>
 	void applyAttributes(const QString& moduleName, Args ...args)
@@ -91,17 +99,6 @@ public:
 
 		out.flush();
 	}
-
-	bool isProcessedElement(int curId, const QString& layerAttr) const;
-	void updateDrawingPivotStatus(int curId, const QString& layerAttr, bool hasUsedDrawingPivots);
-	bool getDrawingPivotStatus(int curId, const QString& layerAttr) const;
-	void addElement(int curId, const QString& layerAttr, bool hasUsedDrawingPivots);
-	bool isExperimentalMode() const { return m_settings[settingIndex("ExperimentalMode")].value; }
-	bool isMultithreadingMode() const { return m_settings[settingIndex("UseMultithreading")].value; }
-	bool isDebugMode() const { return m_settings[settingIndex("DebugMode")].value; }
-	bool isPassOnOgl() const { return m_settings[settingIndex("PassOnOglControllerTransformation")].value; }
-	bool isMoveUnusedPivots() const { return m_settings[settingIndex("MoveUnusedPivots")].value; }
-	bool isSetInbetweenKfMode() const { return m_settings[settingIndex("SetInbetweenKeyframesMode")].value; }
 
 private:
 
