@@ -1,13 +1,8 @@
-#include "elementModule.h"
 #include "moduleBase.h"
 
-#include <SceneCore//attribute/AT_Rotation3dAttr.h>
-#include <SceneCore/attribute/AT_AttrCmds.h>
-#include <SceneCore/attribute/AT_DoubleAttr.h>
-#include <SceneCore/attribute/AT_Rotation3dAttrCmds.h>
 #include <SceneCore/module/MO_FrameKey.h>
+#include <SceneCore/module/MO_PortTransform.h>
 
-#include <stdexcept>
 
 ModuleBase::ModuleBase(std::shared_ptr<FreezeManager> freezeManager, MO_Module* modulePtr, ModuleType moduleType)
 	: m_freezeManager(std::move(freezeManager))
@@ -23,7 +18,6 @@ ModuleBase::ModuleBase(std::shared_ptr<FreezeManager> freezeManager, MO_Module* 
 	if (getFreezeManagerPtr()->isExperimentalMode())
 		modulePtr->closeEditor();
 }
-
 
 ModuleType ModuleBase::getModuleType() const
 {
@@ -55,7 +49,8 @@ FreezeManager* ModuleBase::getFreezeManagerPtr() const
 	return m_freezeManager.get();
 }
 
-Math::Matrix4x4 ModuleBase::getIncomingMatrix(unsigned int port, double frameNo, bool useDeformation) const
+Math::Matrix4x4 ModuleBase::getIncomingMatrix(const unsigned int port, const double frameNo,
+	const bool useDeformation) const
 {
 	if (port < 0)
 	{
@@ -70,7 +65,7 @@ Math::Matrix4x4 ModuleBase::getIncomingMatrix(unsigned int port, double frameNo,
 		printf("invalid port for incoming matrix\n");
 		return {};
 	}
-	//TODO: replace with get source node function from utils
+
 	const MO_BaseContext context{MO_FrameKey(frameNo)};
 	const MO_PortTransform * portTransform = m_modulePtr->computeTransformationParent(context, port);
 

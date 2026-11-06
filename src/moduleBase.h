@@ -7,10 +7,7 @@
 #ifndef MODULEBASE_H
 #define MODULEBASE_H
 
-#include "utils.h"
 #include "freezeManager.h"
-
-#include <algorithm>
 
 class MO_Module;
 
@@ -30,14 +27,12 @@ enum class ModuleType
 	QUADMAP,
 };
 
-
 enum class KeyframeState : uint8_t
 {
 	Keyframe,
 	PossibleKeyframe,
 	NoKeyframe
 };
-
 
 class ModuleBase
 {
@@ -66,7 +61,8 @@ protected:
 	std::shared_ptr<FreezeManager> getFreezeManager() const;
 	FreezeManager* getFreezeManagerPtr() const;
 
-	virtual Math::Matrix4x4 getIncomingMatrix(unsigned int port, double frameNo, bool useDeformation) const;
+	virtual Math::Matrix4x4 getIncomingMatrix(const unsigned int port, const double frameNo,
+		const bool useDeformation) const;
 
 private:
 	std::shared_ptr<FreezeManager> m_freezeManager;
