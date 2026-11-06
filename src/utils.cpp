@@ -686,10 +686,6 @@ static bool isAuxiliaryPort(const MO_Port* port)
 	
 	if(!node)
 		return false;
-
-	//TODO: there must be a better way to get the port index
-	//port->id() unfortunately returns something different
-	const MO_Node::InPorts inPorts = node->getInPorts();
 	
 	//For the original usage of this function in getAllChildren_internal it would be enough
 	//To only check for "DeformTransformOut" as this is the only matrix auxiliary port
@@ -699,7 +695,7 @@ static bool isAuxiliaryPort(const MO_Port* port)
 		|| node->keyword() == "ShapeAwareDeformation"_L1
 		|| node->keyword() == "OglController"_L1
 		|| node->keyword() == "READ"_L1)
-		&& inPorts.size() >= 2 && port == inPorts[1])
+		&& node->inPortId(port) != node->mainInPortId())
 	{
 		return true;
 	}
