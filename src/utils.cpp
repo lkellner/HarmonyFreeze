@@ -31,9 +31,11 @@ void getIncomingFrameRange(const MO_Node * node, FrameRange& frameRange)
 			printf("Couldn't get keyframes for %s\n", qPrintable(node->instanceName()));
 		}
 
-		updateFrameRange(frameRange, start);
-		updateFrameRange(frameRange, end);
+		if(start < frameRange.start)
+			updateFrameRange(frameRange, start);
 
+		if(end > frameRange.end)
+			updateFrameRange(frameRange, end);
 
 		const MO_Node::InPorts inPorts = node->getInPorts();
 
