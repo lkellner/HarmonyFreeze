@@ -1,4 +1,5 @@
 #include "regionOfInfluence.h"
+#include "utils.h"
 
 #include <stdexcept>
 
@@ -27,8 +28,7 @@ RegionOfInfluence::RegionOfInfluence(std::shared_ptr<FreezeManager> freezeManage
 		throw std::runtime_error("missing attribute: 'm_influenceFadeAttr' for " + modulePtr->qualifiedName().toStdString());
 }
 
-
-void RegionOfInfluence::readjustSecondary(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix)
+void RegionOfInfluence::readjustSecondary(CO_OrCommand& curMacro, const Math::Matrix4x4& matrix) const
 {
 	const Math::Point3d scale = getScale(matrix);
 	const double scaleFactor = (abs(scale.x()) + abs(scale.y())) / 2;
