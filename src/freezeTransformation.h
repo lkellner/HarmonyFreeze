@@ -7,24 +7,12 @@
 #ifndef FREEZETRANSFORMATION_H
 #define FREEZETRANSFORMATION_H
 
-#include "curveModule.h"
-#include "drawingTransformationModule.h"
-#include "elementModule.h"
-#include "freeformModule.h"
-#include "offsetModule.h"
-#include "oglControllerModule.h"
-#include "pegModule.h"
-#include "pkoModule.h"
-#include "boneModule.h"
-#include "quadmapModule.h"
-#include "shapeAwareModule.h"
-#include "staticTransformationModule.h"
-#include "utils.h"
+#include "moduleBase.h"
 
 #include <Util/pluginmanager/PLUG_Services.h>
 
 #include <QObject>
-#include <QString>
+
 
 class GR_CompositeVectorDrawingObj;
 class CA_CelPtr;

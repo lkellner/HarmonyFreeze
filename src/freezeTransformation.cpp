@@ -1,34 +1,28 @@
-#include "freezeTransformation.h"
-#include "utils.h"
+#include "boneModule.h"
+#include "curveModule.h"
 #include "dialog.h"
+#include "drawingTransformationModule.h"
+#include "elementModule.h"
+#include "freeformModule.h"
+#include "freezeTransformation.h"
+#include "offsetModule.h"
+#include "oglControllerModule.h"
+#include "pegModule.h"
+#include "pkoModule.h"
+#include "quadmapModule.h"
+#include "shapeAwareModule.h"
+#include "staticTransformationModule.h"
+#include "utils.h"
 
-#include <CelCore/Cel/CEL_Cel.h>
-#include <CelCore/Cel/CEL_PixmapRGBA16.h>
-#include <CelCore/CelIO/CELIO_Manager.h>
-#include <CelCore/CelVector/CELVEC_Tbd.h>
-
-#include <GraphicCore/GraphicLib/GR_ColorDict.h>
-#include <GraphicCore/GraphicLib/GR_CompositeDrawingInfo.h>
-#include <GraphicCore/GraphicLib/GR_CompositeVectorDrawingObj.h>
-#include <GraphicCore/GraphicLib/GR_DrawingAccess.h>
-
-#include <SceneCore/attribute/AT_Attr.h>
-#include <SceneCore/celcache/CA_CelPtr.h>
-#include <SceneCore/elementmanager/EM_Types.h>
-#include <SceneCore/module/MO_BaseContext.h>
-#include <SceneCore/module/MO_Module.h>
-
-#include <SDKExtension/SDK_Commands.h>
 #include <SDKExtension/SDK_Responder.h>
 
 #include <chrono>
 #include <future>
 #include <iostream>
-#include <memory>
 
 using namespace Qt::StringLiterals;
 
-ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::shared_ptr<FreezeManager> freezeManager)
+static ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::shared_ptr<FreezeManager> freezeManager)
 {
 	ModuleWrappers moduleWrappers;
 	moduleWrappers.reserve(nodes.size());
@@ -60,7 +54,6 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 
 			freezeManager->addElement(curId, layerAttr, hasUsedDrawingPivots(node->toModule()));
 			moduleWrappers.push_back(std::make_unique <ElementModule>(freezeManager, node->toModule(), ModuleType::ELEMENT));
-
 		}
 
 		if (node->keyword() == "PEG"_L1)
@@ -100,12 +93,10 @@ ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, std::sha
 	return moduleWrappers;
 }
 
-
 void FreezeResponder::onActionShowSettings()
 {
 	showDialog();
 }
-
 
 void FreezeResponder::onActionFreezeTransformation()
 {
