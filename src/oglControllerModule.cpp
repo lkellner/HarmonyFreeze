@@ -1,18 +1,8 @@
 #include "oglControllerModule.h"
 #include "elementModule.h"
 
-
-#include <BaseCore/maths/MT_Matrix4x4.h>
 #include <SceneCore/attribute/AT_AttrCmds.h>
 #include <SceneCore/attribute/AT_PositionAttrCmds.h>
-#include <SceneCore/attribute/AT_Rotation3dAttrCmds.h>
-#include <SceneCore/attribute/AT_Scale3dAttrCmds.h>
-#include <SceneCore/attribute/AT_ScaleAttrCmds.h>
-#include <SceneCore/selectable/SLB_CmdManipulator.h>
-#include <SceneCore/selectable/SLB_ManipContext.h>
-#include <Util/command/CO_OrCommand.h>
-#include <Util/pluginmanager/PLUG_Scripting.h>
-#include <Util/pluginmanager/PLUG_Services.h>
 
 using namespace Qt::StringLiterals;
 
@@ -46,7 +36,6 @@ Math::Matrix4x4 OglControllerModule::getIncomingMatrix(unsigned int port, double
 	return getModulePtr()->getParentModelMatrix(context, port);
 }
 
-
 Math::Matrix4x4 OglControllerModule::getLocalMatrix(const double frameNo) const
 {
 	Math::Point3d position;
@@ -78,7 +67,6 @@ bool OglControllerModule::isDoubleFlipped(const Math::Matrix4x4& matrix) const
 
 	return p.sy < 0;
 }
-
 
 double OglControllerModule::getScaleFactor(const Math::Matrix4x4& matrix, const double frameNo) const
 {
@@ -118,7 +106,6 @@ Math::Matrix4x4 OglControllerModule::constructLocalMatrix(Math::Point3d position
 	return matrix;
 }
 
-
 void OglControllerModule::initInputModules()
 {
 	m_inputModules = getAllInputModules(getModulePtr());
@@ -154,7 +141,6 @@ void OglControllerModule::initInputModules()
 	}
 }
 
-
 void OglControllerModule::readjustSecondary()
 {
 	FreezeManager* fm = getFreezeManagerPtr();
@@ -165,9 +151,9 @@ void OglControllerModule::readjustSecondary()
 		initInputModules();
 
 
-	Math::Matrix4x4 oglocalMatrix = getLocalMatrix(fm->getSelFrame()); //TO be used later for elements
+	const Math::Matrix4x4 oglocalMatrix = getLocalMatrix(fm->getSelFrame()); //TO be used later for elements
 
-	Math::Matrix4x4 oglChangeMatrix = fm->getFreezeMatrix();
+	const Math::Matrix4x4 oglChangeMatrix = fm->getFreezeMatrix();
 
 	double scaleFactor = getScaleFactor(oglChangeMatrix, fm->getSelFrame());
 
@@ -254,21 +240,20 @@ void OglControllerModule::readjustSecondary()
 	}
 }
 
-
-void OglControllerModule::modifyInputModules(Math::Matrix4x4 inputChangeMatrix)
+void OglControllerModule::modifyInputModules(Math::Matrix4x4 inputChangeMatrix) const
 {
 	std::shared_ptr<FreezeManager> fm = getFreezeManager();
 
 	for (auto& inputModule : m_inputModules)
 	{
-		int curId = getElementId(inputModule);
-		QString layerAttr = getLayerAttr(inputModule);
+		const int curId = getElementId(inputModule);
+		const QString layerAttr = getLayerAttr(inputModule);
 
 		Math::Matrix4x4 inputMatrix = inputModule->getModelMatrix(MO_FrameKey(fm->getSelFrame()));
 
 		fm->addElement(curId, layerAttr, hasUsedDrawingPivots(inputModule));
 
-		std::shared_ptr<ElementModule> elementModule = std::make_shared<ElementModule>(fm, inputModule, ModuleType::ELEMENT);
+		const std::shared_ptr<ElementModule> elementModule = std::make_shared<ElementModule>(fm, inputModule, ModuleType::ELEMENT);
 
 		inputMatrix = inputMatrix * elementModule->getAlignmentMatrix();
 
@@ -279,8 +264,8 @@ void OglControllerModule::modifyInputModules(Math::Matrix4x4 inputChangeMatrix)
 	}
 }
 
-
-void OglControllerModule::setStaticAttributes(Math::Point3d position, Math::Point3d textPosition, double size, double textSize, CO_OrCommand& curMacro)
+void OglControllerModule::setStaticAttributes(Math::Point3d position, Math::Point3d textPosition, double size,
+	double textSize, CO_OrCommand& curMacro) const
 {
 	clampControllerValues(position, textPosition, size, textSize);
 
@@ -313,7 +298,6 @@ void OglControllerModule::setStaticAttributes(Math::Point3d position, Math::Poin
 
 }
 
-
 void OglControllerModule::clampControllerValues(Math::Point3d& position, Math::Point3d& textPosition, double& size, double& textSize) const
 {
 	clampValues(position);
@@ -324,8 +308,8 @@ void OglControllerModule::clampControllerValues(Math::Point3d& position, Math::P
 	clampValue(textSize, -1);
 }
 
-
-void OglControllerModule::setAttributes( Math::Point3d position, Math::Point3d textPosition, double size, double textSize, CO_OrCommand& curMacro, const double frameNo)
+void OglControllerModule::setAttributes( Math::Point3d position, Math::Point3d textPosition, double size,
+	double textSize, CO_OrCommand& curMacro, const double frameNo) const
 {
 	Math::Point3d tempPoint;
 
@@ -333,12 +317,11 @@ void OglControllerModule::setAttributes( Math::Point3d position, Math::Point3d t
 	bool isSizeCtrlPnt = false;
 	bool isTextPosCtrlPnt = false;
 	bool isTextSizeCtrlPnt = false;
-	bool isConstSeg = false;
 
-	m_positionAttr->getValue(frameNo, tempPoint, &isPosCtrlPnt, &isConstSeg); //FIXME interface change
-	m_sizeAttr->value(frameNo, &isSizeCtrlPnt, &isConstSeg);
-	m_textPositionAttr->getValue(frameNo, tempPoint, &isTextPosCtrlPnt, &isConstSeg); //FIXME interface change
-	m_textSizeAttr->value(frameNo, &isTextSizeCtrlPnt, &isConstSeg);
+	m_positionAttr->getValue(frameNo, tempPoint, &isPosCtrlPnt);
+	m_sizeAttr->value(frameNo, &isSizeCtrlPnt);
+	m_textPositionAttr->getValue(frameNo, tempPoint, &isTextPosCtrlPnt);
+	m_textSizeAttr->value(frameNo, &isTextSizeCtrlPnt);
 
 	clampControllerValues(position, textPosition, size, textSize);
 
@@ -383,7 +366,6 @@ void OglControllerModule::setAttributes( Math::Point3d position, Math::Point3d t
 			AttrData{ u"textsize"_s, textSize, frameNo, isTextSizeCtrlPnt });
 	}
 }
-
 
 FrameRange OglControllerModule::getFrameRange() const
 {

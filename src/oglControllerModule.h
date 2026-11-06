@@ -14,11 +14,7 @@
 #include <SceneCore/attribute/AT_DoubleAttr.h>
 #include <SceneCore/attribute/AT_Path3dAttr.h>
 #include <SceneCore/attribute/AT_Position3dAttr.h>
-#include <SceneCore/attribute/AT_QuaternionPathAttr.h>
-#include <SceneCore/attribute/AT_Rotation3dAttr.h>
-#include <SceneCore/attribute/AT_Scale3dAttr.h>
-#include <SceneCore/module/MO_Module.h>
-#include <SceneCore/module/MO_Port.h>
+
 
 class OglControllerModule : public ModuleBase
 {
@@ -31,9 +27,9 @@ private:
 	FrameRange getFrameRange() const override;
 
 	void setStaticAttributes(Math::Point3d position, Math::Point3d textPosition,
-		double size,double textSize, CO_OrCommand& curMacro);
+		double size,double textSize, CO_OrCommand& curMacro) const;
 	void setAttributes(Math::Point3d position, Math::Point3d textPosition,
-		double size, double textSize, CO_OrCommand& curMacro, const double frameNo);
+		double size, double textSize, CO_OrCommand& curMacro, const double frameNo) const;
 
 	void clampControllerValues(Math::Point3d& position, Math::Point3d& textPosition, double& size, double& textSize) const;
 
@@ -45,7 +41,7 @@ private:
 	bool isDoubleFlipped(const Math::Matrix4x4& matrix) const;
 
 	void initInputModules();
-	void modifyInputModules(Math::Matrix4x4 inputChangeMatrix);
+	void modifyInputModules(Math::Matrix4x4 inputChangeMatrix) const;
 
 	std::vector<MO_Module*> m_inputModules;
 
