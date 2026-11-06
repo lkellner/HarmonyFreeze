@@ -23,7 +23,6 @@ SettingsDesc loadSettings()
 	return settings;
 }
 
-
 void storeSettings(const SettingsDesc& settings)
 {
 	QSettings file(QSettings::IniFormat, QSettings::UserScope, u"HarmonyFreeze"_s, u"HarmonyFreeze"_s);
