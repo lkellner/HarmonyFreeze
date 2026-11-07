@@ -357,7 +357,7 @@ void BoneModule::setAttributes(const Math::Point3d position, const double orient
 {
 	FreezeManager* fm = getFreezeManagerPtr();
 
-	BoneKeyframeData kfData = generateKeyframeData(frameNo, isFirst);
+	BoneModule::KeyframeData kfData = generateKeyframeData(frameNo, isFirst);
 
 	const bool isSetPosition = kfData.position == KeyframeState::Keyframe ||
 		(m_prevPosition != position && kfData.position == KeyframeState::PossibleKeyframe);
@@ -495,9 +495,9 @@ FrameRange BoneModule::getFrameRange() const
 	return range;
 }
 
-BoneKeyframeData BoneModule::generateKeyframeData(const double frameNo, const bool isFirst) const
+BoneModule::KeyframeData BoneModule::generateKeyframeData(const double frameNo, const bool isFirst) const
 {
-	BoneKeyframeData kfData;
+	BoneModule::KeyframeData kfData;
 	//Check if there is a keyframe on the attributes
 
 	if (isFirst && isComplexTransform())

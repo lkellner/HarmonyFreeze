@@ -14,19 +14,14 @@
 #include <SceneCore/attribute/AT_PositionAttrCmds.h>
 #include <SceneCore/attribute/AT_Position2dAttr.h>
 
-struct BoneKeyframeData
-{
-	KeyframeState position;
-	KeyframeState length;
-	KeyframeState orientation;
-	KeyframeState radius;
-};
 
 bool hasOffset(const MO_Node* node);
 
 class BoneModule : public ModuleBase
 {
 public:
+	struct KeyframeData;
+
 	explicit BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType);
@@ -45,7 +40,7 @@ private:
 	double getStaticChainRotation(const bool isRest) const;
 	double getChainRotation(const double frameNo) const;
 
-	BoneKeyframeData generateKeyframeData(const double frameNo, const bool isFirst) const;
+	BoneModule::KeyframeData generateKeyframeData(const double frameNo, const bool isFirst) const;
 
 	bool isParentKeyframe(const double frameNo) const;
 	bool hasBoneParents() const;
@@ -78,4 +73,19 @@ private:
 	double m_prevOrientation;
 	double m_prevRadius;
 };
+
+struct BoneModule::KeyframeData
+{
+	KeyframeState position;
+	KeyframeState length;
+	KeyframeState orientation;
+	KeyframeState radius;
+	bool positionSeg2D;
+	bool positionSegX;
+	bool positionSegY;
+	bool lengthSeg;
+	bool orientationSeg;
+	bool radiusSeg;
+};
+
 #endif
