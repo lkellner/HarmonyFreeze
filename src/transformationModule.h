@@ -48,7 +48,7 @@ protected:
 
 private:
 
-	Math::Angle3d getFreezeAngle(bool isStatic, const double frameNo = 1) const;
+	Math::Angle3d getFreezeAngle(const bool isStatic, const double frameNo = 1) const;
 
 	KeyframeData generateKeyframeData(const MatrixParameters& params, const double frameNo, const bool isFirst) const;
 	MatrixParameters convertMatrixToParams(const Math::Matrix4x4 matrix, const Math::Angle3d angle) const;
@@ -56,7 +56,7 @@ private:
 	void processMatrix(const Math::Matrix4x4& matrix, CO_OrCommand& curMacro, const double frameNo, const bool isFirst);
 	void processStaticMatrix(const Math::Matrix4x4& matrix, CO_OrCommand& curMacro);
 	void setAttributes(const MatrixParameters& params, const KeyframeData& kfData, CO_OrCommand& curMacro, const double frameNo);
-	void setStaticAttributes(const MatrixParameters& params, CO_OrCommand& curMacro);
+	void setStaticAttributes(const MatrixParameters& params, CO_OrCommand& curMacro) const;
 	void setAttributesJS(const MatrixParameters& params, const KeyframeData& kfData, const double frameNo) const;
 	void setStaticAttributesJS(const MatrixParameters& params) const;
 
@@ -91,7 +91,6 @@ private:
 	bool m_is3D;
 	bool m_isFreeze;
 };
-
 
 struct TransformationModule::KeyframeData
 {

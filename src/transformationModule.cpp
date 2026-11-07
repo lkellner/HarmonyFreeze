@@ -1,20 +1,10 @@
 #include "transformationModule.h"
 
-#include <BaseCore/maths/MT_Matrix4x4.h>
 #include <SceneCore/attribute/AT_AttrCmds.h>
-#include <SceneCore/attribute/AT_EnumAttrTemplate.h>
 #include <SceneCore/attribute/AT_PositionAttrCmds.h>
 #include <SceneCore/attribute/AT_Rotation3dAttrCmds.h>
 #include <SceneCore/attribute/AT_Scale3dAttrCmds.h>
-#include <SceneCore/attribute/AT_ScaleAttrCmds.h>
-#include <SceneCore/selectable/SLB_CmdManipulator.h>
-#include <SceneCore/selectable/SLB_ManipContext.h>
-#include <Util/command/CO_OrCommand.h>
-#include <Util/pluginmanager/PLUG_Services.h>
 
-#include <algorithm>
-#include <limits>
-#include <type_traits>
 
 using namespace Qt::StringLiterals;
 
@@ -203,10 +193,8 @@ FrameRange TransformationModule::getFrameRange() const
 
 Math::Matrix4x4 TransformationModule::getStaticLocalMatrixNoPivot() const
 {
-	Math::Matrix4x4 matrix = Math::Matrix4x4();
-
 	//POSITION
-	Math::Point3d oglPos = Math::Point3d();
+	Math::Point3d oglPos;
 
 	//Need to get the local values directly from the double attributes instead of calling
 	//m_positionAttr->getLocalValue(oglPos) as the values are incorrect whenever the 3dpath is selected
@@ -217,7 +205,7 @@ Math::Matrix4x4 TransformationModule::getStaticLocalMatrixNoPivot() const
 
 	oglPos = getModulePtr()->sceneMetrics()->toOGL(oglPos);
 
-	matrix.translate(oglPos.x(), oglPos.y(), oglPos.z());
+	Math::Matrix4x4 matrix = Math::Matrix4x4().translate(oglPos.x(), oglPos.y(), oglPos.z());
 
 
 	//ROTATION
@@ -260,21 +248,19 @@ Math::Matrix4x4 TransformationModule::getStaticLocalMatrixNoPivot() const
 
 Math::Matrix4x4 TransformationModule::getLocalMatrixNoPivot(const double frameNo) const
 {
-	Math::Matrix4x4 matrix = Math::Matrix4x4();
-
 	//POSITION
 
-	Math::Point3d oglPos = Math::Point3d();
+	Math::Point3d oglPos;
 
 	m_positionAttr->getValue(frameNo, oglPos);
 	oglPos = getModulePtr()->sceneMetrics()->toOGL(oglPos);
 
-	matrix.translate(oglPos.x(), oglPos.y(), oglPos.z());
+	Math::Matrix4x4 matrix = Math::Matrix4x4().translate(oglPos.x(), oglPos.y(), oglPos.z());
 
 
 	//ROTATION
 
-	Math::Angle3d angle = Math::Angle3d();
+	Math::Angle3d angle;
 
 	m_rotationAttr->getValue(frameNo, angle);
 
@@ -381,9 +367,9 @@ void TransformationModule::recalculateAllPivots()
 
 	oglPivot = getModulePtr()->sceneMetrics()->toOGL(oglPivot);
 
-	FreezeManager* fm = getFreezeManagerPtr();
+	const FreezeManager* fm = getFreezeManagerPtr();
 
-	Math::Matrix4x4 matrix = fm->getFreezeMatrix();
+	const Math::Matrix4x4 matrix = fm->getFreezeMatrix();
 
 	if (m_isFreeze)
 	{
@@ -403,11 +389,10 @@ void TransformationModule::recalculateAllPivots()
 	const int nDrawingSources = std::min<size_t>(m_drawingPivotSources.size(),
 			std::numeric_limits<int>::max());
 
-	Math::Matrix4x4 translationMatrix = Math::Matrix4x4();
-	Math::Vector3d translateVec = matrix.origin().toVector() * (-nDrawingSources);
+	const Math::Vector3d translateVec = matrix.origin().toVector() * (-nDrawingSources);
 
-	translationMatrix = translationMatrix.translate(translateVec);
-	Math::Matrix4x4 modifiedMatrix = translationMatrix * matrix;
+	const Math::Matrix4x4 translationMatrix = Math::Matrix4x4().translate(translateVec);
+	const Math::Matrix4x4 modifiedMatrix = translationMatrix * matrix;
 
 	m_pivotAttrSurrogate = modifiedMatrix * oglPivot;
 
@@ -445,7 +430,7 @@ void TransformationModule::readjustSecondary()
 
 	recalculateAllPivots();
 
-	FreezeManager* fm = getFreezeManagerPtr();
+	const FreezeManager* fm = getFreezeManagerPtr();
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
@@ -484,7 +469,7 @@ void TransformationModule::freeze()
 {
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
-	FreezeManager* fm = getFreezeManagerPtr();
+	const FreezeManager* fm = getFreezeManagerPtr();
 
 	if (isScaleZero(getModulePtr()->getModelMatrix(MO_FrameKey(fm->getSelFrame()))))
 		return;
@@ -494,7 +479,7 @@ void TransformationModule::freeze()
 	const Math::Matrix4x4 offsetMatrix = fm->getOffsetMatrix();
 	const Math::Matrix4x4 offsetMatrixInverse = offsetMatrix.getInverse();
 
-	Math::Matrix4x4 freezeMatrix = getLocalMatrix(fm->getSelFrame()).getInverse() * offsetMatrixInverse;
+	const Math::Matrix4x4 freezeMatrix = getLocalMatrix(fm->getSelFrame()).getInverse() * offsetMatrixInverse;
 
 	m_freezeMatrixComplexity = defineMatrixComplexity(freezeMatrix, m_is3D);
 
@@ -559,28 +544,26 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 	bool isPosYCtrlPnt = false;
 	bool isPosZCtrlPnt = false;
 	bool isPosCtrlPnt = false;
-	bool isConstSeg = false;
+
 	Math::Point3d tempPos;
 
 	//POSITION
 	if (m_positionAttr->useSeparate())
 	{
 		if (m_positionAttr->separateX())
-			m_positionAttr->separateX()->value(frameNo, &isPosXCtrlPnt, &isConstSeg);
+			m_positionAttr->separateX()->value(frameNo, &isPosXCtrlPnt);
 
 		if (m_positionAttr->separateY())
-			m_positionAttr->separateY()->value(frameNo, &isPosYCtrlPnt, &isConstSeg);
+			m_positionAttr->separateY()->value(frameNo, &isPosYCtrlPnt);
 
 		if (m_positionAttr->separateZ())
-			m_positionAttr->separateZ()->value(frameNo, &isPosZCtrlPnt, &isConstSeg);
+			m_positionAttr->separateZ()->value(frameNo, &isPosZCtrlPnt);
 	}
 	else
 	{
-		//TODO: might be possible to access sub attributes
-		m_positionAttr->getValue(frameNo, tempPos, &isPosCtrlPnt, &isConstSeg);
+		m_positionAttr->getValue(frameNo, tempPos, &isPosCtrlPnt);
 	}
 
-	//TODO: could return early here in case this is not the freeze peg
 	const bool isForceKeyframePos = isFirst && m_freezeMatrixComplexity == MatrixComplexity::Complex;
 
 	FreezeManager* fm = getFreezeManagerPtr();
@@ -624,13 +607,13 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 	if (m_rotationAttr->useSeparate())
 	{
 		if (m_rotationAttr->separateX())
-			m_rotationAttr->separateX()->value(frameNo, &isRotXCtrlPnt, &isConstSeg);
+			m_rotationAttr->separateX()->value(frameNo, &isRotXCtrlPnt);
 
 		if (m_rotationAttr->separateY())
-			m_rotationAttr->separateY()->value(frameNo, &isRotYCtrlPnt, &isConstSeg);
+			m_rotationAttr->separateY()->value(frameNo, &isRotYCtrlPnt);
 
 		if (m_rotationAttr->separateZ())
-			m_rotationAttr->separateZ()->value(frameNo, &isRotZCtrlPnt, &isConstSeg);
+			m_rotationAttr->separateZ()->value(frameNo, &isRotZCtrlPnt);
 	}
 	else
 	{
@@ -641,7 +624,7 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 
 	bool isSkewCtrlPnt = false;
 
-	m_skewAttr->value(frameNo, &isSkewCtrlPnt, &isConstSeg);
+	m_skewAttr->value(frameNo, &isSkewCtrlPnt);
 	bool isForceKeyframe = isFirst && (m_freezeMatrixComplexity == MatrixComplexity::Complex 
 		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly);
 
@@ -692,8 +675,7 @@ MatrixParameters TransformationModule::convertMatrixToParams(const Math::Matrix4
 	return params;
 }
 
-
-Math::Angle3d TransformationModule::getFreezeAngle(bool isStatic, const double frameNo) const
+Math::Angle3d TransformationModule::getFreezeAngle(const bool isStatic, const double frameNo) const
 {
 	Math::Angle3d angle;
 
@@ -712,12 +694,11 @@ Math::Angle3d TransformationModule::getFreezeAngle(bool isStatic, const double f
 	return angle;
 }
 
-
 void TransformationModule::processMatrix(const Math::Matrix4x4& matrix, CO_OrCommand& curMacro, const double frameNo,const bool isFirst)
 {
-	MatrixParameters params = convertMatrixToParams(matrix, getFreezeAngle(false, frameNo));
+	const MatrixParameters params = convertMatrixToParams(matrix, getFreezeAngle(false, frameNo));
 
-	KeyframeData kfData = generateKeyframeData(params, frameNo, isFirst);
+	const KeyframeData kfData = generateKeyframeData(params, frameNo, isFirst);
 	//updating m_prevFrameParams to be used for the following frameNo
 	//needs to happen after call to generateKeyframeData;
 	m_prevFrameParams = params;
@@ -768,7 +749,6 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 
 
 	//SCALE
-	//TODO: might split these up
 	if (kfData.sx || kfData.sy || kfData.sz)
 	{
 		if (kfData.isScaleSeparate)
@@ -779,7 +759,6 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 
 
 	//ROTATION
-	//TODO: might split these up
 	if (!m_is3D)
 	{
 		//Specifically setting the z rotation for a 2d peg to avoid additional quarternion keyframe that happens
@@ -803,7 +782,7 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 
 void TransformationModule::processStaticMatrix(const Math::Matrix4x4& matrix, CO_OrCommand& curMacro)
 {
-	MatrixParameters params = convertMatrixToParams(matrix, getFreezeAngle(true));
+	const MatrixParameters params = convertMatrixToParams(matrix, getFreezeAngle(true));
 
 	//Need to store these as well, to know whether the first frame needs a keyframe
 	m_prevFrameParams = params;
@@ -830,10 +809,8 @@ void TransformationModule::setStaticAttributesJS(const MatrixParameters& params)
 		StaticAttrData{ u"skew"_s, params.skewx });
 }
 
-void TransformationModule::setStaticAttributes(const MatrixParameters& params, CO_OrCommand& curMacro)
+void TransformationModule::setStaticAttributes(const MatrixParameters& params, CO_OrCommand& curMacro) const
 {
-	Math::Angle3d tempAngle = Math::Angle3d();
-
 	curMacro.add(Attr::Position3d::createSetLocalValueCmd(m_positionAttr, params.tx, params.ty, params.tz));
 
 	curMacro.add(Attr::Scale3d::createSetLocalValueCmd(m_scaleAttr, params.sx, params.sy, params.sz));
@@ -861,14 +838,14 @@ void TransformationModule::initDrawingPivotSources()
 
 void TransformationModule::initElementDrawingPivotSources()
 {
-	AT_Attr* attr = findAttribute<AT_Attr>("USE_DRAWING_PIVOT"_L1);
+	const AT_Attr* attr = findAttribute<AT_Attr>("USE_DRAWING_PIVOT"_L1);
 	if (attr && attr->textValue(1) == "Apply Embedded Pivot on Drawing Layer"_L1)
 		m_drawingPivotSources.push_back(getModulePtr());
 }
 
 void TransformationModule::initPegDrawingPivotSources()
 {
-	std::vector<MO_Port*> outPorts = getModulePtr()->getOutPorts();
+	const std::vector<MO_Port*> outPorts = getModulePtr()->getOutPorts();
 
 	for (auto& port : outPorts)
 	{
