@@ -35,6 +35,8 @@ public:
 	{
 		KeyframeState length;
 		KeyframeState orientation;
+		bool lengthSeg;
+		bool orientationSeg;
 	};
 
 	explicit CurveModuleBase(std::shared_ptr<FreezeManager> freezeManager,
