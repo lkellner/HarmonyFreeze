@@ -85,11 +85,12 @@ void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 
 	if (m_freezeManager->isExperimentalMode())
 	{
+		//Need to use the version that allows for forcing keyframes
 		if (isSetRadius)
-			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, handleInfo.radius));
+			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, handleInfo.radius, kfData.lengthSeg, true));
 
 		if (isSetAngle)
-			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, handleInfo.angle));
+			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, handleInfo.angle, kfData.orientationSeg, true));
 	}
 	else
 	{
@@ -208,18 +209,28 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 
 	const FrameRange range = getFrameRange();
 
-	bool isCtrlPnt = false;
+	bool isCtrlPnt2D = false;
+	bool isCtrlPntX = false;
+	bool isCtrlPntY = false;	
+	bool isConstSeg2D = false;
+	bool isConstSegX = false;
+	bool isConstSegY = false;
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
 		double frameNo = curFrame;
 		Math::Point2d offset;
 
-		//Decided not to split this for now, as the individual values are connected
-		//in case of a rotation, etc
-		m_offsetAttr->getValue(frameNo, offset, &isCtrlPnt);
+		//These are split up in order to get the different values for the constSegs
+		//These are important to be able to force keyframes in C++
+		//The value to be used however, will be the one from the combined attribute
+		//As the separate value might not be in use
+		m_offsetAttr->getValue(frameNo, offset, &isCtrlPnt2D, &isConstSeg2D);
+		m_offsetAttr->separateX()->value(frameNo, &isCtrlPntX, &isConstSegX);
+		m_offsetAttr->separateY()->value(frameNo, &isCtrlPntY, &isConstSegY);
 
-		//Set keyframe either way
+		//Set keyframe either way. Forcing is necessary as curves' values also can 
+		//also depend on their parents' rotation 
 		bool isForceKeyframe = curFrame == range.start && isComplexTransform();
 
 		//Set keyframe in case it different from the previous value
@@ -232,7 +243,7 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 			recalculateIndependentPoint(getModulePtr(), changeMatrix, offset);
 
 
-		if (!isCtrlPnt && !(m_prevOffset != offset && isAdjustKeyframe) && !isForceKeyframe)
+		if (!isCtrlPnt2D && !(m_prevOffset != offset && isAdjustKeyframe) && !isForceKeyframe)
 		{
 			//This is neither a previous keyframe, nor does it need to be set either way
 			//-> no keyframe needs to be set here
@@ -247,7 +258,24 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 		if (fm->isExperimentalMode())
 		{
 			//C++
-			curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, offset.x(), offset.y()));
+			if (isForceKeyframe)
+			{
+				//Attributes are being split to be able to set the proper isConstSeg value
+				if (m_offsetAttr->useSeparate())
+				{
+					curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateX(), frameNo, offset.x(), isConstSegX, true));
+					curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateY(), frameNo, offset.y(), isConstSegY, true));
+				}
+				else
+				{
+					curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr, frameNo, 
+						offset.x(), offset.y(), { isConstSeg2D, true, false, false}));
+				}
+			}
+			else
+			{
+				curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, offset.x(), offset.y()));
+			}
 		}
 		else
 		{

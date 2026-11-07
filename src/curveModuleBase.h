@@ -21,6 +21,11 @@
  * Curve modules' attributes are set in fields coordinates when indepentent. However when used in curve mode, they are using 4:4 field
 */
 
+/*
+ * The process of deciding when to set a keyframe can be considerable simplified if the JS script workaround ever becomes obsolete.
+ * Checking whether the current value equals the previous one would no longer be necessary, neither would be the distinction beetween
+ * 2DPath and Separate for keyframes that are not forced.
+*/
 
 struct BezierHandleInfo
 {
@@ -35,6 +40,8 @@ public:
 	{
 		KeyframeState length;
 		KeyframeState orientation;
+		bool lengthSeg;
+		bool orientationSeg;
 	};
 
 	explicit CurveModuleBase(std::shared_ptr<FreezeManager> freezeManager,

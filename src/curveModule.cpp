@@ -248,9 +248,14 @@ CurveModuleBase::KeyframeData CurveModule::generateKeyframeData(const BezierHand
 
 	bool isCtrlPntRadius = false;
 	bool isCtrlPntAngle = false;
+	bool isConstSegRadius = false;
+	bool isConstSegAngle = false;
 
-	bezierHandle.getLengthAttr()->value(frameNo, &isCtrlPntRadius);
-	bezierHandle.getOrientationAttr()->value(frameNo, &isCtrlPntAngle);
+	bezierHandle.getLengthAttr()->value(frameNo, &isCtrlPntRadius, &isConstSegRadius);
+	bezierHandle.getOrientationAttr()->value(frameNo, &isCtrlPntAngle, &isConstSegAngle);
+
+	kfData.lengthSeg = isConstSegRadius;
+	kfData.orientationSeg = isConstSegRadius;
 
 	bool isAdjustKeyframe = isCtrlPntAngle || isCtrlPntRadius || (!isIndependent() && isParentKeyframe(frameNo)) 
 		|| getFreezeManagerPtr()->isSetInbetweenKfMode();
