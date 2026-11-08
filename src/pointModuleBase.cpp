@@ -49,7 +49,7 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 
 		pos3d = changeMatrix * pos3d;
 
-		const PointModuleBase::KeyframeData kfData = generateKeyframeData(point, pos3d,
+		const KeyframeData kfData = generateKeyframeData(point, pos3d,
 			curFrame, curFrame == range.start);
 		setAttributes(point, pos3d, kfData, curMacro, curFrame);
 
@@ -60,7 +60,7 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 PointModuleBase::KeyframeData PointModuleBase::generateKeyframeData(const TransformPoint* point, const Math::Point3d position,
 	const double frameNo, const bool isFirst) const
 {
-	PointModuleBase::KeyframeData kfData;
+	KeyframeData kfData;
 	kfData.isSeparate = point->posAttr->useSeparate();
 
 	Math::Point2d tempPos;
@@ -122,7 +122,7 @@ void PointModuleBase::setStaticAttributes(const TransformPoint* point, Math::Poi
 }
 
 void PointModuleBase::setAttributes(const TransformPoint* point, Math::Point3d position,
-	const PointModuleBase::KeyframeData kfData, CO_OrCommand& curMacro, const double frameNo) const
+	const KeyframeData kfData, CO_OrCommand& curMacro, const double frameNo) const
 {
 	if (!kfData.posX && !kfData.posY && !kfData.pos2D)
 		return;

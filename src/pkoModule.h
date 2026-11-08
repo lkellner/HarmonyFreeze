@@ -33,7 +33,7 @@ private:
 
 	void processPivot(TransformPoint* point, CO_OrCommand& curMacro);
 	void identifyTransformationType();
-	PointModuleBase::KeyframeData generateKeyframeData(TransformPoint* point, const Math::Point3d position,
+	KeyframeData generateKeyframeData(TransformPoint* point, const Math::Point3d position,
 		const double frameNo, const bool isFirst) const;
 	bool hasComplexPort1Parent() const;
 	bool hasNoParentKeyframe(double frameNo) const;
