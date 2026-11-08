@@ -171,6 +171,7 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, const QString pivotKe
 	pos3d = changeMatrix * pos3d;
 
 	setStaticAttributes(pos3d, pivotAttr, pivotKeyword, curMacro);
+	m_prevPos = pos3d;
 
 	FrameRange range = getFrameRange();
 	
@@ -198,8 +199,12 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, const QString pivotKe
 
 		pos3d = changeMatrix * pos3d;
 
-		KeyframeState keyframeState = generateKeyframeData(pivotAttr, curFrame, curFrame == range.start);
-		setAttributes(pos3d, pivotAttr, pivotKeyword, curMacro, keyframeState, curFrame);
+		PkoModule::KeyframeData kfData = generateKeyframeData(pivotAttr, pos3d, curFrame, curFrame == range.start);
+
+		setAttributes(pos3d, pivotAttr, pivotKeyword, curMacro, kfData, curFrame);
+		
+		//This can only be changed after the keyframe data has been generated
+		m_prevPos = pos3d;
 	}
 }
 
@@ -225,70 +230,96 @@ void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* a
 }
 
 void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, const QString attributeKeyword, CO_OrCommand& curMacro, 
-	const KeyframeState keyframeState, const double frameNo)
+	const PkoModule::KeyframeData kfData, const double frameNo)
 {
 	clampValues(position);
 
 	FreezeManager* fm = getFreezeManagerPtr();
 
 
-	if (keyframeState == KeyframeState::NoKeyframe || (keyframeState == KeyframeState::PossibleKeyframe && m_prevPos == position))
+	if (!kfData.posX && !kfData.posY && !kfData.pos2D)
 		return;
-
-	m_prevPos = position;
 
 	if (fm->isExperimentalMode())
 	{
 		//C++
+		if (kfData.isSeparate)
+		{
+			if(kfData.posX)
+				curMacro.add(Attr::Double::createSetValueCmd(attr->separateX(), frameNo, position.x(), kfData.isConstSegX, true));
+			if (kfData.posY)
+				curMacro.add(Attr::Double::createSetValueCmd(attr->separateX(), frameNo, position.y(), kfData.isConstSegY, true));
+		}
+		else
+		{
+			SC_SceneCommon* sceneCommon = getModulePtr()->sceneCommon();
+
+			if (kfData.pos2D && sceneCommon)
+				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(sceneCommon, attr, frameNo,
+					position.x(), position.y(), { kfData.isConstSeg2D, true, false, false }));
+		}
+		
 		curMacro.add(Attr::Position2d::createSetValueCmd(attr, frameNo, position.x(), position.y()));
 	}
 	else
 	{
 		//JS
-
 		if (attr->useSeparate())
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ attributeKeyword + u".x"_s, position.x(), frameNo, true },
-				AttrData{ attributeKeyword + u".y"_s, position.y(), frameNo, true });
+				AttrData{ attributeKeyword + u".x"_s, position.x(), frameNo, kfData.posX },
+				AttrData{ attributeKeyword + u".y"_s, position.y(), frameNo, kfData.posY });
 		}
 		else
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, true });
+				Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, kfData.pos2D });
 		}
 	}
 }
 
-KeyframeState PkoModule::generateKeyframeData(AT_Position2dAttr* attr, const double frameNo, const bool isFirst) const
+PkoModule::KeyframeData PkoModule::generateKeyframeData(AT_Position2dAttr* attr, const Math::Point3d position, 
+	const double frameNo, const bool isFirst) const
 {
-	Math::Point2d tempPoint; 
-	bool isPosCtrlPnt = false;
+	PkoModule::KeyframeData kfData;
+	kfData.isSeparate = attr->useSeparate();
+
+	Math::Point2d tempPos;
+	bool isPos2DCtrlPnt = false;
+	bool isPosXCtrlPnt = false;
+	bool isPosYCtrlPnt = false;
 
 	//There have been changes to the getValue function between H24 and H27.
 	//When making changes here, all supported versions need to be taken into account
-	attr->getValue(frameNo, tempPoint, &isPosCtrlPnt);
+	if (kfData.isSeparate)
+	{
+		attr->separateX()->value(frameNo, &isPosXCtrlPnt, &kfData.isConstSegX);
+		attr->separateY()->value(frameNo, &isPosYCtrlPnt, &kfData.isConstSegY);
+	}
+	else
+	{
+		attr->getValue(frameNo, tempPos, &isPos2DCtrlPnt, &kfData.isConstSeg2D);
+	}
 
-	if (isPosCtrlPnt)
-		return KeyframeState::Keyframe;
+	const bool isForceKeyframe = isFirst && isComplexTransform();
+	bool isAdjustKeyframe = getFreezeManagerPtr()->isSetInbetweenKfMode() 
+		|| (m_transformationType != TransformationType::Simple && (hasComplexPort1Parent() || !hasNoParentKeyframe(frameNo)));
 
+	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
 
-	//Values don't depend on port 1 input
-	if (!isComplexTransform() || m_transformationType == TransformationType::Simple)
-		return KeyframeState::NoKeyframe;
+	kfData.pos2D = isPos2DCtrlPnt || isForceKeyframe || (isAdjustKeyframe && position != m_prevPos);
+	kfData.posX = isPosXCtrlPnt || isForceKeyframe || ((isAdjustKeyframe || isPosYCtrlPnt) && position.x() != m_prevPos.x());
+	kfData.posY = isPosYCtrlPnt || isForceKeyframe || ((isAdjustKeyframe || isPosXCtrlPnt) && position.y() != m_prevPos.y());
 
-	//The cases below are either TransformationType::DoubleFreeze or TransformationType::SingleFreeze
-	// as well as isComplexTransform()
-	if (isFirst)
-		return KeyframeState::Keyframe;
+	/*Keyframes are being set if
+	*- there already is a keyframe
+	*-it's the first frame and the freeze is complex
+	*-the freeze is complex and the transformation type is not simple, the value doesn't match the previous one and
+	*	-there is either a compexPort1Parent, the parent has a keyframe or inbetweenmode is turned on
+	*-the attribute is set to separate, and the partner attribute has a keyframe and the value doesn't match the previous one
+	*/
 
-	//Keyframes will be set if the value changes compared to the previous frame
-	if (hasComplexPort1Parent() || !hasNoParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
-		return KeyframeState::PossibleKeyframe;
-
-	//The point kinematic output doesn't have a complex parent chain, neither the port 1 parent nor the ptk itself have keyframes
-	//InbetweenKfMode is turned off
-	return KeyframeState::NoKeyframe;
+	return kfData;
 }
 
 bool PkoModule::hasComplexPort1Parent() const

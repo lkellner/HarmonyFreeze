@@ -36,6 +36,8 @@ enum class TransformationType : uint8_t
 class PkoModule : public ModuleBase
 {
 public:
+	struct KeyframeData;
+
 	explicit PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 			MO_Module* modulePtr,
 			ModuleType moduleType);
@@ -52,9 +54,10 @@ private:
 	void setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, const QString attributeKeyword,
 		CO_OrCommand& curMacro) const;
 	void setAttributes(Math::Point3d position, AT_Position2dAttr* attr, const QString attributeKeyword,
-		CO_OrCommand& curMacro, const KeyframeState keyframeState, const double frameNo);
+		CO_OrCommand& curMacro, const PkoModule::KeyframeData keyframeState, const double frameNo);
 	void identifyTransformationType();
-	KeyframeState generateKeyframeData(AT_Position2dAttr* attr, const double frameNo, const bool isFirst) const;
+	PkoModule::KeyframeData generateKeyframeData(AT_Position2dAttr* attr, const Math::Point3d position, 
+		const double frameNo, const bool isFirst) const;
 	bool hasComplexPort1Parent() const;
 	bool hasNoParentKeyframe(double frameNo) const;
 	bool isComplexTransform() const { return m_freezeMatrixComplexity != MatrixComplexity::Simple; } //This is different from curve module
@@ -68,4 +71,16 @@ private:
 	Math::Point3d m_prevPos;
 };
 
+struct PkoModule::KeyframeData
+{
+	bool posX = false;
+	bool posY = false;
+	bool pos2D = false;
+
+	bool isConstSegX = false;
+	bool isConstSegY = false;
+	bool isConstSeg2D = false;
+
+	bool isSeparate = false;
+};
 #endif
