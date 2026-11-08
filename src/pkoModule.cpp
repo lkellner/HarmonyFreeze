@@ -1,12 +1,8 @@
 #include "pkoModule.h"
-#include "src/utils.h"
 
-#include <SceneCore/attribute/AT_Position2dAttr.h>
 #include <SceneCore/attribute/AT_Position3dAttr.h>
 #include <SceneCore/attribute/AT_Rotation3dAttr.h>
 #include <SceneCore/attribute/AT_Scale3dAttr.h>
-
-#include <stdexcept>
 
 using namespace Qt::StringLiterals;
 
