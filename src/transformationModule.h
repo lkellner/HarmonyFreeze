@@ -26,8 +26,6 @@
 class TransformationModule : public ModuleBase
 {
 public:
-	struct KeyframeData;
-
 	explicit TransformationModule(std::shared_ptr<FreezeManager> freezeManager, MO_Module* modulePtr,
 			ModuleType moduleType, bool isFreeze);
 
@@ -40,6 +38,8 @@ public:
 	FrameRange getFrameRange() const override;
 
 protected:
+	struct KeyframeData;
+
 	AT_Position3dAttr* getPivotAttr() const { return m_pivotAttr; };
 	void setPivot(CO_OrCommand& curMacro) const;
 	void setPivotJS() const;
@@ -47,7 +47,6 @@ protected:
 	Math::Matrix4x4 getStaticLocalMatrixNoPivot() const;
 
 private:
-
 	Math::Angle3d getFreezeAngle(const bool isStatic, const double frameNo = 1) const;
 
 	KeyframeData generateKeyframeData(const MatrixParameters& params, const double frameNo, const bool isFirst) const;
