@@ -551,16 +551,16 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 	if (m_positionAttr->useSeparate())
 	{
 		if (m_positionAttr->separateX())
-			m_positionAttr->separateX()->value(frameNo, &isPosXCtrlPnt);
+			m_positionAttr->separateX()->value(frameNo, &isPosXCtrlPnt, &kfData.isConstSegTX);
 
 		if (m_positionAttr->separateY())
-			m_positionAttr->separateY()->value(frameNo, &isPosYCtrlPnt);
+			m_positionAttr->separateY()->value(frameNo, &isPosYCtrlPnt, &kfData.isConstSegTY);
 
 		if (m_positionAttr->separateZ())
-			m_positionAttr->separateZ()->value(frameNo, &isPosZCtrlPnt);
+			m_positionAttr->separateZ()->value(frameNo, &isPosZCtrlPnt, &kfData.isConstSegTZ);
 	}
 	else
-	{
+	{	//ConstSeg is not needed for 3Paths, as these only depend on themselves and don't need to be forced
 		m_positionAttr->getValue(frameNo, tempPos, &isPosCtrlPnt);
 	}
 
@@ -575,11 +575,6 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 	kfData.ty = isPosCtrlPnt || isPosYCtrlPnt || (m_prevFrameParams.ty != params.ty && isAdjustKeyframePos) || isForceKeyframePos;
 	kfData.tz = isPosCtrlPnt || isPosZCtrlPnt || (m_prevFrameParams.tz != params.tz && isAdjustKeyframePos) || isForceKeyframePos;
 
-	Math::Angle3d tempAngle = Math::Angle3d();
-
-	bool isConstSegX = false;
-	bool isConstSegY = false;
-	bool isConstSegZ = false;
 
 	bool isKeyframeX = false;
 	bool isKeyframeY = false;
@@ -594,9 +589,11 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 
 	//Uniform scaling is automatically detected properly
 	m_scaleAttr->getValue(frameNo, tempScaleX, tempScaleY, tempScaleZ, &isKeyframeX, &isKeyframeY, &isKeyframeZ,
-		&isConstSegX, &isConstSegY, &isConstSegZ);
+		&kfData.isConstSegSX, &kfData.isConstSegSY, &kfData.isConstSegSZ);
 
 	//ROTATION
+
+	Math::Angle3d tempAngle = Math::Angle3d();
 
 	bool isRotCtrlPnt = false;
 	bool isRotXCtrlPnt = false;
@@ -607,16 +604,17 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 	if (m_rotationAttr->useSeparate())
 	{
 		if (m_rotationAttr->separateX())
-			m_rotationAttr->separateX()->value(frameNo, &isRotXCtrlPnt);
+			m_rotationAttr->separateX()->value(frameNo, &isRotXCtrlPnt, &kfData.isConstSegAX);
 
 		if (m_rotationAttr->separateY())
-			m_rotationAttr->separateY()->value(frameNo, &isRotYCtrlPnt);
+			m_rotationAttr->separateY()->value(frameNo, &isRotYCtrlPnt, &kfData.isConstSegAY);
 
 		if (m_rotationAttr->separateZ())
-			m_rotationAttr->separateZ()->value(frameNo, &isRotZCtrlPnt);
+			m_rotationAttr->separateZ()->value(frameNo, &isRotZCtrlPnt, &kfData.isConstSegAZ);
 	}
 	else
 	{
+		kfData.isConstSegA3D = isQuarternionConstSeg(*m_rotationAttr, frameNo, tempAngle);
 		isRotCtrlPnt = isQuarternionKeyframe(*m_rotationAttr, frameNo, tempAngle);
 	}
 
@@ -624,7 +622,7 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 
 	bool isSkewCtrlPnt = false;
 
-	m_skewAttr->value(frameNo, &isSkewCtrlPnt);
+	m_skewAttr->value(frameNo, &isSkewCtrlPnt, &kfData.isConstSegSkew);
 	bool isForceKeyframe = isFirst && (m_freezeMatrixComplexity == MatrixComplexity::Complex 
 		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly);
 
@@ -743,18 +741,45 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 		return;
 
 	//POSITION
-	//No need to split these up, automatically will only set a keyframe where it is required
+	//Usually wouldn't have to split these up. However sometimes it might be necessary to force a separate keyframe
+	//3P path keyframes don't need to be forced as they only depend on themselves
 	if (kfData.tx || kfData.ty || kfData.tz)
-		curMacro.add(Attr::Position3d::createSetValueCmd(m_positionAttr, frameNo, params.tx, params.ty, params.tz));
+	{
+		if (kfData.isPosSeparate)
+		{
+			if (kfData.tx)
+				curMacro.add(Attr::Double::createSetValueCmd(m_positionAttr->separateX(), frameNo, params.tx, kfData.isConstSegTX, true));
+			if (kfData.ty)
+				curMacro.add(Attr::Double::createSetValueCmd(m_positionAttr->separateY(), frameNo, params.ty, kfData.isConstSegTY, true));
+			if (kfData.tz)
+				curMacro.add(Attr::Double::createSetValueCmd(m_positionAttr->separateZ(), frameNo, params.tz, kfData.isConstSegTZ, true));
+		}
+		else
+		{
+			curMacro.add(Attr::Position3d::createSetValueCmd(m_positionAttr, frameNo, params.tx, params.ty, params.tz));
+		}
+	}
 
 
 	//SCALE
 	if (kfData.sx || kfData.sy || kfData.sz)
 	{
 		if (kfData.isScaleSeparate)
-			curMacro.add(Attr::Scale3d::createSetValueCurrentFrameCmd(sceneCommon, m_scaleAttr, frameNo, params.sx, params.sy, params.sz, false));
+		{
+			if (kfData.sx)
+				curMacro.add(Attr::Double::createSetValueCmd(m_scaleAttr->scaleXAttr(), frameNo, params.sx, kfData.isConstSegSX, true));
+			if (kfData.sy)
+				curMacro.add(Attr::Double::createSetValueCmd(m_scaleAttr->scaleYAttr(), frameNo, params.sy, kfData.isConstSegSY, true));
+			if (kfData.sz && m_is3D)
+				curMacro.add(Attr::Double::createSetValueCmd(m_scaleAttr->scaleZAttr(), frameNo, params.sz, kfData.isConstSegSZ, true));
+		}
+			
 		else
-			curMacro.add(Attr::Scale3d::createSetValueCurrentFrameCmd(sceneCommon, m_scaleAttr, frameNo, params.sxy, params.sxy, params.sxy, false));
+		{
+			curMacro.add(Attr::Scale3d::createSetValueCurrentFrameCmd(sceneCommon, m_scaleAttr, frameNo,
+				params.sxy, params.sxy, params.sxy, { kfData.isConstSegSX, true, false, false }));
+		}
+			
 	}
 
 
@@ -764,19 +789,33 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 		//Specifically setting the z rotation for a 2d peg to avoid additional quarternion keyframe that happens
 		//when quarternion is enabled in the background
 		if (kfData.az)
-			curMacro.add(Attr::Double::createSetValueCmd(m_rotationAttr->separateZ(), frameNo, params.az));
+			curMacro.add(Attr::Double::createSetValueCmd(m_rotationAttr->separateZ(), frameNo, params.az, kfData.isConstSegAZ, true));
 	}
 	else
 	{
 		if (kfData.ax || kfData.ay || kfData.az)
-			curMacro.add(Attr::Rotation3d::createSetValueCurrentFrameCmd(sceneCommon, m_rotationAttr, frameNo,
-				Math::Angle3d(params.ax, params.ay, params.az), false));
+		{
+			if (kfData.isRotSeparate)
+			{
+				if (kfData.ax)
+					curMacro.add(Attr::Double::createSetValueCmd(m_rotationAttr->separateX(), frameNo, params.ax, kfData.isConstSegAX, true));
+				if (kfData.ay)
+					curMacro.add(Attr::Double::createSetValueCmd(m_rotationAttr->separateY(), frameNo, params.ay, kfData.isConstSegAY, true));
+				if (kfData.az)
+					curMacro.add(Attr::Double::createSetValueCmd(m_rotationAttr->separateZ(), frameNo, params.az, kfData.isConstSegAZ, true));
+			}
+			else
+			{
+				curMacro.add(Attr::Rotation3d::createSetValueCurrentFrameCmd(sceneCommon, m_rotationAttr, frameNo,
+					Math::Angle3d(params.ax, params.ay, params.az), { kfData.isConstSegA3D, true, false, false }));
+			}
+		}
 	}
 
 	//SKEW
 
 	if (kfData.skew)
-		curMacro.add(Attr::Double::createSetValueCmd(m_skewAttr, frameNo, params.skewx));
+		curMacro.add(Attr::Double::createSetValueCmd(m_skewAttr, frameNo, params.skewx, kfData.isConstSegSkew, true));
 }
 
 

@@ -105,6 +105,18 @@ struct TransformationModule::KeyframeData
 	bool az = false;
 	bool skew = false;
 
+	bool isConstSegTX = false;
+	bool isConstSegTY = false;
+	bool isConstSegTZ = false;
+	bool isConstSegSX = false;
+	bool isConstSegSY = false;
+	bool isConstSegSZ = false;
+	bool isConstSegA3D = false;
+	bool isConstSegAX = false;
+	bool isConstSegAY = false;
+	bool isConstSegAZ = false;
+	bool isConstSegSkew = false;
+
 	bool isPosSeparate = false;
 	bool isRotSeparate = false;
 	bool isScaleSeparate = false;
