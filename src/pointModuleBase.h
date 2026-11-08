@@ -24,8 +24,6 @@ struct TransformPoint
 class PointModuleBase : public ModuleBase
 {
 public:
-	struct KeyframeData;
-
 	explicit PointModuleBase(std::shared_ptr<FreezeManager> freezeManager,
 			MO_Module* modulePtr,
 			ModuleType moduleType);
@@ -33,6 +31,8 @@ public:
 	void readjustSecondary() override;
 
 protected:
+	struct KeyframeData;
+
 	void setStaticAttributes(const TransformPoint* point, Math::Point3d position,
 		CO_OrCommand& curMacro) const;
 	void setAttributes(const TransformPoint* point, Math::Point3d position, const PointModuleBase::KeyframeData kfData,
