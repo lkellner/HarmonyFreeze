@@ -13,17 +13,22 @@ using namespace Qt::StringLiterals;
 PkoModule::PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType)
-	: ModuleBase(std::move(freezeManager), modulePtr, moduleType)
-	, m_pivot01Attr(findAttribute<AT_Position2dAttr>("PIVOT1"_L1))
-	, m_pivot02Attr(findAttribute<AT_Position2dAttr>("PIVOT2"_L1))
-	, m_pivot03Attr(findAttribute<AT_Position2dAttr>("PIVOT3"_L1))
+	: PointModuleBase(std::move(freezeManager), modulePtr, moduleType)
 {
-	if (!m_pivot01Attr)
-		throw std::runtime_error("missing attribute: 'm_pivot01Attr' for " + modulePtr->qualifiedName().toStdString());
-	if (!m_pivot02Attr)
-		throw std::runtime_error("missing attribute: 'm_pivot02Attr' for " + modulePtr->qualifiedName().toStdString());
-	if (!m_pivot03Attr)
-		throw std::runtime_error("missing attribute: 'm_pivot03Attr' for " + modulePtr->qualifiedName().toStdString());
+	const AT_AttrList attrList = getAttributeList();
+
+	for (auto& attr : attrList)
+	{
+		if (attr._pAttr->typeName() == "POSITION_2D"_L1)
+		{
+			AT_Position2dAttr* pointAttr = dynamic_cast<AT_Position2dAttr*>(attr._pAttr);
+
+			if (!pointAttr)
+				continue;
+
+			addTransformPoint(std::make_unique<TransformPoint>(pointAttr->xmlKeyword(), pointAttr, true));
+		}
+	}
 
 	identifyTransformationType();
 }
@@ -147,30 +152,30 @@ Math::Matrix4x4 PkoModule::calculateChangeMatrix(const double frameNo) const
 
 void PkoModule::readjustSecondary()
 {
-	m_freezeMatrixComplexity = getFreezeManagerPtr()->getMatrixComplexity(false);
+	setMatrixComplexity();
 
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
-	processPivot(m_pivot01Attr, u"pivot1"_s, *curMacro);
-	processPivot(m_pivot02Attr, u"pivot2"_s, *curMacro);
-	processPivot(m_pivot03Attr, u"pivot3"_s, *curMacro);
+	for (const auto& point : m_transformPoints)
+		processPivot(point.get(), *curMacro);
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
+
 }
 
-void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, const QString pivotKeyword, CO_OrCommand& curMacro)
+void PkoModule::processPivot(TransformPoint* point, CO_OrCommand& curMacro)
 {
 	//In the case of DoubleFreeze or SingleFreeze this might not be accurate for the static values. 
 	//However in those cases frame 1 will have a forced keyframe
 	Math::Matrix4x4 changeMatrix = calculateChangeMatrix(1);
 
 	Math::Point2d position;
-	pivotAttr->getLocalValue(position);
+	point->posAttr->getLocalValue(position);
 	Math::Point3d pos3d = Math::Point3d(position);
 
 	pos3d = changeMatrix * pos3d;
 
-	setStaticAttributes(pos3d, pivotAttr, pivotKeyword, curMacro);
+	setStaticAttributes(point, pos3d, curMacro);
 	m_prevPos = pos3d;
 
 	FrameRange range = getFrameRange();
@@ -194,95 +199,25 @@ void PkoModule::processPivot(AT_Position2dAttr* pivotAttr, const QString pivotKe
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
 		changeMatrix = calculateChangeMatrix(curFrame);
-		pivotAttr->getValue(curFrame, position);
+		point->posAttr->getValue(curFrame, position);
 		pos3d = Math::Point3d(position);
 
 		pos3d = changeMatrix * pos3d;
 
-		PkoModule::KeyframeData kfData = generateKeyframeData(pivotAttr, pos3d, curFrame, curFrame == range.start);
+		PointModuleBase::KeyframeData kfData = generateKeyframeData(point, pos3d, curFrame, curFrame == range.start);
 
-		setAttributes(pos3d, pivotAttr, pivotKeyword, curMacro, kfData, curFrame);
+		setAttributes(point, pos3d, kfData, curMacro, curFrame);
 		
 		//This can only be changed after the keyframe data has been generated
 		m_prevPos = pos3d;
 	}
 }
 
-void PkoModule::setStaticAttributes(Math::Point3d position, AT_Position2dAttr* attr, const QString attributeKeyword, CO_OrCommand& curMacro) const
-{
-	clampValues(position);
-
-	FreezeManager* fm = getFreezeManagerPtr();
-
-	if (fm->isExperimentalMode())
-	{
-		//C++
-		curMacro.add(Attr::Position2d::createSetLocalValueCmd(attr, position.x(), position.y()));
-	}
-	else
-	{
-		//JS
-		//Similar to transformation module, can't set static value of combined paths
-		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ attributeKeyword + u".x"_s, position.x() },
-			StaticAttrData{ attributeKeyword + u".y"_s, position.y() });
-	}
-}
-
-void PkoModule::setAttributes(Math::Point3d position, AT_Position2dAttr* attr, const QString attributeKeyword, CO_OrCommand& curMacro, 
-	const PkoModule::KeyframeData kfData, const double frameNo)
-{
-	clampValues(position);
-
-	FreezeManager* fm = getFreezeManagerPtr();
-
-
-	if (!kfData.posX && !kfData.posY && !kfData.pos2D)
-		return;
-
-	if (fm->isExperimentalMode())
-	{
-		//C++
-		if (kfData.isSeparate)
-		{
-			if(kfData.posX)
-				curMacro.add(Attr::Double::createSetValueCmd(attr->separateX(), frameNo, position.x(), kfData.isConstSegX, true));
-			if (kfData.posY)
-				curMacro.add(Attr::Double::createSetValueCmd(attr->separateX(), frameNo, position.y(), kfData.isConstSegY, true));
-		}
-		else
-		{
-			SC_SceneCommon* sceneCommon = getModulePtr()->sceneCommon();
-
-			if (kfData.pos2D && sceneCommon)
-				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(sceneCommon, attr, frameNo,
-					position.x(), position.y(), { kfData.isConstSeg2D, true, false, false }));
-		}
-		
-		curMacro.add(Attr::Position2d::createSetValueCmd(attr, frameNo, position.x(), position.y()));
-	}
-	else
-	{
-		//JS
-		if (attr->useSeparate())
-		{
-			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ attributeKeyword + u".x"_s, position.x(), frameNo, kfData.posX },
-				AttrData{ attributeKeyword + u".y"_s, position.y(), frameNo, kfData.posY });
-		}
-		else
-		{
-			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{ attributeKeyword, Math::Point2d(position.x(),position.y()) , frameNo, kfData.pos2D });
-		}
-	}
-}
-
-PkoModule::KeyframeData PkoModule::generateKeyframeData(AT_Position2dAttr* attr, const Math::Point3d position, 
+PointModuleBase::KeyframeData PkoModule::generateKeyframeData(TransformPoint* point, const Math::Point3d position,
 	const double frameNo, const bool isFirst) const
 {
-	PkoModule::KeyframeData kfData;
-	kfData.isSeparate = attr->useSeparate();
+	PointModuleBase::KeyframeData kfData;
+	kfData.isSeparate = point->posAttr->useSeparate();
 
 	Math::Point2d tempPos;
 	bool isPos2DCtrlPnt = false;
@@ -293,12 +228,12 @@ PkoModule::KeyframeData PkoModule::generateKeyframeData(AT_Position2dAttr* attr,
 	//When making changes here, all supported versions need to be taken into account
 	if (kfData.isSeparate)
 	{
-		attr->separateX()->value(frameNo, &isPosXCtrlPnt, &kfData.isConstSegX);
-		attr->separateY()->value(frameNo, &isPosYCtrlPnt, &kfData.isConstSegY);
+		point->posAttr->separateX()->value(frameNo, &isPosXCtrlPnt, &kfData.isConstSegX);
+		point->posAttr->separateY()->value(frameNo, &isPosYCtrlPnt, &kfData.isConstSegY);
 	}
 	else
 	{
-		attr->getValue(frameNo, tempPos, &isPos2DCtrlPnt, &kfData.isConstSeg2D);
+		point->posAttr->getValue(frameNo, tempPos, &isPos2DCtrlPnt, &kfData.isConstSeg2D);
 	}
 
 	const bool isForceKeyframe = isFirst && isComplexTransform();
@@ -439,68 +374,4 @@ bool PkoModule::hasNoParentKeyframe(double frameNo) const
 
 	return !(isPosCtrlPnt || isRotCtrlPnt || isRotXCtrlPnt || isRotYCtrlPnt || isRotZCtrlPnt 
 		|| isKeyframeX || isKeyframeY || isKeyframeZ || isSkewCtrlPnt);
-}
-
-FrameRange PkoModule::getFrameRange() const
-{
-	FrameRange range;
-
-	int key;
-
-	//Main attribute only detects point2d keyframes
-	if (m_pivot01Attr->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot01Attr->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot01Attr->separateX()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot01Attr->separateX()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot01Attr->separateY()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot01Attr->separateY()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-	
-	if (m_pivot02Attr->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot02Attr->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot02Attr->separateX()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot02Attr->separateX()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot02Attr->separateY()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot02Attr->separateY()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-	
-	if (m_pivot03Attr->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->separateX()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->separateX()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->separateY()->getNextKey(0, &key))
-		updateFrameRange(range, key);
-
-	if (m_pivot03Attr->separateY()->getPrevKey(INT_MAX, &key))
-		updateFrameRange(range, key);
-
-	return range;
 }
