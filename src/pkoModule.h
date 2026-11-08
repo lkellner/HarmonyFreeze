@@ -9,12 +9,6 @@
 
 #include "pointModuleBase.h"
 
-enum class TransformationType : uint8_t
-{
-	Simple,
-	SingleFreeze,
-	DoubleFreeze
-};
 
 
 class PkoModule : public PointModuleBase
@@ -30,6 +24,13 @@ public:
 
 
 private:
+	enum class TransformationType : uint8_t
+	{
+		Simple,
+		SingleFreeze,
+		DoubleFreeze
+	};
+
 	Math::Matrix4x4 calculateChangeMatrix(const double frameNo) const;
 
 	void processPivot(TransformPoint* point, CO_OrCommand& curMacro);
@@ -55,4 +56,7 @@ struct PkoModule::KeyframeData
 
 	bool isSeparate = false;
 };
+
+
+
 #endif
