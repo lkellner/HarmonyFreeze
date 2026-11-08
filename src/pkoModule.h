@@ -14,8 +14,6 @@
 class PkoModule : public PointModuleBase
 {
 public:
-	struct KeyframeData;
-
 	explicit PkoModule(std::shared_ptr<FreezeManager> freezeManager,
 			MO_Module* modulePtr,
 			ModuleType moduleType);
@@ -43,20 +41,4 @@ private:
 
 	TransformationType m_transformationType = TransformationType::Simple;
 };
-
-struct PkoModule::KeyframeData
-{
-	bool posX = false;
-	bool posY = false;
-	bool pos2D = false;
-
-	bool isConstSegX = false;
-	bool isConstSegY = false;
-	bool isConstSeg2D = false;
-
-	bool isSeparate = false;
-};
-
-
-
 #endif
