@@ -1,6 +1,5 @@
 #include "utils.h"
-#include <GraphicCore/GraphicLib/GR_DrawingAccess.h>
-#include <GraphicCore/GraphicLib/GR_ColorDict.h>
+
 #include <SceneCore/attribute/AT_BoolAttr.h>
 
 using namespace Qt::StringLiterals;
