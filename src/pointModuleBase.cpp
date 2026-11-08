@@ -1,5 +1,7 @@
 #include "pointModuleBase.h"
 
+#include <SceneCore/attribute/AT_AttrCmds.h>
+
 using namespace Qt::StringLiterals;
 
 PointModuleBase::PointModuleBase(std::shared_ptr<FreezeManager> freezeManager,
@@ -11,6 +13,8 @@ PointModuleBase::PointModuleBase(std::shared_ptr<FreezeManager> freezeManager,
 
 void PointModuleBase::readjustSecondary()
 {
+	setMatrixComplexity();
+
 	std::shared_ptr<CO_OrCommand> curMacro = std::make_shared<CO_OrCommand>();
 
 	for (const auto& point : m_transformPoints)
@@ -19,7 +23,7 @@ void PointModuleBase::readjustSecondary()
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
-void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& curMacro) const
+void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& curMacro)
 {
 	Math::Matrix4x4 changeMatrix = oglToFieldsModificationMatrix(getModulePtr()->sceneMetrics(),
 		getFreezeManagerPtr()->getFreezeMatrix());
@@ -29,13 +33,14 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 	Math::Point3d pos3d = Math::Point3d(position);
 
 	pos3d = changeMatrix * pos3d;
+	m_prevPos = pos3d;
 
 	setStaticAttributes(point, pos3d,  curMacro);
 
 	if(!point->isAnimated)
 		return;
 
-	FrameRange range = getFrameRange();
+	const FrameRange range = getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
@@ -44,8 +49,54 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 
 		pos3d = changeMatrix * pos3d;
 
-		setAttributes(point, pos3d, curMacro, curFrame);
+		const PointModuleBase::KeyframeData kfData = generateKeyframeData(point, pos3d,
+			curFrame, curFrame == range.start);
+		setAttributes(point, pos3d, kfData, curMacro, curFrame);
+
+		m_prevPos = pos3d;
 	}
+}
+
+PointModuleBase::KeyframeData PointModuleBase::generateKeyframeData(const TransformPoint* point, const Math::Point3d position,
+	const double frameNo, const bool isFirst) const
+{
+	PointModuleBase::KeyframeData kfData;
+	kfData.isSeparate = point->posAttr->useSeparate();
+
+	Math::Point2d tempPos;
+	bool isPos2DCtrlPnt = false;
+	bool isPosXCtrlPnt = false;
+	bool isPosYCtrlPnt = false;
+
+	//There have been changes to the getValue function between H24 and H27.
+	//When making changes here, all supported versions need to be taken into account
+	if (kfData.isSeparate)
+	{
+		point->posAttr->separateX()->value(frameNo, &isPosXCtrlPnt, &kfData.isConstSegX);
+		point->posAttr->separateY()->value(frameNo, &isPosYCtrlPnt, &kfData.isConstSegY);
+	}
+	else
+	{
+		point->posAttr->getValue(frameNo, tempPos, &isPos2DCtrlPnt, &kfData.isConstSeg2D);
+	}
+
+	const bool isForceKeyframe = isFirst && isComplexTransform();
+	bool isAdjustKeyframe = getFreezeManagerPtr()->isSetInbetweenKfMode() && isComplexTransform();
+
+	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
+
+	kfData.pos2D = isPos2DCtrlPnt || isForceKeyframe || (isAdjustKeyframe && position != m_prevPos);
+	kfData.posX = isPosXCtrlPnt || isForceKeyframe || ((isAdjustKeyframe || isPosYCtrlPnt) && position.x() != m_prevPos.x());
+	kfData.posY = isPosYCtrlPnt || isForceKeyframe || ((isAdjustKeyframe || isPosXCtrlPnt) && position.y() != m_prevPos.y());
+
+	/*Keyframes are being set if
+	*- there already is a keyframe
+	*-it's the first frame and the freeze is complex
+	*-the freeze is complex and the transformation type is not simple and the value doesn't match the previous one
+	*-the attribute is set to separate, and the partner attribute has a keyframe and the value doesn't match the previous one
+	*/
+
+	return kfData;
 }
 
 void PointModuleBase::setStaticAttributes(const TransformPoint* point, Math::Point3d position,
@@ -71,8 +122,11 @@ void PointModuleBase::setStaticAttributes(const TransformPoint* point, Math::Poi
 }
 
 void PointModuleBase::setAttributes(const TransformPoint* point, Math::Point3d position,
-	CO_OrCommand& curMacro, const double frameNo) const
+	const PointModuleBase::KeyframeData kfData, CO_OrCommand& curMacro, const double frameNo) const
 {
+	if (!kfData.posX && !kfData.posY && !kfData.pos2D)
+		return;
+
 	clampValues(position);
 
 	FreezeManager* fm = getFreezeManagerPtr();
@@ -81,22 +135,36 @@ void PointModuleBase::setAttributes(const TransformPoint* point, Math::Point3d p
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		curMacro.add(Attr::Position2d::createSetValueCmd(point->posAttr, frameNo, position.x(), position.y()));
+		if (kfData.isSeparate)
+		{
+			if (kfData.posX)
+				curMacro.add(Attr::Double::createSetValueCmd(point->posAttr->separateX(), frameNo, position.x(), kfData.isConstSegX, true));
+			if (kfData.posY)
+				curMacro.add(Attr::Double::createSetValueCmd(point->posAttr->separateY(), frameNo, position.y(), kfData.isConstSegY, true));
+		}
+		else
+		{
+			SC_SceneCommon* sceneCommon = getModulePtr()->sceneCommon();
+
+			if (kfData.pos2D && sceneCommon)
+				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(sceneCommon, point->posAttr, frameNo,
+					position.x(), position.y(), { kfData.isConstSeg2D, true, false, false }));
+		}
 	}
 	else
 	{
 		//JS
 
-		if (point->posAttr->useSeparate())
+		if (kfData.isSeparate)
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ point->name + u".x"_s, position.x(), frameNo, true },
-				AttrData{ point->name + u".y"_s, position.y(), frameNo, true });
+				AttrData{ point->name + u".x"_s, position.x(), frameNo, kfData.posX },
+				AttrData{ point->name + u".y"_s, position.y(), frameNo, kfData.posY });
 		}
 		else
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				Point2dAttrData{ point->name, Math::Point2d(position.x(),position.y()) , frameNo, true });
+				Point2dAttrData{ point->name, Math::Point2d(position.x(),position.y()) , frameNo, kfData.pos2D });
 		}
 	}
 }

@@ -24,6 +24,8 @@ struct TransformPoint
 class PointModuleBase : public ModuleBase
 {
 public:
+	struct KeyframeData;
+
 	explicit PointModuleBase(std::shared_ptr<FreezeManager> freezeManager,
 			MO_Module* modulePtr,
 			ModuleType moduleType);
@@ -32,18 +34,36 @@ public:
 
 protected:
 	void addTransformPoint(std::unique_ptr<TransformPoint> point);
+	void setMatrixComplexity() { m_freezeMatrixComplexity = getFreezeManagerPtr()->getMatrixComplexity(false); };
+	bool isComplexTransform() const { return m_freezeMatrixComplexity == MatrixComplexity::Complex; };
 
+	Math::Point3d m_prevPos;
 
 private:
+	PointModuleBase::KeyframeData generateKeyframeData(const TransformPoint*, const Math::Point3d position,
+		const double frameNo, const bool isFirst) const;
 	FrameRange getFrameRange() const override;
 
-	void processPoint(const TransformPoint*, CO_OrCommand& curMacro) const;
+	void processPoint(const TransformPoint* point, CO_OrCommand& curMacro);
 	void setStaticAttributes(const TransformPoint* point, Math::Point3d position,
 		CO_OrCommand& curMacro) const;
-	void setAttributes(const TransformPoint* point, Math::Point3d position, CO_OrCommand& curMacro,
-		const double frameNo) const;
+	void setAttributes(const TransformPoint* point, Math::Point3d position, const PointModuleBase::KeyframeData kfData,
+		CO_OrCommand& curMacro, const double frameNo) const;
 	
+	MatrixComplexity m_freezeMatrixComplexity;
 	std::vector<std::unique_ptr<TransformPoint>> m_transformPoints;
 };
 
+struct PointModuleBase::KeyframeData
+{
+	bool posX = false;
+	bool posY = false;
+	bool pos2D = false;
+
+	bool isConstSegX = false;
+	bool isConstSegY = false;
+	bool isConstSeg2D = false;
+
+	bool isSeparate = false;
+};
 #endif
