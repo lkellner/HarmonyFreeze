@@ -62,7 +62,6 @@ TransformationModule::TransformationModule(std::shared_ptr<FreezeManager> freeze
 	initPivots();
 }
 
-
 void TransformationModule::initPivots()
 {
 	initDrawingPivotSources();
@@ -245,7 +244,6 @@ Math::Matrix4x4 TransformationModule::getStaticLocalMatrixNoPivot() const
 	return matrix;
 }
 
-
 Math::Matrix4x4 TransformationModule::getLocalMatrixNoPivot(const double frameNo) const
 {
 	//POSITION
@@ -297,7 +295,6 @@ Math::Matrix4x4 TransformationModule::getLocalMatrixNoPivot(const double frameNo
 	return matrix;
 }
 
-
 Math::Matrix4x4 TransformationModule::getLocalMatrix(const double frameNo) const
 {
 	const MO_FrameKey frameKey = MO_FrameKey(frameNo);
@@ -310,7 +307,6 @@ Math::Matrix4x4 TransformationModule::getLocalMatrix(const double frameNo) const
 		?  Math::Matrix4x4()
 		: parent.getInverse() * child;
 }
-
 
 void TransformationModule::saveWorldCombinedPivots()
 {
@@ -357,7 +353,6 @@ void TransformationModule::saveWorldCombinedPivots()
 		}
 	}
 }
-
 
 void TransformationModule::recalculateAllPivots()
 {
@@ -421,7 +416,6 @@ void TransformationModule::setPivot(CO_OrCommand& curMacro) const
 	curMacro.add(Attr::Position3d::createSetLocalValueCmd(m_pivotAttr, m_pivotAttrSurrogate.x(), m_pivotAttrSurrogate.y(), m_pivotAttrSurrogate.z()));
 }
 
-
 void TransformationModule::readjustSecondary()
 {
 	//ReadjustSecondary doesn't use the "true" matrix of a transformation module
@@ -463,7 +457,6 @@ void TransformationModule::readjustSecondary()
 
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
-
 
 void TransformationModule::freeze()
 {
@@ -645,7 +638,6 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 	return kfData;
 }
 
-
 MatrixParameters TransformationModule::convertMatrixToParams(const Math::Matrix4x4 matrix, const Math::Angle3d angle) const
 {
 	Math::Point3d oglPivot = m_pivotOffset;
@@ -818,7 +810,6 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 		curMacro.add(Attr::Double::createSetValueCmd(m_skewAttr, frameNo, params.skewx, kfData.isConstSegSkew, true));
 }
 
-
 void TransformationModule::processStaticMatrix(const Math::Matrix4x4& matrix, CO_OrCommand& curMacro)
 {
 	const MatrixParameters params = convertMatrixToParams(matrix, getFreezeAngle(true));
@@ -831,7 +822,6 @@ void TransformationModule::processStaticMatrix(const Math::Matrix4x4& matrix, CO
 	else
 		setStaticAttributesJS(params);
 }
-
 
 void TransformationModule::setStaticAttributesJS(const MatrixParameters& params) const
 {
@@ -858,7 +848,6 @@ void TransformationModule::setStaticAttributes(const MatrixParameters& params, C
 
 	curMacro.add(Attr::Double::createSetLocalValueCmd(m_skewAttr, params.skewx));
 }
-
 
 void TransformationModule::initDrawingPivotSources()
 {
