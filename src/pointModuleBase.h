@@ -35,8 +35,10 @@ protected:
 
 	void setStaticAttributes(const TransformPoint* point, Math::Point3d position,
 		CO_OrCommand& curMacro) const;
-	void setAttributes(const TransformPoint* point, Math::Point3d position, const KeyframeData kfData,
-		CO_OrCommand& curMacro, const double frameNo) const;
+	void setAttributes(const TransformPoint* point, Math::Point3d position,
+		CO_OrCommand& curMacro, const double frameNo, const bool isFirst) const;
+	virtual KeyframeData generateKeyframeData(const TransformPoint* point, const Math::Point3d position,
+		const double frameNo, const bool isFirst) const;
 
 	void addTransformPoint(std::unique_ptr<TransformPoint> point);
 	void setMatrixComplexity() { m_freezeMatrixComplexity = getFreezeManagerPtr()->getMatrixComplexity(false); };
@@ -47,8 +49,6 @@ protected:
 	Math::Point3d m_prevPos;
 
 private:
-	KeyframeData generateKeyframeData(const TransformPoint*, const Math::Point3d position,
-		const double frameNo, const bool isFirst) const;
 	void processPoint(const TransformPoint* point, CO_OrCommand& curMacro);
 	bool isComplexTransform() const { return m_freezeMatrixComplexity == MatrixComplexity::Complex; };
 };

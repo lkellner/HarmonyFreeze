@@ -200,16 +200,14 @@ void PkoModule::processPivot(TransformPoint* point, CO_OrCommand& curMacro)
 
 		pos3d = changeMatrix * pos3d;
 
-		KeyframeData kfData = generateKeyframeData(point, pos3d, curFrame, curFrame == range.start);
-
-		setAttributes(point, pos3d, kfData, curMacro, curFrame);
+		setAttributes(point, pos3d, curMacro, curFrame, curFrame == range.start);
 		
 		//This can only be changed after the keyframe data has been generated
 		m_prevPos = pos3d;
 	}
 }
 
-PointModuleBase::KeyframeData PkoModule::generateKeyframeData(TransformPoint* point, const Math::Point3d position,
+PointModuleBase::KeyframeData PkoModule::generateKeyframeData(const TransformPoint* point, const Math::Point3d position,
 	const double frameNo, const bool isFirst) const
 {
 	KeyframeData kfData;

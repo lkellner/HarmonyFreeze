@@ -20,6 +20,9 @@ public:
 
 	void readjustSecondary() override;
 
+protected:
+	virtual KeyframeData generateKeyframeData(const TransformPoint* point, const Math::Point3d position,
+		const double frameNo, const bool isFirst) const override;
 
 private:
 	enum class TransformationType : uint8_t
@@ -33,8 +36,7 @@ private:
 
 	void processPivot(TransformPoint* point, CO_OrCommand& curMacro);
 	void identifyTransformationType();
-	KeyframeData generateKeyframeData(TransformPoint* point, const Math::Point3d position,
-		const double frameNo, const bool isFirst) const;
+
 	bool hasComplexPort1Parent() const;
 	bool hasNoParentKeyframe(double frameNo) const;
 	bool isComplexTransform() const { return m_freezeMatrixComplexity != MatrixComplexity::Simple; }; //This is different from curve module

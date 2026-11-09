@@ -49,9 +49,7 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 
 		pos3d = changeMatrix * pos3d;
 
-		const KeyframeData kfData = generateKeyframeData(point, pos3d,
-			curFrame, curFrame == range.start);
-		setAttributes(point, pos3d, kfData, curMacro, curFrame);
+		setAttributes(point, pos3d, curMacro, curFrame, curFrame == range.start);
 
 		m_prevPos = pos3d;
 	}
@@ -122,8 +120,11 @@ void PointModuleBase::setStaticAttributes(const TransformPoint* point, Math::Poi
 }
 
 void PointModuleBase::setAttributes(const TransformPoint* point, Math::Point3d position,
-	const KeyframeData kfData, CO_OrCommand& curMacro, const double frameNo) const
+	CO_OrCommand& curMacro, const double frameNo, const bool isFirst) const
 {
+	const KeyframeData kfData = generateKeyframeData(point, position,
+		frameNo, isFirst);
+
 	if (!kfData.posX && !kfData.posY && !kfData.pos2D)
 		return;
 
