@@ -446,11 +446,18 @@ void TransformationModule::readjustSecondary()
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
+		KeyframeData kfData = generateKeyframeData(curFrame, curFrame == range.start);
+
+		if (!kfData.isProcessFrame)
+			continue;
+
 		Math::Matrix4x4 newLocalMatrix = freezeMatrix * getLocalMatrixNoPivot(curFrame) * freezeMatrixInverse;
 		newLocalMatrix = offsetMatrix * newLocalMatrix;
 
-		if (!isScaleZero(newLocalMatrix))//need to test otherwise parameters can't be extracted //TODO: maybe can move this elsewhere?
-			processMatrix(newLocalMatrix, *curMacro, curFrame, curFrame == range.start);
+		
+
+		if (!isScaleZero(newLocalMatrix))
+			processMatrix(newLocalMatrix, kfData, *curMacro, curFrame);
 	}
 
 	processPivotAttribute(*curMacro);
@@ -493,13 +500,18 @@ void TransformationModule::freeze()
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
+		KeyframeData kfData = generateKeyframeData(curFrame, curFrame == range.start);
+
+		if (!kfData.isProcessFrame)
+			continue;
+
 		m_pivotOffset = m_combinedPivots[curFrame];
 
 		Math::Matrix4x4 newLocalMatrix = getLocalMatrix(curFrame) * freezeMatrix;
 		newLocalMatrix = offsetMatrix * newLocalMatrix;
 
 		if (!isScaleZero(newLocalMatrix))
-			processMatrix(newLocalMatrix, *curMacro, curFrame, curFrame == range.start);
+			processMatrix(newLocalMatrix, kfData ,*curMacro, curFrame);
 	}
 
 	processPivotAttribute(*curMacro);
@@ -507,7 +519,7 @@ void TransformationModule::freeze()
 	getFreezeManagerPtr()->addCommand(std::move(curMacro));
 }
 
-TransformationModule::KeyframeData TransformationModule::generateKeyframeData(const MatrixParameters& params, const double frameNo, const bool isFirst) const
+TransformationModule::KeyframeData TransformationModule::generateKeyframeData(const double frameNo, const bool isFirst) const
 {
 	//Sometimes it's not only enough to check whether the current frame contains a keyframe,
 	//As rotation, scale and skew values aren't always independent of each other.
@@ -557,21 +569,16 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 		m_positionAttr->getValue(frameNo, tempPos, &isPosCtrlPnt);
 	}
 
-	const bool isForceKeyframePos = isFirst && m_freezeMatrixComplexity == MatrixComplexity::Complex;
+	kfData.isForceKeyframePos = isFirst && m_freezeMatrixComplexity == MatrixComplexity::Complex;
 
 	FreezeManager* fm = getFreezeManagerPtr();
 
-	bool isAdjustKeyframePos = (isPosXCtrlPnt || isPosYCtrlPnt || isPosZCtrlPnt || fm->isSetInbetweenKfMode())
+	kfData.isAdjustKeyframePos = (isPosXCtrlPnt || isPosYCtrlPnt || isPosZCtrlPnt || fm->isSetInbetweenKfMode())
 		&& m_freezeMatrixComplexity == MatrixComplexity::Complex;
 
-	kfData.tx = isPosCtrlPnt || isPosXCtrlPnt || (m_prevFrameParams.tx != params.tx && isAdjustKeyframePos) || isForceKeyframePos;
-	kfData.ty = isPosCtrlPnt || isPosYCtrlPnt || (m_prevFrameParams.ty != params.ty && isAdjustKeyframePos) || isForceKeyframePos;
-	kfData.tz = isPosCtrlPnt || isPosZCtrlPnt || (m_prevFrameParams.tz != params.tz && isAdjustKeyframePos) || isForceKeyframePos;
-
-
-	bool isKeyframeX = false;
-	bool isKeyframeY = false;
-	bool isKeyframeZ = false;
+	kfData.tx = isPosCtrlPnt || isPosXCtrlPnt;
+	kfData.ty = isPosCtrlPnt || isPosYCtrlPnt;
+	kfData.tz = isPosCtrlPnt || isPosZCtrlPnt;
 
 	double tempScaleX;
 	double tempScaleY;
@@ -581,7 +588,7 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 	//SCALE
 
 	//Uniform scaling is automatically detected properly
-	m_scaleAttr->getValue(frameNo, tempScaleX, tempScaleY, tempScaleZ, &isKeyframeX, &isKeyframeY, &isKeyframeZ,
+	m_scaleAttr->getValue(frameNo, tempScaleX, tempScaleY, tempScaleZ, &kfData.sx, &kfData.sy, &kfData.sz,
 		&kfData.isConstSegSX, &kfData.isConstSegSY, &kfData.isConstSegSZ);
 
 	//ROTATION
@@ -611,31 +618,47 @@ TransformationModule::KeyframeData TransformationModule::generateKeyframeData(co
 		isRotCtrlPnt = isQuarternionKeyframe(*m_rotationAttr, frameNo, tempAngle);
 	}
 
+	kfData.ax = isRotCtrlPnt || isRotXCtrlPnt;
+	kfData.ay = isRotCtrlPnt || isRotYCtrlPnt;
+	kfData.az = isRotCtrlPnt || isRotZCtrlPnt;
+
 	//SKEW
 
-	bool isSkewCtrlPnt = false;
+	m_skewAttr->value(frameNo, &kfData.skew, &kfData.isConstSegSkew);
 
-	m_skewAttr->value(frameNo, &isSkewCtrlPnt, &kfData.isConstSegSkew);
-	bool isForceKeyframe = isFirst && (m_freezeMatrixComplexity == MatrixComplexity::Complex 
+
+	kfData.isForceKeyframe = isFirst && (m_freezeMatrixComplexity == MatrixComplexity::Complex
 		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly);
 
-	bool isAdjustKeyframe = isKeyframeX || isKeyframeY || isKeyframeZ || isRotCtrlPnt
-		|| isRotXCtrlPnt || isRotYCtrlPnt || isRotZCtrlPnt || isSkewCtrlPnt || fm->isSetInbetweenKfMode();
+	kfData.isAdjustKeyframe = kfData.sx || kfData.sy || kfData.sz || kfData.ax
+		|| kfData.ay || kfData.az || kfData.skew || fm->isSetInbetweenKfMode();
 
-	isAdjustKeyframe = isAdjustKeyframe && (m_freezeMatrixComplexity == MatrixComplexity::Complex
+	kfData.isAdjustKeyframe = kfData.isAdjustKeyframe && (m_freezeMatrixComplexity == MatrixComplexity::Complex
 		|| m_freezeMatrixComplexity == MatrixComplexity::ScaleTranslationOnly);
 
-	kfData.sx = isKeyframeX || (m_prevFrameParams.sx != params.sx && isAdjustKeyframe) || isForceKeyframe;
-	kfData.sy = isKeyframeY || (m_prevFrameParams.sy != params.sy && isAdjustKeyframe) || isForceKeyframe;
-	kfData.sz = isKeyframeZ || (m_prevFrameParams.sz != params.sz && isAdjustKeyframe) || isForceKeyframe;
 
-	kfData.ax = isRotCtrlPnt || isRotXCtrlPnt || (m_prevFrameParams.ax != params.ax && isAdjustKeyframe) || isForceKeyframe;
-	kfData.ay = isRotCtrlPnt || isRotYCtrlPnt || (m_prevFrameParams.ay != params.ay && isAdjustKeyframe) || isForceKeyframe;
-	kfData.az = isRotCtrlPnt || isRotZCtrlPnt || (m_prevFrameParams.az != params.az && isAdjustKeyframe) || isForceKeyframe;
-
-	kfData.skew = isSkewCtrlPnt || (m_prevFrameParams.skewx != params.skewx && isAdjustKeyframe) || isForceKeyframe;
+	kfData.isProcessFrame = kfData.tx || kfData.ty || kfData.tz || kfData.sx || kfData.sy || kfData.sz
+		|| kfData.ax || kfData.ay || kfData.az || kfData.skew || kfData.isForceKeyframe || kfData.isForceKeyframePos ||
+		kfData.isAdjustKeyframe || kfData.isAdjustKeyframePos;
 
 	return kfData;
+}
+
+void TransformationModule::updateKeyframeData(KeyframeData& kfData, const MatrixParameters& params) const
+{
+	kfData.tx = kfData.tx || (m_prevFrameParams.tx != params.tx && kfData.isAdjustKeyframePos) || kfData.isForceKeyframePos;
+	kfData.ty = kfData.ty || (m_prevFrameParams.ty != params.ty && kfData.isAdjustKeyframePos) || kfData.isForceKeyframePos;
+	kfData.tz = kfData.tz || (m_prevFrameParams.tz != params.tz && kfData.isAdjustKeyframePos) || kfData.isForceKeyframePos;
+
+	kfData.sx = kfData.sx || (m_prevFrameParams.sx != params.sx && kfData.isAdjustKeyframe) || kfData.isForceKeyframe;
+	kfData.sy = kfData.sy || (m_prevFrameParams.sy != params.sy && kfData.isAdjustKeyframe) || kfData.isForceKeyframe;
+	kfData.sz = kfData.sz || (m_prevFrameParams.sz != params.sz && kfData.isAdjustKeyframe) || kfData.isForceKeyframe;
+
+	kfData.ax = kfData.ax || (m_prevFrameParams.ax != params.ax && kfData.isAdjustKeyframe) || kfData.isForceKeyframe;
+	kfData.ay = kfData.ay || (m_prevFrameParams.ay != params.ay && kfData.isAdjustKeyframe) || kfData.isForceKeyframe;
+	kfData.az = kfData.az || (m_prevFrameParams.az != params.az && kfData.isAdjustKeyframe) || kfData.isForceKeyframe;
+
+	kfData.skew = kfData.skew || (m_prevFrameParams.skewx != params.skewx && kfData.isAdjustKeyframe) || kfData.isForceKeyframe;
 }
 
 MatrixParameters TransformationModule::convertMatrixToParams(const Math::Matrix4x4 matrix, const Math::Angle3d angle) const
@@ -684,11 +707,12 @@ Math::Angle3d TransformationModule::getFreezeAngle(const bool isStatic, const do
 	return angle;
 }
 
-void TransformationModule::processMatrix(const Math::Matrix4x4& matrix, CO_OrCommand& curMacro, const double frameNo,const bool isFirst)
+void TransformationModule::processMatrix(const Math::Matrix4x4& matrix, KeyframeData& kfData, CO_OrCommand& curMacro,
+	const double frameNo)
 {
 	const MatrixParameters params = convertMatrixToParams(matrix, getFreezeAngle(false, frameNo));
 
-	const KeyframeData kfData = generateKeyframeData(params, frameNo, isFirst);
+	updateKeyframeData(kfData, params);
 	//updating m_prevFrameParams to be used for the following frameNo
 	//needs to happen after call to generateKeyframeData;
 	//Within the current algorithm, there is no need to initialize m_prevBoneData with static values first,
