@@ -337,10 +337,10 @@ void BoneModule::setStaticAttributes(const Math::Point3d position, const double 
 	{
 		//JS
 
-		QString offsetJS = isRest ? u"restoffset"_s : u"offset"_s;
-		QString orientationJS = isRest ? u"restorientation"_s : u"orientation"_s;
-		QString radiusJS = isRest ? u"restradius"_s : u"radius"_s;
-		QString lengthJS = isRest ? u"restlength"_s : u"length"_s;
+		const QString offsetJS = isRest ? u"restoffset"_s : u"offset"_s;
+		const QString orientationJS = isRest ? u"restorientation"_s : u"orientation"_s;
+		const QString radiusJS = isRest ? u"restradius"_s : u"radius"_s;
+		const QString lengthJS = isRest ? u"restlength"_s : u"length"_s;
 
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
