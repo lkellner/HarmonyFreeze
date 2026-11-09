@@ -33,7 +33,6 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 	Math::Point3d pos3d = Math::Point3d(position);
 
 	pos3d = changeMatrix * pos3d;
-	m_prevPos = pos3d;
 
 	setStaticAttributes(point, pos3d,  curMacro);
 
@@ -51,6 +50,8 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 
 		setAttributes(point, pos3d, curMacro, curFrame, curFrame == range.start);
 
+		//Within the current algorithm, there is no need to initialize m_prevBoneData with static values first, 
+		//as, for modules containing keyframes, the first Keyframe would be set anyway for complexMatrices
 		m_prevPos = pos3d;
 	}
 }
