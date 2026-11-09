@@ -241,7 +241,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 	Math::Point3d length = Math::Point3d(lengthAttr->localValue(), 0, 0);
 	length = adjScaleShearChangeMatrix * length;
 	
-	setStaticAttributes(pos3d, orientation, radius.toVector().length(), length.toVector().length(), curMacro, isRest);
+	setStaticAttributes({ pos3d, orientation, radius.toVector().length(), length.toVector().length() }, curMacro, isRest);
 
 	//Rest attributes only contain static values
 	if (isRest)
@@ -310,13 +310,12 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 		length = Math::Point3d(lengthAttr->value(frameNo), 0, 0);
 		length = adjScaleShearChangeMatrix * length;
 
-		setAttributes(pos3d, orientation, radius.toVector().length(), length.toVector().length(),
+		setAttributes({ pos3d, orientation, radius.toVector().length(), length.toVector().length() },
 			curMacro, frameNo, curFrame == range.start);
 	}
 }
 
-void BoneModule::setStaticAttributes(const Math::Point3d position, const double orientation,
-	const double radius, const double length, CO_OrCommand& curMacro, const bool isRest) const
+void BoneModule::setStaticAttributes(const BoneData boneData, CO_OrCommand& curMacro, const bool isRest) const
 {
 	FreezeManager* fm = getFreezeManagerPtr();
 
@@ -328,10 +327,10 @@ void BoneModule::setStaticAttributes(const Math::Point3d position, const double 
 		AT_DoubleAttr* lengthAttr = isRest ? m_restLengthAttr : m_lengthAttr;
 		AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
 
-		curMacro.add(Attr::Position2d::createSetLocalValueCmd(positionAttr, position.x(), position.y()));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(orientationAttr, orientation));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(radiusAttr, radius));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(lengthAttr, length));
+		curMacro.add(Attr::Position2d::createSetLocalValueCmd(positionAttr, boneData.position.x(), boneData.position.y()));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(orientationAttr, boneData.orientation));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(radiusAttr, boneData.radius));
+		curMacro.add(Attr::Double::createSetLocalValueCmd(lengthAttr, boneData.length));
 	}
 	else
 	{
@@ -344,35 +343,35 @@ void BoneModule::setStaticAttributes(const Math::Point3d position, const double 
 
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ offsetJS + u".x"_s, position.x() },
-			StaticAttrData{ offsetJS + u".y"_s, position.y() },
-			StaticAttrData{ orientationJS, orientation },
-			StaticAttrData{ radiusJS, radius},
-			StaticAttrData{ lengthJS, length });
+			StaticAttrData{ offsetJS + u".x"_s, boneData.position.x() },
+			StaticAttrData{ offsetJS + u".y"_s, boneData.position.y() },
+			StaticAttrData{ orientationJS, boneData.orientation },
+			StaticAttrData{ radiusJS, boneData.radius},
+			StaticAttrData{ lengthJS, boneData.length });
 	}
 }
 
-void BoneModule::setAttributes(const Math::Point3d position, const double orientation, const double radius,
-	const double length, CO_OrCommand& curMacro, const double frameNo, const bool isFirst)
+void BoneModule::setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
+	const double frameNo, const bool isFirst)
 {
 	FreezeManager* fm = getFreezeManagerPtr();
 
 	BoneModule::KeyframeData kfData = generateKeyframeData(frameNo, isFirst);
 
 	const bool isSetPosition = kfData.position == KeyframeState::Keyframe ||
-		(m_prevPosition != position && kfData.position == KeyframeState::PossibleKeyframe);
+		(m_prevPosition != boneData.position && kfData.position == KeyframeState::PossibleKeyframe);
 	const bool isSetLength = kfData.length == KeyframeState::Keyframe ||
-		(m_prevLength != length && kfData.length == KeyframeState::PossibleKeyframe);
+		(m_prevLength != boneData.length && kfData.length == KeyframeState::PossibleKeyframe);
 	const bool isSetOrientation = kfData.orientation == KeyframeState::Keyframe ||
-		(m_prevOrientation != orientation && kfData.orientation == KeyframeState::PossibleKeyframe);
+		(m_prevOrientation != boneData.orientation && kfData.orientation == KeyframeState::PossibleKeyframe);
 	const bool isSetRadius = kfData.radius == KeyframeState::Keyframe ||
-		(m_prevRadius != radius && kfData.orientation == KeyframeState::PossibleKeyframe);
+		(m_prevRadius != boneData.radius && kfData.orientation == KeyframeState::PossibleKeyframe);
 
 	//Saving the current values for the next keyframe
-	m_prevPosition = position;
-	m_prevLength = length; 
-	m_prevOrientation = orientation;
-	m_prevRadius = radius;
+	m_prevPosition = boneData.position;
+	m_prevLength = boneData.length;
+	m_prevOrientation = boneData.orientation;
+	m_prevRadius = boneData.radius;
 
 
 	if (fm->isExperimentalMode())
@@ -383,27 +382,31 @@ void BoneModule::setAttributes(const Math::Point3d position, const double orient
 			//Attributes are being split to be able to set the proper isConstSeg value
 			if (m_offsetAttr->useSeparate())
 			{
-				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateX(), frameNo, position.x(), kfData.positionSegX, true));
-				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateY(), frameNo, position.y(), kfData.positionSegY, true));
+				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateX(), frameNo,
+					boneData.position.x(), kfData.positionSegX, true));
+				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateY(), frameNo,
+					boneData.position.y(), kfData.positionSegY, true));
 			}
 			else
 			{
-				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr, frameNo,
-					position.x(), position.y(), { kfData.positionSeg2D, true, false, false }));
+				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr,
+					frameNo, boneData.position.x(), boneData.position.y(), { kfData.positionSeg2D, true, false, false }));
 			}
 		}
 		else
 		{
 			if (isSetPosition)
-				curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, position.x(), position.y()));
+				curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo,
+					boneData.position.x(), boneData.position.y()));
 		}
 
 		if (isSetOrientation)
-			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, orientation, kfData.orientationSeg, true));
+			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo,
+				boneData.orientation, kfData.orientationSeg, true));
 		if (isSetRadius)
-			curMacro.add(Attr::Double::createSetValueCmd(m_radiusAttr, frameNo, radius, kfData.radiusSeg, true));
+			curMacro.add(Attr::Double::createSetValueCmd(m_radiusAttr, frameNo, boneData.radius, kfData.radiusSeg, true));
 		if (isSetLength)
-			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, length, kfData.lengthSeg, true));
+			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, boneData.length, kfData.lengthSeg, true));
 	}
 	else
 	{
@@ -413,21 +416,22 @@ void BoneModule::setAttributes(const Math::Point3d position, const double orient
 			if (m_offsetAttr->useSeparate())
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					AttrData{ u"offset.x"_s, position.x(), frameNo, isSetPosition },
-					AttrData{ u"offset.y"_s, position.y(), frameNo, isSetPosition });
+					AttrData{ u"offset.x"_s, boneData.position.x(), frameNo, isSetPosition },
+					AttrData{ u"offset.y"_s, boneData.position.y(), frameNo, isSetPosition });
 			}
 			else
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					Point2dAttrData{ u"offset"_s, Math::Point2d(position.x(),position.y()) , frameNo, isSetPosition });
+					Point2dAttrData{ u"offset"_s, Math::Point2d(boneData.position.x(),
+						boneData.position.y()) , frameNo, isSetPosition });
 			}
 		}
 		if (isSetOrientation || isSetRadius || isSetLength)
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ u"orientation"_s, orientation, frameNo, isSetOrientation },
-				AttrData{ u"radius"_s, radius, frameNo, isSetRadius },
-				AttrData{ u"length"_s, length, frameNo, isSetLength });
+				AttrData{ u"orientation"_s, boneData.orientation, frameNo, isSetOrientation },
+				AttrData{ u"radius"_s, boneData.radius, frameNo, isSetRadius },
+				AttrData{ u"length"_s, boneData.length, frameNo, isSetLength });
 		}
 	}
 }

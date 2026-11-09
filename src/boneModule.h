@@ -21,6 +21,7 @@ class BoneModule : public ModuleBase
 {
 public:
 	struct KeyframeData;
+	struct BoneData;
 
 	explicit BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
@@ -32,10 +33,10 @@ private:
 	FrameRange getFrameRange() const override;
 
 	void processAttributeSet(CO_OrCommand& curMacro, const bool isRest);
-	void setStaticAttributes(const Math::Point3d position, const double radius, const double length,
-		const double orientation, CO_OrCommand& curMacro, const bool isRest) const;
-	void setAttributes(const Math::Point3d position, const double orientation,const double radius,
-		const double length, CO_OrCommand& curMacro, const double frameNo, const bool isFirst);
+	void setStaticAttributes(const BoneData boneData, CO_OrCommand& curMacro,
+		const bool isRest) const;
+	void setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
+		const double frameNo, const bool isFirst);
 
 	double getStaticChainRotation(const bool isRest) const;
 	double getChainRotation(const double frameNo) const;
@@ -72,6 +73,14 @@ private:
 	double m_prevLength;
 	double m_prevOrientation;
 	double m_prevRadius;
+};
+
+struct BoneModule::BoneData
+{
+	Math::Point3d position;
+	double orientation;
+	double radius;
+	double length;
 };
 
 struct BoneModule::KeyframeData
