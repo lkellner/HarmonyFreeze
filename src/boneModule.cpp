@@ -526,23 +526,22 @@ BoneModule::KeyframeData BoneModule::generateKeyframeData(const BoneData& boneDa
 
 	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
 
-	kfData.pos2D = isCtrlPntPos2D || isForceKeyframe || (isAdjustKeyframe && boneData.position != m_prevPosition);
+	kfData.pos2D = isCtrlPntPos2D || isForceKeyframe || (isAdjustKeyframe && boneData.position != m_prevBoneData.position);
 	kfData.posX = isCtrlPntPosX || isForceKeyframe || 
-		((isAdjustKeyframe || kfData.posY) && boneData.position.x() != m_prevPosition.x());
+		((isAdjustKeyframe || kfData.posY) && boneData.position.x() != m_prevBoneData.position.x());
 	kfData.posY = isCtrlPntPosY || isForceKeyframe || 
-		((isAdjustKeyframe || kfData.posX) && boneData.position.y() != m_prevPosition.y());
+		((isAdjustKeyframe || kfData.posX) && boneData.position.y() != m_prevBoneData.position.y());
 	
 	kfData.orientation = isCtrlPntOrientation || isForceKeyframe ||
-		(isAdjustKeyframe && boneData.orientation != m_prevOrientation);
-	kfData.length = isCtrlPntLength || isForceKeyframe || (isAdjustKeyframe && boneData.length != m_prevLength);
-	kfData.radius = isCtrlPntRadius || isForceKeyframe || (isAdjustKeyframe && boneData.radius != m_prevRadius);
+		(isAdjustKeyframe && boneData.orientation != m_prevBoneData.orientation);
+	kfData.length = isCtrlPntLength || isForceKeyframe || (isAdjustKeyframe && boneData.length != m_prevBoneData.length);
+	kfData.radius = isCtrlPntRadius || isForceKeyframe || (isAdjustKeyframe && boneData.radius != m_prevBoneData.radius);
 
 
 	//Saving the current values for the next keyframe
-	m_prevPosition = boneData.position;
-	m_prevLength = boneData.length;
-	m_prevOrientation = boneData.orientation;
-	m_prevRadius = boneData.radius;
+	//Within the current algorithm, there is no need to initialize m_prevBoneData with static values first, 
+	//as, for modules containing keyframes, the first Keyframe would be set anyway for complexMatrices
+	m_prevBoneData = boneData;
 
 	return kfData;
 }

@@ -14,7 +14,6 @@
 #include <SceneCore/attribute/AT_PositionAttrCmds.h>
 #include <SceneCore/attribute/AT_Position2dAttr.h>
 
-
 bool hasOffset(const MO_Node* node);
 
 class BoneModule : public ModuleBase
@@ -28,7 +27,14 @@ public:
 
 private:
 	struct KeyframeData;
-	struct BoneData;
+
+	struct BoneData
+	{
+		Math::Point3d position;
+		double orientation;
+		double radius;
+		double length;
+	};
 
 	FrameRange getFrameRange() const override;
 
@@ -69,18 +75,7 @@ private:
 
 	MatrixComplexity m_freezeMatrixComplexity;
 
-	Math::Point3d m_prevPosition;
-	double m_prevLength;
-	double m_prevOrientation;
-	double m_prevRadius;
-};
-
-struct BoneModule::BoneData
-{
-	Math::Point3d position;
-	double orientation;
-	double radius;
-	double length;
+	BoneData m_prevBoneData;
 };
 
 struct BoneModule::KeyframeData
