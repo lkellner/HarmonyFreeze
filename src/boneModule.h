@@ -30,7 +30,7 @@ private:
 
 	struct BoneData
 	{
-		Math::Point3d position;
+		Math::Point3d pos;
 		double orientation;
 		double radius;
 		double length;
@@ -41,13 +41,14 @@ private:
 	void processAttributeSet(CO_OrCommand& curMacro, const bool isRest);
 	void setStaticAttributes(const BoneData boneData, CO_OrCommand& curMacro,
 		const bool isRest) const;
-	void setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
-		const double frameNo, const bool isFirst);
+	void setAttributes(const BoneData boneData, KeyframeData& kfData,
+		CO_OrCommand& curMacro, const double frameNo);
 
 	double getStaticChainRotation(const bool isRest) const;
 	double getChainRotation(const double frameNo) const;
 
-	BoneModule::KeyframeData generateKeyframeData(const BoneData& boneData, const double frameNo, const bool isFirst);
+	BoneModule::KeyframeData generateKeyframeData(const double frameNo, const bool isFirst);
+	void updateKeyframeData(KeyframeData& kfData, const BoneData& boneData);
 
 	bool isParentKeyframe(const double frameNo) const;
 	bool hasBoneParents() const;
@@ -92,6 +93,9 @@ struct BoneModule::KeyframeData
 	bool isConstSegLength;
 	bool isConstSegOrientation;
 	bool isConstSegRadius;
+	bool isAdjustKeyframe;
+	bool isForceKeyframe;
+	bool isProcessFrame;
 };
 
 #endif

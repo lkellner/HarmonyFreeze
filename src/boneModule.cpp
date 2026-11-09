@@ -251,6 +251,11 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
+		BoneModule::KeyframeData kfData = generateKeyframeData(curFrame, curFrame == range.start);
+
+		if (!kfData.isProcessFrame)
+			continue;
+
 		double frameNo = curFrame;
 
 		oldParentRotationMatrix = Math::Matrix4x4();
@@ -311,7 +316,7 @@ void BoneModule::processAttributeSet(CO_OrCommand& curMacro, const bool isRest)
 		length = adjScaleShearChangeMatrix * length;
 
 		setAttributes({ pos3d, orientation, radius.toVector().length(), length.toVector().length() },
-			curMacro, frameNo, curFrame == range.start);
+			kfData, curMacro, frameNo);
 	}
 }
 
@@ -327,7 +332,7 @@ void BoneModule::setStaticAttributes(const BoneData boneData, CO_OrCommand& curM
 		AT_DoubleAttr* lengthAttr = isRest ? m_restLengthAttr : m_lengthAttr;
 		AT_DoubleAttr* orientationAttr = isRest ? m_restOrientationAttr : m_orientationAttr;
 
-		curMacro.add(Attr::Position2d::createSetLocalValueCmd(positionAttr, boneData.position.x(), boneData.position.y()));
+		curMacro.add(Attr::Position2d::createSetLocalValueCmd(positionAttr, boneData.pos.x(), boneData.pos.y()));
 		curMacro.add(Attr::Double::createSetLocalValueCmd(orientationAttr, boneData.orientation));
 		curMacro.add(Attr::Double::createSetLocalValueCmd(radiusAttr, boneData.radius));
 		curMacro.add(Attr::Double::createSetLocalValueCmd(lengthAttr, boneData.length));
@@ -343,20 +348,20 @@ void BoneModule::setStaticAttributes(const BoneData boneData, CO_OrCommand& curM
 
 		//Similar to transformation module, can't set static value of combined paths
 		fm->applyAttributes(getModulePtr()->qualifiedName(),
-			StaticAttrData{ offsetJS + u".x"_s, boneData.position.x() },
-			StaticAttrData{ offsetJS + u".y"_s, boneData.position.y() },
+			StaticAttrData{ offsetJS + u".x"_s, boneData.pos.x() },
+			StaticAttrData{ offsetJS + u".y"_s, boneData.pos.y() },
 			StaticAttrData{ orientationJS, boneData.orientation },
 			StaticAttrData{ radiusJS, boneData.radius},
 			StaticAttrData{ lengthJS, boneData.length });
 	}
 }
 
-void BoneModule::setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
-	const double frameNo, const bool isFirst)
+void BoneModule::setAttributes(const BoneData boneData, KeyframeData& kfData, CO_OrCommand& curMacro,
+	const double frameNo)
 {
 	FreezeManager* fm = getFreezeManagerPtr();
 
-	BoneModule::KeyframeData kfData = generateKeyframeData(boneData, frameNo, isFirst);
+	updateKeyframeData(kfData, boneData);
 
 	if (fm->isExperimentalMode())
 	{
@@ -367,15 +372,15 @@ void BoneModule::setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
 		{
 			if(kfData.posX)
 				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateX(), frameNo,
-					boneData.position.x(), kfData.isConstSegPosX, true));
+					boneData.pos.x(), kfData.isConstSegPosX, true));
 			if(kfData.posY)
 				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateY(), frameNo,
-					boneData.position.y(), kfData.isConstSegPosY, true));
+					boneData.pos.y(), kfData.isConstSegPosY, true));
 		}
 		else if(kfData.pos2D)
 		{
 			curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr,
-				frameNo, boneData.position.x(), boneData.position.y(), { kfData.isConstSegPos2D, true, false, false }));
+				frameNo, boneData.pos.x(), boneData.pos.y(), { kfData.isConstSegPos2D, true, false, false }));
 		}
 
 		if (kfData.orientation)
@@ -394,14 +399,14 @@ void BoneModule::setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
 			if (m_offsetAttr->useSeparate())
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					AttrData{ u"offset.x"_s, boneData.position.x(), frameNo, kfData.posX },
-					AttrData{ u"offset.y"_s, boneData.position.y(), frameNo, kfData.posY });
+					AttrData{ u"offset.x"_s, boneData.pos.x(), frameNo, kfData.posX },
+					AttrData{ u"offset.y"_s, boneData.pos.y(), frameNo, kfData.posY });
 			}
 			else
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					Point2dAttrData{ u"offset"_s, Math::Point2d(boneData.position.x(),
-						boneData.position.y()) , frameNo, kfData.pos2D });
+					Point2dAttrData{ u"offset"_s, Math::Point2d(boneData.pos.x(),
+						boneData.pos.y()) , frameNo, kfData.pos2D });
 			}
 		}
 		if (kfData.orientation || kfData.radius || kfData.length)
@@ -495,55 +500,50 @@ FrameRange BoneModule::getFrameRange() const
 	return range;
 }
 
-BoneModule::KeyframeData BoneModule::generateKeyframeData(const BoneData& boneData, const double frameNo, const bool isFirst)
+BoneModule::KeyframeData BoneModule::generateKeyframeData(const double frameNo, const bool isFirst)
 {
 	BoneModule::KeyframeData kfData;
-
-	bool isCtrlPntPos2D = false;
-	bool isCtrlPntPosX = false;
-	bool isCtrlPntPosY = false;
-	bool isCtrlPntLength = false;
-	bool isCtrlPntOrientation = false;
-	bool isCtrlPntRadius = false;
 
 	Math::Point2d tempPoint;
 
 	//There have been changes to the getValue function between H24 and H27.
 	//When making changes here, all supported versions need to be taken into account
-	m_offsetAttr->getValue(frameNo, tempPoint, &isCtrlPntPos2D, &kfData.isConstSegPos2D);
+	m_offsetAttr->getValue(frameNo, tempPoint, &kfData.pos2D, &kfData.isConstSegPos2D);
 	//Getting the separate values only for the const Seg positions
-	m_offsetAttr->separateX()->value(frameNo, &isCtrlPntPosX, &kfData.isConstSegPosX);
-	m_offsetAttr->separateY()->value(frameNo, &isCtrlPntPosY, &kfData.isConstSegPosY);
+	m_offsetAttr->separateX()->value(frameNo, &kfData.posX, &kfData.isConstSegPosX);
+	m_offsetAttr->separateY()->value(frameNo, &kfData.posY, &kfData.isConstSegPosY);
 
 
-	m_lengthAttr->value(frameNo, &isCtrlPntLength, &kfData.isConstSegLength);
-	m_orientationAttr->value(frameNo, &isCtrlPntOrientation, &kfData.isConstSegOrientation);
-	m_radiusAttr->value(frameNo, &isCtrlPntRadius, &kfData.isConstSegRadius);
+	m_lengthAttr->value(frameNo, &kfData.length, &kfData.isConstSegLength);
+	m_orientationAttr->value(frameNo, &kfData.orientation, &kfData.isConstSegOrientation);
+	m_radiusAttr->value(frameNo, &kfData.radius, &kfData.isConstSegRadius);
 
-	bool isForceKeyframe = isFirst && isComplexTransform();
-	bool isAdjustKeyframe = isCtrlPntOrientation || isParentKeyframe(frameNo)
+	kfData.isForceKeyframe = isFirst && isComplexTransform();
+	kfData.isAdjustKeyframe = kfData.orientation || isParentKeyframe(frameNo)
 		|| getFreezeManagerPtr()->isSetInbetweenKfMode();
 
-	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
+	kfData.isAdjustKeyframe = kfData.isAdjustKeyframe && isComplexTransform();
 
-	kfData.pos2D = isCtrlPntPos2D || isForceKeyframe || (isAdjustKeyframe && boneData.position != m_prevBoneData.position);
-	kfData.posX = isCtrlPntPosX || isForceKeyframe || 
-		((isAdjustKeyframe || kfData.posY) && boneData.position.x() != m_prevBoneData.position.x());
-	kfData.posY = isCtrlPntPosY || isForceKeyframe || 
-		((isAdjustKeyframe || kfData.posX) && boneData.position.y() != m_prevBoneData.position.y());
-	
-	kfData.orientation = isCtrlPntOrientation || isForceKeyframe ||
-		(isAdjustKeyframe && boneData.orientation != m_prevBoneData.orientation);
-	kfData.length = isCtrlPntLength || isForceKeyframe || (isAdjustKeyframe && boneData.length != m_prevBoneData.length);
-	kfData.radius = isCtrlPntRadius || isForceKeyframe || (isAdjustKeyframe && boneData.radius != m_prevBoneData.radius);
+	kfData.isProcessFrame = kfData.isAdjustKeyframe || kfData.isForceKeyframe || kfData.orientation
+		|| kfData.radius || kfData.length || kfData.posX || kfData.posY || kfData.pos2D;
 
+	return kfData;
+}
+
+void BoneModule::updateKeyframeData(KeyframeData& kfData, const BoneData& boneData)
+{
+	kfData.pos2D = kfData.pos2D || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && boneData.pos != m_prevBoneData.pos);
+	kfData.posX = kfData.posX || kfData.isForceKeyframe || ((kfData.isAdjustKeyframe || kfData.posY) && boneData.pos.x() != m_prevBoneData.pos.x());
+	kfData.posY = kfData.posY || kfData.isForceKeyframe || ((kfData.isAdjustKeyframe || kfData.posX) && boneData.pos.y() != m_prevBoneData.pos.y());
+
+	kfData.orientation = kfData.orientation || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && boneData.orientation != m_prevBoneData.orientation);
+	kfData.length = kfData.length || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && boneData.length != m_prevBoneData.length);
+	kfData.radius = kfData.radius || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && boneData.radius != m_prevBoneData.radius);
 
 	//Saving the current values for the next keyframe
 	//Within the current algorithm, there is no need to initialize m_prevBoneData with static values first, 
 	//as, for modules containing keyframes, the first Keyframe would be set anyway for complexMatrices
 	m_prevBoneData = boneData;
-
-	return kfData;
 }
 
 bool BoneModule::isParentKeyframe(const double frameNo) const
