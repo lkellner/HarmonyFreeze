@@ -378,9 +378,6 @@ void BoneModule::setAttributes(const Math::Point3d position, const double orient
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		if(isSetPosition)
-			curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, position.x(), position.y()));
-
 		if (isFirst && isComplexTransform())
 		{
 			//Attributes are being split to be able to set the proper isConstSeg value
@@ -397,7 +394,8 @@ void BoneModule::setAttributes(const Math::Point3d position, const double orient
 		}
 		else
 		{
-			curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, position.x(), position.y()));
+			if (isSetPosition)
+				curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, position.x(), position.y()));
 		}
 
 		if (isSetOrientation)
