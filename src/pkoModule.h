@@ -21,7 +21,7 @@ public:
 	void readjustSecondary() override;
 
 protected:
-	virtual KeyframeData generateKeyframeData(const TransformPoint* point, const Math::Point3d position,
+	virtual KeyframeData generateKeyframeData(const TransformPoint* point,
 		const double frameNo, const bool isFirst) const override;
 
 private:

@@ -43,12 +43,17 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
+		KeyframeData kfData = generateKeyframeData(point, curFrame, curFrame == range.start);
+
+		if (!kfData.isProcessFrame)
+			continue;
+
 		point->posAttr->getValue(curFrame, position);
 		pos3d = Math::Point3d(position);
 
 		pos3d = changeMatrix * pos3d;
 
-		setAttributes(point, pos3d, curMacro, curFrame, curFrame == range.start);
+		setAttributes(point, pos3d, kfData, curMacro, curFrame);
 
 		//Within the current algorithm, there is no need to initialize m_prevBoneData with static values first, 
 		//as, for modules containing keyframes, the first Keyframe would be set anyway for complexMatrices
@@ -56,38 +61,32 @@ void PointModuleBase::processPoint(const TransformPoint* point, CO_OrCommand& cu
 	}
 }
 
-PointModuleBase::KeyframeData PointModuleBase::generateKeyframeData(const TransformPoint* point, const Math::Point3d position,
+PointModuleBase::KeyframeData PointModuleBase::generateKeyframeData(const TransformPoint* point,
 	const double frameNo, const bool isFirst) const
 {
 	KeyframeData kfData;
 	kfData.isSeparate = point->posAttr->useSeparate();
 
 	Math::Point2d tempPos;
-	bool isPos2DCtrlPnt = false;
-	bool isPosXCtrlPnt = false;
-	bool isPosYCtrlPnt = false;
 
 	//There have been changes to the getValue function between H24 and H27.
 	//When making changes here, all supported versions need to be taken into account
 	if (kfData.isSeparate)
 	{
-		point->posAttr->separateX()->value(frameNo, &isPosXCtrlPnt, &kfData.isConstSegX);
-		point->posAttr->separateY()->value(frameNo, &isPosYCtrlPnt, &kfData.isConstSegY);
+		point->posAttr->separateX()->value(frameNo, &kfData.posX, &kfData.isConstSegX);
+		point->posAttr->separateY()->value(frameNo, &kfData.posY, &kfData.isConstSegY);
 	}
 	else
 	{
-		point->posAttr->getValue(frameNo, tempPos, &isPos2DCtrlPnt, &kfData.isConstSeg2D);
+		point->posAttr->getValue(frameNo, tempPos, &kfData.pos2D, &kfData.isConstSeg2D);
 	}
 
-	const bool isForceKeyframe = isFirst && isComplexTransform();
-	bool isAdjustKeyframe = getFreezeManagerPtr()->isSetInbetweenKfMode() && isComplexTransform();
+	kfData.isForceKeyframe = isFirst && isComplexTransform();
+	kfData.isAdjustKeyframe = getFreezeManagerPtr()->isSetInbetweenKfMode() && isComplexTransform();
 
-	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
+	kfData.isAdjustKeyframe = kfData.isAdjustKeyframe && isComplexTransform();
 
-	kfData.pos2D = isPos2DCtrlPnt || isForceKeyframe || (isAdjustKeyframe && position != m_prevPos);
-	kfData.posX = isPosXCtrlPnt || isForceKeyframe || ((isAdjustKeyframe || isPosYCtrlPnt) && position.x() != m_prevPos.x());
-	kfData.posY = isPosYCtrlPnt || isForceKeyframe || ((isAdjustKeyframe || isPosXCtrlPnt) && position.y() != m_prevPos.y());
-
+	kfData.isProcessFrame = kfData.isForceKeyframe || kfData.isAdjustKeyframe || kfData.pos2D || kfData.posX || kfData.posY;
 	/*Keyframes are being set if
 	*- there already is a keyframe
 	*-it's the first frame and the freeze is complex
@@ -96,6 +95,13 @@ PointModuleBase::KeyframeData PointModuleBase::generateKeyframeData(const Transf
 	*/
 
 	return kfData;
+}
+
+void PointModuleBase::updateKeyframeData(KeyframeData& kfData, const Math::Point3d position) const
+{
+	kfData.pos2D = kfData.pos2D || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && position != m_prevPos);
+	kfData.posX = kfData.posX || kfData.isForceKeyframe || ((kfData.isAdjustKeyframe || kfData.posY) && position.x() != m_prevPos.x());
+	kfData.posY = kfData.posY || kfData.isForceKeyframe || ((kfData.isAdjustKeyframe || kfData.posX) && position.y() != m_prevPos.y());
 }
 
 void PointModuleBase::setStaticAttributes(const TransformPoint* point, Math::Point3d position,
@@ -121,10 +127,9 @@ void PointModuleBase::setStaticAttributes(const TransformPoint* point, Math::Poi
 }
 
 void PointModuleBase::setAttributes(const TransformPoint* point, Math::Point3d position,
-	CO_OrCommand& curMacro, const double frameNo, const bool isFirst) const
+	KeyframeData& kfData, CO_OrCommand& curMacro, const double frameNo) const
 {
-	const KeyframeData kfData = generateKeyframeData(point, position,
-		frameNo, isFirst);
+	updateKeyframeData(kfData, position);
 
 	if (!kfData.posX && !kfData.posY && !kfData.pos2D)
 		return;

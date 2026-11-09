@@ -35,10 +35,11 @@ protected:
 
 	void setStaticAttributes(const TransformPoint* point, Math::Point3d position,
 		CO_OrCommand& curMacro) const;
-	void setAttributes(const TransformPoint* point, Math::Point3d position,
-		CO_OrCommand& curMacro, const double frameNo, const bool isFirst) const;
-	virtual KeyframeData generateKeyframeData(const TransformPoint* point, const Math::Point3d position,
+	void setAttributes(const TransformPoint* point, Math::Point3d position, KeyframeData& kfData,
+		CO_OrCommand& curMacro, const double frameNo) const;
+	virtual KeyframeData generateKeyframeData(const TransformPoint* point,
 		const double frameNo, const bool isFirst) const;
+	void  updateKeyframeData(KeyframeData& kfData, const Math::Point3d position) const;
 
 	void addTransformPoint(std::unique_ptr<TransformPoint> point);
 	void setMatrixComplexity() { m_freezeMatrixComplexity = getFreezeManagerPtr()->getMatrixComplexity(false); };
@@ -64,5 +65,8 @@ struct PointModuleBase::KeyframeData
 	bool isConstSeg2D = false;
 
 	bool isSeparate = false;
+	bool isForceKeyframe = false;
+	bool isAdjustKeyframe = false;
+	bool isProcessFrame = false;
 };
 #endif
