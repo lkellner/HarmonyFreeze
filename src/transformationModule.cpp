@@ -691,6 +691,8 @@ void TransformationModule::processMatrix(const Math::Matrix4x4& matrix, CO_OrCom
 	const KeyframeData kfData = generateKeyframeData(params, frameNo, isFirst);
 	//updating m_prevFrameParams to be used for the following frameNo
 	//needs to happen after call to generateKeyframeData;
+	//Within the current algorithm, there is no need to initialize m_prevBoneData with static values first,
+	//as, for modules containing keyframes, the first Keyframe would be set anyway for complexMatrices
 	m_prevFrameParams = params;
 
 	if (getFreezeManagerPtr()->isExperimentalMode())
@@ -813,9 +815,6 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 void TransformationModule::processStaticMatrix(const Math::Matrix4x4& matrix, CO_OrCommand& curMacro)
 {
 	const MatrixParameters params = convertMatrixToParams(matrix, getFreezeAngle(true));
-
-	//Need to store these as well, to know whether the first frame needs a keyframe
-	m_prevFrameParams = params;
 
 	if (getFreezeManagerPtr()->isExperimentalMode())
 		setStaticAttributes(params, curMacro);
