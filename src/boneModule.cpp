@@ -356,82 +356,60 @@ void BoneModule::setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
 {
 	FreezeManager* fm = getFreezeManagerPtr();
 
-	BoneModule::KeyframeData kfData = generateKeyframeData(frameNo, isFirst);
-
-	const bool isSetPosition = kfData.position == KeyframeState::Keyframe ||
-		(m_prevPosition != boneData.position && kfData.position == KeyframeState::PossibleKeyframe);
-	const bool isSetLength = kfData.length == KeyframeState::Keyframe ||
-		(m_prevLength != boneData.length && kfData.length == KeyframeState::PossibleKeyframe);
-	const bool isSetOrientation = kfData.orientation == KeyframeState::Keyframe ||
-		(m_prevOrientation != boneData.orientation && kfData.orientation == KeyframeState::PossibleKeyframe);
-	const bool isSetRadius = kfData.radius == KeyframeState::Keyframe ||
-		(m_prevRadius != boneData.radius && kfData.orientation == KeyframeState::PossibleKeyframe);
-
-	//Saving the current values for the next keyframe
-	m_prevPosition = boneData.position;
-	m_prevLength = boneData.length;
-	m_prevOrientation = boneData.orientation;
-	m_prevRadius = boneData.radius;
-
+	BoneModule::KeyframeData kfData = generateKeyframeData(boneData, frameNo, isFirst);
 
 	if (fm->isExperimentalMode())
 	{
 		//C++
-		if (isFirst && isComplexTransform())
+
+		//Attributes are being split to be able to set the proper isConstSeg value
+		if (m_offsetAttr->useSeparate())
 		{
-			//Attributes are being split to be able to set the proper isConstSeg value
-			if (m_offsetAttr->useSeparate())
-			{
+			if(kfData.posX)
 				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateX(), frameNo,
 					boneData.position.x(), kfData.isConstSegPosX, true));
+			if(kfData.posY)
 				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateY(), frameNo,
 					boneData.position.y(), kfData.isConstSegPosY, true));
-			}
-			else
-			{
-				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr,
-					frameNo, boneData.position.x(), boneData.position.y(), { kfData.isConstSegPos2D, true, false, false }));
-			}
 		}
-		else
+		else if(kfData.pos2D)
 		{
-			if (isSetPosition)
-				curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo,
-					boneData.position.x(), boneData.position.y()));
+			curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr,
+				frameNo, boneData.position.x(), boneData.position.y(), { kfData.isConstSegPos2D, true, false, false }));
 		}
 
-		if (isSetOrientation)
+		if (kfData.orientation)
 			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo,
 				boneData.orientation, kfData.isConstSegOrientation, true));
-		if (isSetRadius)
+		if (kfData.radius)
 			curMacro.add(Attr::Double::createSetValueCmd(m_radiusAttr, frameNo, boneData.radius, kfData.isConstSegRadius, true));
-		if (isSetLength)
+		if (kfData.length)
 			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, boneData.length, kfData.isConstSegLength, true));
 	}
 	else
 	{
 		//JS
-		if (isSetPosition)
+		if (kfData.posX || kfData.posY || kfData.pos2D)
 		{
 			if (m_offsetAttr->useSeparate())
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					AttrData{ u"offset.x"_s, boneData.position.x(), frameNo, isSetPosition },
-					AttrData{ u"offset.y"_s, boneData.position.y(), frameNo, isSetPosition });
+					AttrData{ u"offset.x"_s, boneData.position.x(), frameNo, kfData.posX },
+					AttrData{ u"offset.y"_s, boneData.position.y(), frameNo, kfData.posY });
 			}
 			else
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
 					Point2dAttrData{ u"offset"_s, Math::Point2d(boneData.position.x(),
-						boneData.position.y()) , frameNo, isSetPosition });
+						boneData.position.y()) , frameNo, kfData.pos2D });
 			}
 		}
-		if (isSetOrientation || isSetRadius || isSetLength)
+		if (kfData.orientation || kfData.radius || kfData.length)
 		{
 			fm->applyAttributes(getModulePtr()->qualifiedName(),
-				AttrData{ u"orientation"_s, boneData.orientation, frameNo, isSetOrientation },
-				AttrData{ u"radius"_s, boneData.radius, frameNo, isSetRadius },
-				AttrData{ u"length"_s, boneData.length, frameNo, isSetLength });
+				AttrData{ u"orientation"_s, boneData.orientation, frameNo, kfData.orientation },
+				AttrData{ u"radius"_s, boneData.radius, frameNo, kfData.radius },
+				AttrData{ u"length"_s, boneData.length, frameNo, kfData.length });
 		}
 	}
 }
@@ -517,23 +495,13 @@ FrameRange BoneModule::getFrameRange() const
 	return range;
 }
 
-BoneModule::KeyframeData BoneModule::generateKeyframeData(const double frameNo, const bool isFirst) const
+BoneModule::KeyframeData BoneModule::generateKeyframeData(const BoneData& boneData, const double frameNo, const bool isFirst)
 {
 	BoneModule::KeyframeData kfData;
-	//Check if there is a keyframe on the attributes
 
-	if (isFirst && isComplexTransform())
-	{
-		kfData.position = KeyframeState::Keyframe;
-		kfData.length = KeyframeState::Keyframe;
-		kfData.orientation = KeyframeState::Keyframe;
-		kfData.radius = KeyframeState::Keyframe;
-		return kfData;
-	}
-
-	bool isCtrlPntPosition2D = false;
-	bool isCtrlPntPositionX = false;
-	bool isCtrlPntPositionY = false;
+	bool isCtrlPntPos2D = false;
+	bool isCtrlPntPosX = false;
+	bool isCtrlPntPosY = false;
 	bool isCtrlPntLength = false;
 	bool isCtrlPntOrientation = false;
 	bool isCtrlPntRadius = false;
@@ -542,50 +510,39 @@ BoneModule::KeyframeData BoneModule::generateKeyframeData(const double frameNo, 
 
 	//There have been changes to the getValue function between H24 and H27.
 	//When making changes here, all supported versions need to be taken into account
-	m_offsetAttr->getValue(frameNo, tempPoint, &isCtrlPntPosition2D, &kfData.isConstSegPos2D);
+	m_offsetAttr->getValue(frameNo, tempPoint, &isCtrlPntPos2D, &kfData.isConstSegPos2D);
 	//Getting the separate values only for the const Seg positions
-	m_offsetAttr->separateX()->value(frameNo, &isCtrlPntPositionX, &kfData.isConstSegPosX);
-	m_offsetAttr->separateY()->value(frameNo, &isCtrlPntPositionY, &kfData.isConstSegPosY);
+	m_offsetAttr->separateX()->value(frameNo, &isCtrlPntPosX, &kfData.isConstSegPosX);
+	m_offsetAttr->separateY()->value(frameNo, &isCtrlPntPosY, &kfData.isConstSegPosY);
 
 
 	m_lengthAttr->value(frameNo, &isCtrlPntLength, &kfData.isConstSegLength);
 	m_orientationAttr->value(frameNo, &isCtrlPntOrientation, &kfData.isConstSegOrientation);
 	m_radiusAttr->value(frameNo, &isCtrlPntRadius, &kfData.isConstSegRadius);
 
+	bool isForceKeyframe = isFirst && isComplexTransform();
 	bool isAdjustKeyframe = isCtrlPntOrientation || isParentKeyframe(frameNo)
 		|| getFreezeManagerPtr()->isSetInbetweenKfMode();
 
 	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
 
+	kfData.pos2D = isCtrlPntPos2D || isForceKeyframe || (isAdjustKeyframe && boneData.position != m_prevPosition);
+	kfData.posX = isCtrlPntPosX || isForceKeyframe || 
+		((isAdjustKeyframe || kfData.posY) && boneData.position.x() != m_prevPosition.x());
+	kfData.posY = isCtrlPntPosY || isForceKeyframe || 
+		((isAdjustKeyframe || kfData.posX) && boneData.position.y() != m_prevPosition.y());
+	
+	kfData.orientation = isCtrlPntOrientation || isForceKeyframe ||
+		(isAdjustKeyframe && boneData.orientation != m_prevOrientation);
+	kfData.length = isCtrlPntLength || isForceKeyframe || (isAdjustKeyframe && boneData.length != m_prevLength);
+	kfData.radius = isCtrlPntRadius || isForceKeyframe || (isAdjustKeyframe && boneData.radius != m_prevRadius);
 
-	if (isCtrlPntLength)
-		kfData.length = KeyframeState::Keyframe;
-	else if (isAdjustKeyframe)
-		kfData.length = KeyframeState::PossibleKeyframe;
-	else
-		kfData.length = KeyframeState::NoKeyframe;
 
-	if (isCtrlPntOrientation)
-		kfData.orientation = KeyframeState::Keyframe;
-	else if (isAdjustKeyframe)
-		kfData.orientation = KeyframeState::PossibleKeyframe;
-	else
-		kfData.orientation = KeyframeState::NoKeyframe;
-
-	//Radius and position are not being influenced by current bone's orientation
-	if (isCtrlPntRadius)
-		kfData.radius = KeyframeState::Keyframe;
-	else if (isParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
-		kfData.radius = KeyframeState::PossibleKeyframe;
-	else
-		kfData.radius = KeyframeState::NoKeyframe;
-
-	if (isCtrlPntPosition2D)
-		kfData.position = KeyframeState::Keyframe;
-	else if (isParentKeyframe(frameNo) || getFreezeManagerPtr()->isSetInbetweenKfMode())
-		kfData.position = KeyframeState::PossibleKeyframe;
-	else
-		kfData.position = KeyframeState::NoKeyframe;
+	//Saving the current values for the next keyframe
+	m_prevPosition = boneData.position;
+	m_prevLength = boneData.length;
+	m_prevOrientation = boneData.orientation;
+	m_prevRadius = boneData.radius;
 
 	return kfData;
 }

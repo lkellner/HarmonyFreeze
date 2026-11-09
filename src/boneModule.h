@@ -20,9 +20,6 @@ bool hasOffset(const MO_Node* node);
 class BoneModule : public ModuleBase
 {
 public:
-	struct KeyframeData;
-	struct BoneData;
-
 	explicit BoneModule(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType);
@@ -30,6 +27,9 @@ public:
 	void readjustSecondary() override;
 
 private:
+	struct KeyframeData;
+	struct BoneData;
+
 	FrameRange getFrameRange() const override;
 
 	void processAttributeSet(CO_OrCommand& curMacro, const bool isRest);
@@ -41,7 +41,7 @@ private:
 	double getStaticChainRotation(const bool isRest) const;
 	double getChainRotation(const double frameNo) const;
 
-	BoneModule::KeyframeData generateKeyframeData(const double frameNo, const bool isFirst) const;
+	BoneModule::KeyframeData generateKeyframeData(const BoneData& boneData, const double frameNo, const bool isFirst);
 
 	bool isParentKeyframe(const double frameNo) const;
 	bool hasBoneParents() const;
@@ -85,10 +85,12 @@ struct BoneModule::BoneData
 
 struct BoneModule::KeyframeData
 {
-	KeyframeState position;
-	KeyframeState length;
-	KeyframeState orientation;
-	KeyframeState radius;
+	bool pos2D;
+	bool posX;
+	bool posY;
+	bool length;
+	bool orientation;
+	bool radius;
 	bool isConstSegPos2D;
 	bool isConstSegPosX;
 	bool isConstSegPosY;
