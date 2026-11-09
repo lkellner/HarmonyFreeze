@@ -89,12 +89,12 @@ struct BoneModule::KeyframeData
 	KeyframeState length;
 	KeyframeState orientation;
 	KeyframeState radius;
-	bool positionSeg2D;
-	bool positionSegX;
-	bool positionSegY;
-	bool lengthSeg;
-	bool orientationSeg;
-	bool radiusSeg;
+	bool isConstSegPos2D;
+	bool isConstSegPosX;
+	bool isConstSegPosY;
+	bool isConstSegLength;
+	bool isConstSegOrientation;
+	bool isConstSegRadius;
 };
 
 #endif

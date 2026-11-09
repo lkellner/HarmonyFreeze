@@ -383,14 +383,14 @@ void BoneModule::setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
 			if (m_offsetAttr->useSeparate())
 			{
 				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateX(), frameNo,
-					boneData.position.x(), kfData.positionSegX, true));
+					boneData.position.x(), kfData.isConstSegPosX, true));
 				curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateY(), frameNo,
-					boneData.position.y(), kfData.positionSegY, true));
+					boneData.position.y(), kfData.isConstSegPosY, true));
 			}
 			else
 			{
 				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr,
-					frameNo, boneData.position.x(), boneData.position.y(), { kfData.positionSeg2D, true, false, false }));
+					frameNo, boneData.position.x(), boneData.position.y(), { kfData.isConstSegPos2D, true, false, false }));
 			}
 		}
 		else
@@ -402,11 +402,11 @@ void BoneModule::setAttributes(const BoneData boneData, CO_OrCommand& curMacro,
 
 		if (isSetOrientation)
 			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo,
-				boneData.orientation, kfData.orientationSeg, true));
+				boneData.orientation, kfData.isConstSegOrientation, true));
 		if (isSetRadius)
-			curMacro.add(Attr::Double::createSetValueCmd(m_radiusAttr, frameNo, boneData.radius, kfData.radiusSeg, true));
+			curMacro.add(Attr::Double::createSetValueCmd(m_radiusAttr, frameNo, boneData.radius, kfData.isConstSegRadius, true));
 		if (isSetLength)
-			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, boneData.length, kfData.lengthSeg, true));
+			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, boneData.length, kfData.isConstSegLength, true));
 	}
 	else
 	{
@@ -542,15 +542,15 @@ BoneModule::KeyframeData BoneModule::generateKeyframeData(const double frameNo, 
 
 	//There have been changes to the getValue function between H24 and H27.
 	//When making changes here, all supported versions need to be taken into account
-	m_offsetAttr->getValue(frameNo, tempPoint, &isCtrlPntPosition2D, &kfData.positionSeg2D);
+	m_offsetAttr->getValue(frameNo, tempPoint, &isCtrlPntPosition2D, &kfData.isConstSegPos2D);
 	//Getting the separate values only for the const Seg positions
-	m_offsetAttr->separateX()->value(frameNo, &isCtrlPntPositionX, &kfData.positionSegX);
-	m_offsetAttr->separateY()->value(frameNo, &isCtrlPntPositionY, &kfData.positionSegY);
+	m_offsetAttr->separateX()->value(frameNo, &isCtrlPntPositionX, &kfData.isConstSegPosX);
+	m_offsetAttr->separateY()->value(frameNo, &isCtrlPntPositionY, &kfData.isConstSegPosY);
 
 
-	m_lengthAttr->value(frameNo, &isCtrlPntLength, &kfData.lengthSeg);
-	m_orientationAttr->value(frameNo, &isCtrlPntOrientation, &kfData.orientationSeg);
-	m_radiusAttr->value(frameNo, &isCtrlPntRadius, &kfData.radiusSeg);
+	m_lengthAttr->value(frameNo, &isCtrlPntLength, &kfData.isConstSegLength);
+	m_orientationAttr->value(frameNo, &isCtrlPntOrientation, &kfData.isConstSegOrientation);
+	m_radiusAttr->value(frameNo, &isCtrlPntRadius, &kfData.isConstSegRadius);
 
 	bool isAdjustKeyframe = isCtrlPntOrientation || isParentKeyframe(frameNo)
 		|| getFreezeManagerPtr()->isSetInbetweenKfMode();
