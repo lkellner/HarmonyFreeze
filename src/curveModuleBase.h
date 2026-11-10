@@ -40,8 +40,11 @@ public:
 	{
 		KeyframeState length;
 		KeyframeState orientation;
-		bool lengthSeg;
-		bool orientationSeg;
+		bool isConstSegLength;
+		bool isConstSegOrientation;
+		bool isAdjustKeyframe;
+		bool isForceKeyframe;
+		bool isProcessFrame;
 	};
 
 	explicit CurveModuleBase(std::shared_ptr<FreezeManager> freezeManager,

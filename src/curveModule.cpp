@@ -248,23 +248,20 @@ CurveModuleBase::KeyframeData CurveModule::generateKeyframeData(const BezierHand
 
 	bool isCtrlPntRadius = false;
 	bool isCtrlPntAngle = false;
-	bool isConstSegRadius = false;
-	bool isConstSegAngle = false;
 
-	bezierHandle.getLengthAttr()->value(frameNo, &isCtrlPntRadius, &isConstSegRadius);
-	bezierHandle.getOrientationAttr()->value(frameNo, &isCtrlPntAngle, &isConstSegAngle);
+	bezierHandle.getLengthAttr()->value(frameNo, &isCtrlPntRadius, &kfData.isConstSegLength);
+	bezierHandle.getOrientationAttr()->value(frameNo, &isCtrlPntAngle, &kfData.isConstSegOrientation);
 
-	kfData.lengthSeg = isConstSegRadius;
-	kfData.orientationSeg = isConstSegRadius;
 
-	bool isAdjustKeyframe = isCtrlPntAngle || isCtrlPntRadius || (!isIndependent() && isParentKeyframe(frameNo)) 
+	kfData.isAdjustKeyframe = isCtrlPntAngle || isCtrlPntRadius || (!isIndependent() && isParentKeyframe(frameNo)) 
 		|| getFreezeManagerPtr()->isSetInbetweenKfMode();
 
-	isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
+	kfData.isAdjustKeyframe = kfData.isAdjustKeyframe && isComplexTransform();
+	kfData.isForceKeyframe = isFirst && isComplexTransform();
 
 	if(isCtrlPntRadius)
 		kfData.length = KeyframeState::Keyframe;
-	else if (isAdjustKeyframe)
+	else if (kfData.isAdjustKeyframe)
 		kfData.length = KeyframeState::PossibleKeyframe;
 	else
 		kfData.length = KeyframeState::NoKeyframe;
@@ -272,7 +269,7 @@ CurveModuleBase::KeyframeData CurveModule::generateKeyframeData(const BezierHand
 
 	if(isCtrlPntAngle)
 		kfData.orientation = KeyframeState::Keyframe;
-	else if (isAdjustKeyframe)
+	else if (kfData.isAdjustKeyframe)
 		kfData.orientation = KeyframeState::PossibleKeyframe;
 	else
 		kfData.orientation = KeyframeState::NoKeyframe;

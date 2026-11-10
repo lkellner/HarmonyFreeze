@@ -87,10 +87,10 @@ void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 	{
 		//Need to use the version that allows for forcing keyframes
 		if (isSetRadius)
-			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, handleInfo.radius, kfData.lengthSeg, true));
+			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, handleInfo.radius, kfData.isConstSegLength, true));
 
 		if (isSetAngle)
-			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, handleInfo.angle, kfData.orientationSeg, true));
+			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, handleInfo.angle, kfData.isConstSegOrientation, true));
 	}
 	else
 	{
