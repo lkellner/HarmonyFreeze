@@ -21,22 +21,21 @@ BezierHandle::BezierHandle(std::shared_ptr<FreezeManager> freezeManager,
 
 void BezierHandle::updateKeyframeData(KeyframeData& kfData, const BezierHandleInfo handleInfo) const
 {
-	kfData.orientation = kfData.orientation || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && m_prevAngle != handleInfo.angle);
-	kfData.length = kfData.length || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && m_prevRadius != handleInfo.radius);
+	kfData.orientation = kfData.orientation || kfData.isForceKeyframe ||
+		(kfData.isAdjustKeyframe && m_prevHandleInfo.angle != handleInfo.angle);
+	kfData.length = kfData.length || kfData.isForceKeyframe ||
+		(kfData.isAdjustKeyframe && m_prevHandleInfo.radius != handleInfo.radius);
 }
 
 void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 	const Math::Matrix4x4& changeMatrix,
-	CO_OrCommand& curMacro)
+	CO_OrCommand& curMacro) const
 {
 	if (!modulePtr)
 		return;
 
 	BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr, changeMatrix,
 		m_lengthAttr->localValue(), m_orientationAttr->localValue());
-
-	m_prevRadius = handleInfo.radius; //Saving the current value for the first animated keyframe
-	m_prevAngle = handleInfo.angle;
 
 	if (m_freezeManager->isExperimentalMode())
 	{
@@ -68,8 +67,9 @@ void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 	//An extra keyframe is being added here, if it is the last frame in the animation or if the value differs from.
 	//the following one.
 
-	m_prevRadius = handleInfo.radius; //Saving the current value for the next keyframe
-	m_prevAngle = handleInfo.angle;
+	//Saving the current value for the next keyframe
+	//No need to save it for the static values as the first keyframe would be force either way with the current algorithm
+	m_prevHandleInfo = handleInfo;
 
 	if (m_freezeManager->isExperimentalMode())
 	{

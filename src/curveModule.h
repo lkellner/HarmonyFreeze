@@ -48,7 +48,7 @@ public:
 
 	void recalculateStaticHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4& changeMatrix,
-		CO_OrCommand& curMacro);
+		CO_OrCommand& curMacro) const;
 
 	void recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4 changeMatrix,
@@ -79,8 +79,7 @@ private:
 	QString m_lengthAttrJS;
 	QString m_orientationAttrJS;
 
-	double m_prevRadius;
-	double m_prevAngle;
+	BezierHandleInfo m_prevHandleInfo;
 
 	Kind m_kind;
 	bool m_isIndependent;
