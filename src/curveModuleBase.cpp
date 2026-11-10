@@ -3,8 +3,8 @@
 using namespace Qt::StringLiterals;
 
 static void recalculateIndependentPoint(const MO_Module* modulePtr,
-		const Math::Matrix4x4& matrix,
-		Math::Point2d& point)
+	const Math::Matrix4x4& matrix,
+	Math::Point2d& point)
 {
 	point = modulePtr->sceneMetrics()->toOGL(point);
 	point = point * matrix.getTransform2d();
@@ -14,122 +14,6 @@ static void recalculateIndependentPoint(const MO_Module* modulePtr,
 static const QString& attrKeyword(const AT_AttrDesc& desc)
 {
 	return desc._pAttr->keyword();
-}
-
-BezierHandle::BezierHandle(std::shared_ptr<FreezeManager> freezeManager,
-		AT_DoubleAttr* lengthAttr,
-		AT_DoubleAttr* orientationAttr,
-		QString lengthAttrJS,
-		QString orientationAttrJS,
-		Kind kind,
-		bool isIndependent)
-	: m_freezeManager(std::move(freezeManager))
-	, m_lengthAttr(lengthAttr)
-	, m_orientationAttr(orientationAttr)
-	, m_lengthAttrJS(std::move(lengthAttrJS))
-	, m_orientationAttrJS(std::move(orientationAttrJS))
-	, m_kind(kind)
-	, m_isIndependent(isIndependent)
-{
-}
-
-void BezierHandle::updateKeyframeData(CurveModuleBase::KeyframeData& kfData, const BezierHandleInfo handleInfo) const
-{
-	kfData.orientation = kfData.orientation || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && m_prevAngle != handleInfo.angle);
-	kfData.length = kfData.length || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && m_prevRadius != handleInfo.radius);
-}
-
-void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
-		const Math::Matrix4x4& changeMatrix,
-		CO_OrCommand& curMacro)
-{
-	if (!modulePtr)
-		return;
-
-	BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr, changeMatrix,
-			m_lengthAttr->localValue(), m_orientationAttr->localValue());
-
-	m_prevRadius = handleInfo.radius; //Saving the current value for the first animated keyframe
-	m_prevAngle = handleInfo.angle;
-
-	if (m_freezeManager->isExperimentalMode())
-	{
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_lengthAttr, handleInfo.radius));
-		curMacro.add(Attr::Double::createSetLocalValueCmd(m_orientationAttr, handleInfo.angle));
-	}
-	else
-	{
-		m_freezeManager->applyAttributes(modulePtr->qualifiedName(),
-				StaticAttrData{ m_lengthAttrJS, handleInfo.radius },
-				StaticAttrData{ m_orientationAttrJS, handleInfo.angle });
-	}
-}
-
-void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
-		const Math::Matrix4x4 changeMatrix,
-		CO_OrCommand& curMacro,
-		CurveModuleBase::KeyframeData& kfData,
-		const double frameNo)
-{
-	if (!modulePtr)
-		return;
-
-	const BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr, changeMatrix,
-			m_lengthAttr->value(frameNo), m_orientationAttr->value(frameNo));
-
-	updateKeyframeData(kfData, handleInfo);
-	//Sometimes it might be necessary to add an extra keyframe to the radius/length as it also depends on the orientation.
-	//An extra keyframe is being added here, if it is the last frame in the animation or if the value differs from.
-	//the following one.
-
-	m_prevRadius = handleInfo.radius; //Saving the current value for the next keyframe
-	m_prevAngle = handleInfo.angle;
-
-	if (m_freezeManager->isExperimentalMode())
-	{
-		//Need to use the version that allows for forcing keyframes
-		if (kfData.length)
-			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, handleInfo.radius, kfData.isConstSegLength, true));
-
-		if (kfData.orientation)
-			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, handleInfo.angle, kfData.isConstSegOrientation, true));
-	}
-	else
-	{
-		if (kfData.length || kfData.orientation)
-		{
-			m_freezeManager->applyAttributes(modulePtr->qualifiedName(),
-				AttrData{ m_lengthAttrJS, handleInfo.radius, frameNo, kfData.length },
-				AttrData{ m_orientationAttrJS, handleInfo.angle, frameNo, kfData.orientation });
-		}
-	}
-}
-
-BezierHandleInfo BezierHandle::getRecalculatedHandleInfo(const MO_Module* modulePtr,
-														const Math::Matrix4x4& changeMatrix,
-														const double length,
-														const double angle) const
-{
-	const Math::Matrix4x4 transMatrix = Math::Matrix4x4().translate(length, 0, 0);
-
-	Math::Matrix4x4 rotMatrix = Math::Matrix4x4().rotateDegrees(angle);
-
-	rotMatrix *= transMatrix;
-
-	if(m_isIndependent)
-		rotMatrix = recalculateIndependentHandleMatrix(modulePtr->sceneMetrics(), rotMatrix, changeMatrix);
-	else
-		rotMatrix = changeMatrix.rotation() * rotMatrix;
-
-	const Math::Point3d origin = rotMatrix.origin();
-
-	//Rougly estimated angle used as a reference know whether to add n*360 degrees
-	//to final angle. This is to make sure that animations don't break
-	const double referenceAngle = getAngle2d(changeMatrix.getTransform2d()) + angle;
-
-	const double orientation = matchFullRotations(referenceAngle, getAngle2d(rotMatrix.getTransform2d()));
-
-	return { origin.toVector().length(), orientation};
 }
 
 CurveModuleBase::CurveModuleBase(std::shared_ptr<FreezeManager> freezeManager,

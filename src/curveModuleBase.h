@@ -89,65 +89,6 @@ private:
 	bool m_isIndependent;
 };
 
-class BezierHandle
-{
-public:
-	enum class Kind : uint8_t
-	{
-		Rest,
-		Animatable
-	};
-
-	explicit BezierHandle(std::shared_ptr<FreezeManager> freezeManager,
-			AT_DoubleAttr* lengthAttr,
-			AT_DoubleAttr* orientationAttr,
-			QString lengthAttrJS,
-			QString orientationAttrJS,
-			Kind kind,
-			bool isIndependent);
-
-	void recalculateStaticHandlePoint(const MO_Module* modulePtr,
-			const Math::Matrix4x4& changeMatrix,
-			CO_OrCommand& curMacro);
-
-	void recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
-			const Math::Matrix4x4 changeMatrix,
-			CO_OrCommand& curMacro,
-			CurveModuleBase::KeyframeData& kfData,
-			const double frameNo);
-
-	Kind kind() const { return m_kind; }
-
-	bool isAnimatable() const { return m_kind == Kind::Animatable; }
-	bool isRest() const { return m_kind == Kind::Rest; }
-
-	const AT_DoubleAttr* getLengthAttr() const { return m_lengthAttr; }
-	const AT_DoubleAttr* getOrientationAttr() const { return m_orientationAttr; }
-
-private:
-	BezierHandleInfo getRecalculatedHandleInfo(const MO_Module* modulePtr,
-												const Math::Matrix4x4& changeMatrix,
-												const double length,
-												const double angle) const;
-	void updateKeyframeData(CurveModuleBase::KeyframeData& kfData,
-							const BezierHandleInfo handleInfo) const;
-	std::shared_ptr<FreezeManager> m_freezeManager;
-
-	AT_DoubleAttr* m_lengthAttr;
-	AT_DoubleAttr* m_orientationAttr;
-
-	QString m_lengthAttrJS;
-	QString m_orientationAttrJS;
-
-	double m_prevRadius;
-	double m_prevAngle;
-
-	Kind m_kind;
-	bool m_isIndependent;
-};
-
-
-
 Math::Matrix4x4 recalculateIndependentHandleMatrix(const SC_SceneMetrics* sceneMetrics,
 	Math::Matrix4x4 handleMatrix, const Math::Matrix4x4& changeMatrix);
 #endif
