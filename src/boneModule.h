@@ -39,6 +39,12 @@ private:
 	FrameRange getFrameRange() const override;
 
 	void processAttributeSet(CO_OrCommand& curMacro, const bool isRest);
+	BoneModule::BoneData recalculateBoneData(const BoneData& boneData,
+		const Math::Matrix4x4& changeMatrix,
+		const Math::Matrix4x4& unitOffsetMatrix,
+		Math::Matrix4x4 fieldsChangeMatrix,
+		Math::Matrix4x4 scaleShearChangeMatrix,
+		const double ChainRotation) const;
 	void setStaticAttributes(const BoneData boneData, CO_OrCommand& curMacro,
 		const bool isRest) const;
 	void setAttributes(const BoneData boneData, KeyframeData& kfData,
