@@ -19,7 +19,7 @@ BezierHandle::BezierHandle(std::shared_ptr<FreezeManager> freezeManager,
 {
 }
 
-void BezierHandle::updateKeyframeData(CurveModuleBase::KeyframeData& kfData, const BezierHandleInfo handleInfo) const
+void BezierHandle::updateKeyframeData(KeyframeData& kfData, const BezierHandleInfo handleInfo) const
 {
 	kfData.orientation = kfData.orientation || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && m_prevAngle != handleInfo.angle);
 	kfData.length = kfData.length || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && m_prevRadius != handleInfo.radius);
@@ -54,7 +54,7 @@ void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 	const Math::Matrix4x4 changeMatrix,
 	CO_OrCommand& curMacro,
-	CurveModuleBase::KeyframeData& kfData,
+	KeyframeData& kfData,
 	const double frameNo)
 {
 	if (!modulePtr)
@@ -334,7 +334,7 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 			if(!bezierHandle.isAnimatable())
 				continue;
 
-			CurveModuleBase::KeyframeData kfData = generateKeyframeData(bezierHandle, frameNo, curFrame == range.start);
+			BezierHandle::KeyframeData kfData = generateKeyframeData(bezierHandle, frameNo, curFrame == range.start);
 
 			if (!kfData.isProcessFrame)
 				continue;
@@ -348,11 +348,11 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 	}
 }
 
-CurveModuleBase::KeyframeData CurveModule::generateKeyframeData(const BezierHandle& bezierHandle,
+BezierHandle::KeyframeData CurveModule::generateKeyframeData(const BezierHandle& bezierHandle,
 	const double frameNo,
 	const bool isFirst) const
 {
-	CurveModuleBase::KeyframeData kfData;
+	BezierHandle::KeyframeData kfData;
 
 	bezierHandle.getLengthAttr()->value(frameNo, &kfData.length, &kfData.isConstSegLength);
 	bezierHandle.getOrientationAttr()->value(frameNo, &kfData.orientation, &kfData.isConstSegOrientation);

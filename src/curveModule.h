@@ -21,6 +21,17 @@ public:
 		Animatable
 	};
 
+	struct KeyframeData
+	{
+		bool length;
+		bool orientation;
+		bool isConstSegLength;
+		bool isConstSegOrientation;
+		bool isAdjustKeyframe;
+		bool isForceKeyframe;
+		bool isProcessFrame;
+	};
+
 	explicit BezierHandle(std::shared_ptr<FreezeManager> freezeManager,
 		AT_DoubleAttr* lengthAttr,
 		AT_DoubleAttr* orientationAttr,
@@ -36,7 +47,7 @@ public:
 	void recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4 changeMatrix,
 		CO_OrCommand& curMacro,
-		CurveModuleBase::KeyframeData& kfData,
+		KeyframeData& kfData,
 		const double frameNo);
 
 	Kind kind() const { return m_kind; }
@@ -52,7 +63,7 @@ private:
 		const Math::Matrix4x4& changeMatrix,
 		const double length,
 		const double angle) const;
-	void updateKeyframeData(CurveModuleBase::KeyframeData& kfData,
+	void updateKeyframeData(KeyframeData& kfData,
 		const BezierHandleInfo handleInfo) const;
 	std::shared_ptr<FreezeManager> m_freezeManager;
 
@@ -80,7 +91,7 @@ public:
 private:
 	void loadAttributes();
 
-	CurveModuleBase::KeyframeData generateKeyframeData(const BezierHandle& bezierHandle,
+	BezierHandle::KeyframeData generateKeyframeData(const BezierHandle& bezierHandle,
 		const double frameNo, 
 		const bool isFirst) const;
 	FrameRange getFrameRange() const override;

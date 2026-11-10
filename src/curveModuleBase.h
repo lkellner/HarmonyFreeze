@@ -36,17 +36,6 @@ struct BezierHandleInfo
 class CurveModuleBase : public ModuleBase
 {
 public:
-	struct KeyframeData
-	{
-		bool length;
-		bool orientation;
-		bool isConstSegLength;
-		bool isConstSegOrientation;
-		bool isAdjustKeyframe;
-		bool isForceKeyframe;
-		bool isProcessFrame;
-	};
-
 	explicit CurveModuleBase(std::shared_ptr<FreezeManager> freezeManager,
 		MO_Module* modulePtr,
 		ModuleType moduleType);
