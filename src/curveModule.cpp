@@ -323,7 +323,7 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 			bezierHandle.recalculateStaticHandlePoint(getModulePtr(), matrix, curMacro);
 	}
 
-	FrameRange range = getFrameRange();
+	const FrameRange range = getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
