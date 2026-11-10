@@ -24,8 +24,8 @@ private:
 	void loadAttributes();
 
 	CurveModuleBase::KeyframeData generateKeyframeData(const BezierHandle& bezierHandle,
-		const double frameNo, const bool isFirst) const;
-
+		const double frameNo, 
+		const bool isFirst) const;
 	FrameRange getFrameRange() const override;
 
 	void readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matrix4x4 matrix);

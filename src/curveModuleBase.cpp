@@ -33,6 +33,12 @@ BezierHandle::BezierHandle(std::shared_ptr<FreezeManager> freezeManager,
 {
 }
 
+void BezierHandle::updateKeyframeData(CurveModuleBase::KeyframeData& kfData, const BezierHandleInfo handleInfo) const
+{
+	kfData.orientation = kfData.orientation || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && m_prevAngle != handleInfo.angle);
+	kfData.length = kfData.length || kfData.isForceKeyframe || (kfData.isAdjustKeyframe && m_prevRadius != handleInfo.radius);
+}
+
 void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4& changeMatrix,
 		CO_OrCommand& curMacro)
@@ -62,7 +68,7 @@ void BezierHandle::recalculateStaticHandlePoint(const MO_Module* modulePtr,
 void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 		const Math::Matrix4x4 changeMatrix,
 		CO_OrCommand& curMacro,
-		const CurveModuleBase::KeyframeData& kfData,
+		CurveModuleBase::KeyframeData& kfData,
 		const double frameNo)
 {
 	if (!modulePtr)
@@ -71,14 +77,10 @@ void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 	const BezierHandleInfo handleInfo = getRecalculatedHandleInfo(modulePtr, changeMatrix,
 			m_lengthAttr->value(frameNo), m_orientationAttr->value(frameNo));
 
-
+	updateKeyframeData(kfData, handleInfo);
 	//Sometimes it might be necessary to add an extra keyframe to the radius/length as it also depends on the orientation.
 	//An extra keyframe is being added here, if it is the last frame in the animation or if the value differs from.
 	//the following one.
-	const bool isSetRadius = kfData.length == KeyframeState::Keyframe ||
-		(m_prevRadius != handleInfo.radius && kfData.length == KeyframeState::PossibleKeyframe);
-	const bool isSetAngle = kfData.orientation == KeyframeState::Keyframe ||
-		(m_prevAngle != handleInfo.angle && kfData.orientation == KeyframeState::PossibleKeyframe);
 
 	m_prevRadius = handleInfo.radius; //Saving the current value for the next keyframe
 	m_prevAngle = handleInfo.angle;
@@ -86,19 +88,19 @@ void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 	if (m_freezeManager->isExperimentalMode())
 	{
 		//Need to use the version that allows for forcing keyframes
-		if (isSetRadius)
+		if (kfData.length)
 			curMacro.add(Attr::Double::createSetValueCmd(m_lengthAttr, frameNo, handleInfo.radius, kfData.isConstSegLength, true));
 
-		if (isSetAngle)
+		if (kfData.orientation)
 			curMacro.add(Attr::Double::createSetValueCmd(m_orientationAttr, frameNo, handleInfo.angle, kfData.isConstSegOrientation, true));
 	}
 	else
 	{
-		if (isSetRadius || isSetAngle)
+		if (kfData.length || kfData.orientation)
 		{
 			m_freezeManager->applyAttributes(modulePtr->qualifiedName(),
-				AttrData{ m_lengthAttrJS, handleInfo.radius, frameNo, isSetRadius },
-				AttrData{ m_orientationAttrJS, handleInfo.angle, frameNo, isSetAngle });
+				AttrData{ m_lengthAttrJS, handleInfo.radius, frameNo, kfData.length },
+				AttrData{ m_orientationAttrJS, handleInfo.angle, frameNo, kfData.orientation });
 		}
 	}
 }

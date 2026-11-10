@@ -220,7 +220,7 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 
 			CurveModuleBase::KeyframeData kfData = generateKeyframeData(bezierHandle, frameNo, curFrame == range.start);
 
-			if (kfData.length == KeyframeState::NoKeyframe && kfData.orientation == KeyframeState::NoKeyframe)
+			if (!kfData.isProcessFrame)
 				continue;
 
 			if (!isIndependent())
@@ -233,46 +233,21 @@ void CurveModule::readjustBezierHandles(CO_OrCommand& curMacro, const Math::Matr
 }
 
 CurveModuleBase::KeyframeData CurveModule::generateKeyframeData(const BezierHandle& bezierHandle,
-	const double frameNo, const bool isFirst) const
+	const double frameNo,
+	const bool isFirst) const
 {
 	CurveModuleBase::KeyframeData kfData;
-	//Check if there is a keyframe on the attributes
 
-	if(isFirst && isComplexTransform())
-	{
-		kfData.length = KeyframeState::Keyframe;
-		kfData.orientation = KeyframeState::Keyframe;
+	bezierHandle.getLengthAttr()->value(frameNo, &kfData.length, &kfData.isConstSegLength);
+	bezierHandle.getOrientationAttr()->value(frameNo, &kfData.orientation, &kfData.isConstSegOrientation);
 
-		return kfData;
-	}
-
-	bool isCtrlPntRadius = false;
-	bool isCtrlPntAngle = false;
-
-	bezierHandle.getLengthAttr()->value(frameNo, &isCtrlPntRadius, &kfData.isConstSegLength);
-	bezierHandle.getOrientationAttr()->value(frameNo, &isCtrlPntAngle, &kfData.isConstSegOrientation);
-
-
-	kfData.isAdjustKeyframe = isCtrlPntAngle || isCtrlPntRadius || (!isIndependent() && isParentKeyframe(frameNo)) 
+	kfData.isAdjustKeyframe = kfData.orientation || kfData.length || (!isIndependent() && isParentKeyframe(frameNo))
 		|| getFreezeManagerPtr()->isSetInbetweenKfMode();
 
 	kfData.isAdjustKeyframe = kfData.isAdjustKeyframe && isComplexTransform();
 	kfData.isForceKeyframe = isFirst && isComplexTransform();
 
-	if(isCtrlPntRadius)
-		kfData.length = KeyframeState::Keyframe;
-	else if (kfData.isAdjustKeyframe)
-		kfData.length = KeyframeState::PossibleKeyframe;
-	else
-		kfData.length = KeyframeState::NoKeyframe;
-	
+	kfData.isProcessFrame = kfData.isAdjustKeyframe || kfData.isForceKeyframe || kfData.orientation || kfData.length;
 
-	if(isCtrlPntAngle)
-		kfData.orientation = KeyframeState::Keyframe;
-	else if (kfData.isAdjustKeyframe)
-		kfData.orientation = KeyframeState::PossibleKeyframe;
-	else
-		kfData.orientation = KeyframeState::NoKeyframe;
-
-	 return kfData;
+	return kfData;
 }

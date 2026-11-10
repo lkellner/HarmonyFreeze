@@ -38,8 +38,8 @@ class CurveModuleBase : public ModuleBase
 public:
 	struct KeyframeData
 	{
-		KeyframeState length;
-		KeyframeState orientation;
+		bool length;
+		bool orientation;
 		bool isConstSegLength;
 		bool isConstSegOrientation;
 		bool isAdjustKeyframe;
@@ -113,7 +113,7 @@ public:
 	void recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 			const Math::Matrix4x4 changeMatrix,
 			CO_OrCommand& curMacro,
-			const CurveModuleBase::KeyframeData& kfData,
+			CurveModuleBase::KeyframeData& kfData,
 			const double frameNo);
 
 	Kind kind() const { return m_kind; }
@@ -129,7 +129,8 @@ private:
 												const Math::Matrix4x4& changeMatrix,
 												const double length,
 												const double angle) const;
-
+	void updateKeyframeData(CurveModuleBase::KeyframeData& kfData,
+							const BezierHandleInfo handleInfo) const;
 	std::shared_ptr<FreezeManager> m_freezeManager;
 
 	AT_DoubleAttr* m_lengthAttr;
