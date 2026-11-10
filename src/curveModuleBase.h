@@ -56,8 +56,23 @@ protected:
 	void setMatrixComplexity(const MatrixComplexity complexity) { m_freezeMatrixComplexity = complexity; }
 
 private:
-	void initAttributes();
+	struct KeyframeData;
 
+	void initAttributes();
+	Math::Point2d recalculateOffset(Math::Point2d offset,
+									const Math::Matrix4x4& changeMatrix,
+									const bool isAnimated,
+									const bool isRest,
+									const double frameNo = 1.0) const;
+	CurveModuleBase::KeyframeData generateKeyframeData(const double frameNo, const bool isFirst) const;
+	void updateKeyframeData(KeyframeData& kfData, const Math::Point2d offset) const;
+	void setStaticAttributes(const Math::Point2d restingOffset,
+							const Math::Point2d staticOffset,
+							CO_OrCommand& curMacro) const;
+	void setAttributes(const Math::Point2d offset,
+						const CurveModuleBase::KeyframeData& kfData,
+						CO_OrCommand& curMacro,
+						const double frameNo) const;
 	template <typename ValueFunc>
 	double getRotationImpl(const QLatin1StringView curveAttrKeyword,
 		const QLatin1StringView offsetAttrKeyword,
@@ -70,6 +85,19 @@ private:
 	MatrixComplexity m_freezeMatrixComplexity;
 
 	bool m_isIndependent;
+};
+
+struct CurveModuleBase::KeyframeData
+{
+	bool pos2D;
+	bool posX;
+	bool posY;
+	bool isConstSegPos2D;
+	bool isConstSegPosX;
+	bool isConstSegPosY;
+	bool isAdjustKeyframe;
+	bool isForceKeyframe;
+	bool isProcessFrame;
 };
 
 Math::Matrix4x4 recalculateIndependentHandleMatrix(const SC_SceneMetrics* sceneMetrics,
