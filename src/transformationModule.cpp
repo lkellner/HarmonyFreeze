@@ -442,7 +442,7 @@ void TransformationModule::readjustSecondary()
 		processStaticMatrix(newStaticLocalMatrix, *curMacro);
 
 	//Keyframed matrices
-	FrameRange range = getFrameRange();
+	const FrameRange range = getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
@@ -496,7 +496,7 @@ void TransformationModule::freeze()
 	//Matrices including pivot transformation will be used here to work,
 	//in case there are drawing pivots set on the freeze matrix
 
-	FrameRange range = getFrameRange();
+	const FrameRange range = getFrameRange();
 
 	for (int curFrame = range.start; curFrame <= range.end; curFrame++)
 	{
