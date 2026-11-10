@@ -350,8 +350,8 @@ void BoneModule::setAttributes(const BoneData boneData, KeyframeData& kfData, CO
 		}
 		else if(kfData.pos2D)
 		{
-			curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr,
-				frameNo, boneData.pos.x(), boneData.pos.y(), { kfData.isConstSegPos2D, true, false, false }));
+			createSetValueCurrentFrameCmdPos2D(getModulePtr(), curMacro, m_offsetAttr, frameNo, Math::Point2d(boneData.pos.x(), boneData.pos.y()),
+				kfData.isConstSegPos2D, true, false, false);
 		}
 
 		if (kfData.orientation)
@@ -479,7 +479,7 @@ BoneModule::KeyframeData BoneModule::generateKeyframeData(const double frameNo, 
 
 	//There have been changes to the getValue function between H24 and H27.
 	//When making changes here, all supported versions need to be taken into account
-	m_offsetAttr->getValue(frameNo, tempPoint, &kfData.pos2D, &kfData.isConstSegPos2D);
+	getPos2DValues(*m_offsetAttr, frameNo, tempPoint, kfData.pos2D, kfData.isConstSegPos2D);
 	//Getting the separate values only for the const Seg positions
 	m_offsetAttr->separateX()->value(frameNo, &kfData.posX, &kfData.isConstSegPosX);
 	m_offsetAttr->separateY()->value(frameNo, &kfData.posY, &kfData.isConstSegPosY);

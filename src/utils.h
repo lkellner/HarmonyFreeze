@@ -22,6 +22,9 @@
 #include <SceneCore/attribute/AT_ElementLayerAttr.h>
 #include <SceneCore/attribute/AT_EnumAttrTemplate.h>
 #include <SceneCore/attribute/AT_Enums.h>
+#include <SceneCore/attribute/AT_PositionAttrCmds.h>
+#include <SceneCore/attribute/AT_Rotation3dAttrCmds.h>
+#include <SceneCore/attribute/AT_Scale3dAttrCmds.h>
 #include <SceneCore/attribute/AT_TimingAttr.h>
 #include <SceneCore/celcache/CA_CelKey.h>
 #include <SceneCore/celcache/CA_CelPtr.h>
@@ -37,6 +40,7 @@
 #include <SDKExtension/SDK_Drawing.h>
 #include <SDKExtension/SDK_Selection.h>
 
+#include <Util/command/CO_OrCommand.h>
 
 #include <vector>
 
@@ -245,17 +249,32 @@ bool isQuarternionKeyframe(const T& t, double frame, Math::Angle3d& angle)
 
 	if constexpr (requires { t.getValue(frame, angle, (double*)nullptr, &isCtrlPnt, &isConstSeg); })
 	{
+		//Newer SKDs
 		t.getValue(frame, angle, static_cast<double*>(nullptr), &isCtrlPnt, &isConstSeg);
 	}
 	else
 	{
-		// older SDK
+		//Older SDKs
 		t.getValue(frame, angle, &isCtrlPnt, &isConstSeg);
 	}
 
 	return isCtrlPnt;
 }
 
+template <typename T = AT_Position2DAttr>
+void getPos2DValues(const T& t, double frame, Math::Point2d& pos, bool& isCtrlPnt, bool& isConstSeg)
+{
+	if constexpr (requires { t.getValue(frame, pos, &isCtrlPnt, &isConstSeg); })
+	{
+		//Newer SKDs
+		t.getValue(frame, pos, &isCtrlPnt, &isConstSeg);
+}
+	else
+	{
+		//Older SDKs
+		t.getValue(frame, pos, &isCtrlPnt);
+	}
+}
 
 template <typename T = AT_Rotation3dAttr>
 bool isQuarternionConstSeg(const T& t, double frame, Math::Angle3d& angle)
@@ -265,15 +284,104 @@ bool isQuarternionConstSeg(const T& t, double frame, Math::Angle3d& angle)
 
 	if constexpr (requires { t.getValue(frame, angle, (double*)nullptr, &isCtrlPnt, &isConstSeg); })
 	{
+		//Newer SKDs
 		t.getValue(frame, angle, static_cast<double*>(nullptr), &isCtrlPnt, &isConstSeg);
-}
+	}
 	else
 	{
-		// older SDK
+		//Older SDKs
 		t.getValue(frame, angle, &isCtrlPnt, &isConstSeg);
 	}
 
 	return isConstSeg;
+}
+
+template <typename T = AT_Position2dAttr>
+void createSetValueCurrentFrameCmdPos2D(const MO_Module* modulePtr,
+												CO_OrCommand& curMacro,
+												T* attr,
+												const double frameNo,
+												const Math::Point2d pos,
+												const bool constSeg,
+												const bool forceKeyframe,
+												const bool adjustLastKeyframe,
+												const bool forceKeyFrameAtFrameOne)
+{
+	if constexpr (requires { Attr::Position2d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+		attr, frameNo, pos.x(), pos.y(), { constSeg, forceKeyframe , adjustLastKeyframe, forceKeyFrameAtFrameOne }); })
+	{
+		//Newer SKDs
+		curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+			attr, frameNo, pos.x(), pos.y(),
+			{ constSeg, forceKeyframe , adjustLastKeyframe, forceKeyFrameAtFrameOne }));
+	}
+	else
+	{
+		//Older SDKs
+		curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+			attr, frameNo, pos.x(), pos.y(),
+			constSeg, forceKeyframe , adjustLastKeyframe, forceKeyFrameAtFrameOne));
+	}
+}
+
+template <typename T = AT_Scale3dAttr>
+void createSetValueCurrentFrameCmdScale3D(const MO_Module* modulePtr,
+													CO_OrCommand& curMacro,
+													T* attr,
+													const double frameNo,
+													const double scaleX,
+													const double scaleY,
+													const double scaleZ,
+													const bool constSeg,
+													const bool forceKeyframe,
+													const bool adjustLastKeyframe,
+													const bool forceKeyFrameAtFrameOne)
+{
+	if constexpr (requires { Attr::Scale3d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+		attr, frameNo, scaleX, scaleY, scaleZ, 
+		{ constSeg, forceKeyframe , adjustLastKeyframe, forceKeyFrameAtFrameOne }); })
+	{
+		//Newer SKDs
+		curMacro.add(Attr::Scale3d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+			attr, frameNo, scaleX, scaleY, scaleZ,
+			{ constSeg, forceKeyframe , adjustLastKeyframe, forceKeyFrameAtFrameOne }));
+	}
+	else
+	{
+		//Older SDKs
+		curMacro.add( Attr::Scale3d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+			attr, frameNo, scaleX, scaleY, scaleZ,
+			constSeg, forceKeyframe, adjustLastKeyframe, forceKeyFrameAtFrameOne));
+	}
+}
+
+template <typename T = AT_Rotation3dAttr>
+void createSetValueCurrentFrameCmdRot3D(const MO_Module* modulePtr,
+										CO_OrCommand& curMacro,
+										T* attr,
+										const double frameNo,
+										const Math::Angle3d angle,
+										const bool constSeg,
+										const bool forceKeyframe,
+										const bool adjustLastKeyframe,
+										const bool forceKeyFrameAtFrameOne)
+{
+	if constexpr (requires { Attr::Rotation3d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+		attr, frameNo, angle,
+		{ constSeg, forceKeyframe , adjustLastKeyframe, forceKeyFrameAtFrameOne }); })
+	{
+		//Newer SKDs
+		curMacro.add(Attr::Rotation3d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+			attr, frameNo, angle,
+			{ constSeg, forceKeyframe , adjustLastKeyframe, forceKeyFrameAtFrameOne }));
+	}
+	else
+	{
+		//Older SDKs
+		curMacro.add(Attr::Rotation3d::createSetValueCurrentFrameCmd(modulePtr->sceneCommon(),
+			attr, frameNo, angle,
+			constSeg, forceKeyframe, adjustLastKeyframe, forceKeyFrameAtFrameOne));
+	}
 }
 
 constexpr bool supportsKeysRange()

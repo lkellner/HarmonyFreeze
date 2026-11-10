@@ -78,7 +78,7 @@ PointModuleBase::KeyframeData PointModuleBase::generateKeyframeData(const Transf
 	}
 	else
 	{
-		point->posAttr->getValue(frameNo, tempPos, &kfData.pos2D, &kfData.isConstSeg2D);
+		getPos2DValues(*(point->posAttr), frameNo, tempPos, kfData.pos2D, kfData.isConstSeg2D);
 	}
 
 	kfData.isForceKeyframe = isFirst && isComplexTransform();
@@ -151,11 +151,9 @@ void PointModuleBase::setAttributes(const TransformPoint* point, Math::Point3d p
 		}
 		else
 		{
-			SC_SceneCommon* sceneCommon = getModulePtr()->sceneCommon();
-
-			if (kfData.pos2D && sceneCommon)
-				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(sceneCommon, point->posAttr, frameNo,
-					position.x(), position.y(), { kfData.isConstSeg2D, true, false, false }));
+			if (kfData.pos2D)
+				createSetValueCurrentFrameCmdPos2D(getModulePtr(), curMacro, point->posAttr, frameNo, Math::Point2d(position.x(), position.y()),
+					kfData.isConstSeg2D, true, false, false);
 		}
 	}
 	else

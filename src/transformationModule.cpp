@@ -794,8 +794,8 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 			
 		else
 		{
-			curMacro.add(Attr::Scale3d::createSetValueCurrentFrameCmd(sceneCommon, m_scaleAttr, frameNo,
-				params.sxy, params.sxy, params.sxy, { kfData.isConstSegSX, true, false, false }));
+			createSetValueCurrentFrameCmdScale3D(getModulePtr(), curMacro, m_scaleAttr, frameNo, params.sxy, params.sxy, params.sxy,
+				kfData.isConstSegSX, true, false, false);
 		}
 			
 	}
@@ -824,8 +824,8 @@ void TransformationModule::setAttributes(const MatrixParameters& params, const K
 			}
 			else
 			{
-				curMacro.add(Attr::Rotation3d::createSetValueCurrentFrameCmd(sceneCommon, m_rotationAttr, frameNo,
-					Math::Angle3d(params.ax, params.ay, params.az), { kfData.isConstSegA3D, true, false, false }));
+				createSetValueCurrentFrameCmdRot3D(getModulePtr(), curMacro, m_rotationAttr, frameNo, Math::Angle3d(params.ax, params.ay, params.az),
+					kfData.isConstSegSX, true, false, false);
 			}
 		}
 	}

@@ -229,7 +229,7 @@ PointModuleBase::KeyframeData PkoModule::generateKeyframeData(const TransformPoi
 	}
 	else
 	{
-		point->posAttr->getValue(frameNo, tempPos, &kfData.pos2D, &kfData.isConstSeg2D);
+		getPos2DValues(*(point->posAttr), frameNo, tempPos, kfData.pos2D, kfData.isConstSeg2D);
 	}
 
 	kfData.isForceKeyframe = isFirst && isComplexTransform();

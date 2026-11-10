@@ -60,7 +60,7 @@ CurveModuleBase::KeyframeData CurveModuleBase::generateKeyframeData(const double
 
 	Math::Point2d tempOffset;
 
-	m_offsetAttr->getValue(frameNo, tempOffset, &kfData.pos2D, &kfData.isConstSegPos2D);
+	getPos2DValues(*m_offsetAttr, frameNo, tempOffset, kfData.pos2D, kfData.isConstSegPos2D);
 	m_offsetAttr->separateX()->value(frameNo, &kfData.posX, &kfData.isConstSegPosX);
 	m_offsetAttr->separateY()->value(frameNo, &kfData.posY, &kfData.isConstSegPosY);
 
@@ -130,8 +130,8 @@ void CurveModuleBase::setAttributes(const Math::Point2d offset,
 		else
 		{
 			if (kfData.pos2D)
-				curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr, frameNo,
-					offset.x(), offset.y(), { kfData.isConstSegPos2D, true, false, false }));
+				createSetValueCurrentFrameCmdPos2D(getModulePtr(), curMacro, m_offsetAttr, frameNo, offset,
+					kfData.isConstSegPos2D, true, false, false);
 		}
 	}
 	else
