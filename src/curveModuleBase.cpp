@@ -60,8 +60,6 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 	m_restingOffsetAttr->getLocalValue(restingOffset);
 	m_offsetAttr->getLocalValue(staticOffset);
 
-	m_prevOffset = staticOffset;
-
 	if (isIndependent())
 	{
 		recalculateIndependentPoint(mod, changeMatrix, restingOffset);
@@ -107,21 +105,20 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 		double frameNo = curFrame;
 		Math::Point2d offset;
 
-		//These are split up in order to get the different values for the constSegs
-		//These are important to be able to force keyframes in C++
-		//The value to be used however, will be the one from the combined attribute
-		//As the separate value might not be in use
 		m_offsetAttr->getValue(frameNo, offset, &isCtrlPnt2D, &isConstSeg2D);
 		m_offsetAttr->separateX()->value(frameNo, &isCtrlPntX, &isConstSegX);
 		m_offsetAttr->separateY()->value(frameNo, &isCtrlPntY, &isConstSegY);
 
 		//Set keyframe either way. Forcing is necessary as curves' values also can 
 		//also depend on their parents' rotation 
-		bool isForceKeyframe = curFrame == range.start && isComplexTransform();
+		const bool isForceKeyframe = curFrame == range.start && isComplexTransform();
 
 		//Set keyframe in case it different from the previous value
 		bool isAdjustKeyframe = (!isIndependent() && isParentKeyframe(frameNo)) || fm->isSetInbetweenKfMode();
 		isAdjustKeyframe = isAdjustKeyframe && isComplexTransform();
+
+		if (!isCtrlPnt2D && !isCtrlPntX && !isCtrlPntY && !isAdjustKeyframe && !isForceKeyframe)
+			continue;
 
 		if (!isIndependent())
 			offset *= adjustDependentMatrix(changeMatrix, true, false, frameNo).getTransform2d();
@@ -129,13 +126,10 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 			recalculateIndependentPoint(getModulePtr(), changeMatrix, offset);
 
 
-		if (!isCtrlPnt2D && !(m_prevOffset != offset && isAdjustKeyframe) && !isForceKeyframe)
-		{
-			//This is neither a previous keyframe, nor does it need to be set either way
-			//-> no keyframe needs to be set here
-			m_prevOffset = offset;
-			continue;
-		}
+		isCtrlPnt2D = isCtrlPnt2D || isForceKeyframe || (isAdjustKeyframe && offset != m_prevOffset);
+		isCtrlPntX = isCtrlPntX || isForceKeyframe || ((isAdjustKeyframe || isCtrlPntY) && offset.x() != m_prevOffset.x());
+		isCtrlPntY = isCtrlPntY || isForceKeyframe || ((isAdjustKeyframe || isCtrlPntX) && offset.y() != m_prevOffset.y());
+
 
 		//Setting storing offset for the next keyframe;
 
@@ -144,23 +138,19 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 		if (fm->isExperimentalMode())
 		{
 			//C++
-			if (isForceKeyframe)
+			//Attributes are being split to be able to set the proper isConstSeg value
+			if (m_offsetAttr->useSeparate())
 			{
-				//Attributes are being split to be able to set the proper isConstSeg value
-				if (m_offsetAttr->useSeparate())
-				{
+				if(isCtrlPntX)
 					curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateX(), frameNo, offset.x(), isConstSegX, true));
+				if (isCtrlPntY)
 					curMacro.add(Attr::Double::createSetValueCmd(m_offsetAttr->separateY(), frameNo, offset.y(), isConstSegY, true));
-				}
-				else
-				{
-					curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr, frameNo, 
-						offset.x(), offset.y(), { isConstSeg2D, true, false, false}));
-				}
 			}
 			else
 			{
-				curMacro.add(Attr::Position2d::createSetValueCmd(m_offsetAttr, frameNo, offset.x(), offset.y()));
+				if (isCtrlPnt2D)
+					curMacro.add(Attr::Position2d::createSetValueCurrentFrameCmd(getModulePtr()->sceneCommon(), m_offsetAttr, frameNo, 
+						offset.x(), offset.y(), { isConstSeg2D, true, false, false}));
 			}
 		}
 		else
@@ -169,13 +159,13 @@ void CurveModuleBase::readjustOffsets(CO_OrCommand& curMacro, const Math::Matrix
 			if (m_offsetAttr->useSeparate())
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					AttrData{ u"offset.x"_s, offset.x(), frameNo, true },
-					AttrData{ u"offset.y"_s, offset.y(), frameNo, true });
+					AttrData{ u"offset.x"_s, offset.x(), frameNo, isCtrlPntX },
+					AttrData{ u"offset.y"_s, offset.y(), frameNo, isCtrlPntY });
 			}
 			else
 			{
 				fm->applyAttributes(getModulePtr()->qualifiedName(),
-					Point2dAttrData{ u"offset"_s, Math::Point2d(offset.x(),offset.y()) , frameNo, true });
+					Point2dAttrData{ u"offset"_s, Math::Point2d(offset.x(),offset.y()) , frameNo, isCtrlPnt2D });
 			}
 		}
 	}
@@ -192,7 +182,7 @@ Math::Matrix4x4 CurveModuleBase::adjustDependentMatrix(const Math::Matrix4x4 mat
 
 	const Math::Matrix4x4 newParentMatrix = get2dRotationMatrix((matrix * parentMatrix).getTransform2d());
 
-	FreezeManager* fm = getFreezeManagerPtr();
+	const FreezeManager* fm = getFreezeManagerPtr();
 
 	return fm->getUnitOffsetScaleMatrix() * newParentMatrix.getInverse() *  matrix  * parentMatrix * fm->getUnitOffsetScaleMatrix().getInverse();
 }
