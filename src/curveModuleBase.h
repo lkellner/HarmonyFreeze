@@ -27,12 +27,6 @@
  * 2DPath and Separate for keyframes that are not forced.
 */
 
-struct BezierHandleInfo
-{
-	double radius;
-	double angle;
-};
-
 class CurveModuleBase : public ModuleBase
 {
 public:

@@ -91,7 +91,7 @@ void BezierHandle::recalculateAnimatedHandlePoint(const MO_Module* modulePtr,
 	}
 }
 
-BezierHandleInfo BezierHandle::getRecalculatedHandleInfo(const MO_Module* modulePtr,
+BezierHandle::BezierHandleInfo BezierHandle::getRecalculatedHandleInfo(const MO_Module* modulePtr,
 	const Math::Matrix4x4& changeMatrix,
 	const double length,
 	const double angle) const

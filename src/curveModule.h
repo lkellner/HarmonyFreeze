@@ -21,6 +21,12 @@ public:
 		Animatable
 	};
 
+	struct BezierHandleInfo
+	{
+		double radius;
+		double angle;
+	};
+
 	struct KeyframeData
 	{
 		bool length;
@@ -59,7 +65,7 @@ public:
 	const AT_DoubleAttr* getOrientationAttr() const { return m_orientationAttr; }
 
 private:
-	BezierHandleInfo getRecalculatedHandleInfo(const MO_Module* modulePtr,
+	BezierHandle::BezierHandleInfo getRecalculatedHandleInfo(const MO_Module* modulePtr,
 		const Math::Matrix4x4& changeMatrix,
 		const double length,
 		const double angle) const;
