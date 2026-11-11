@@ -241,7 +241,7 @@ void FreezeResponder::onActionFreezeTransformation()
 }
 
 constexpr char copyrightHeader[] = "===== HarmonyFreeze - "
-"v0.5.5 \n"
+"v0.5.6 \n"
 "Copyright 2026 Laura Kellner <laura@roquetto.com>. All rights reserved. =====\n"
 " SPDX - License - Identifier: GPL-3.0-only\n"
 "\n"
