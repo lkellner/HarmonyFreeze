@@ -294,7 +294,6 @@ void OglControllerModule::setStaticAttributes(Math::Point3d position, Math::Poin
 			StaticAttrData{ u"textposition.z"_s, textPosition.z() },
 			StaticAttrData{ u"textsize"_s, textSize });
 	}
-
 }
 
 void OglControllerModule::clampControllerValues(Math::Point3d& position, Math::Point3d& textPosition, double& size, double& textSize) const
