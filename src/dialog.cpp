@@ -5,6 +5,7 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPropertyAnimation>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -139,12 +140,20 @@ QWidget* createWidget(QWidget* parent, Setting& setting)
 		auto* warningLabel = new QLabel(widget);
 		warningLabel->setText(u"Warning: Undo/Redo commands are NOT available in Experimental Mode!"_s);
 		warningLabel->setWordWrap(true);
-		warningLabel->setVisible(setting.value);
+		warningLabel->setMaximumHeight(setting.value ? warningLabel->sizeHint().height() : 0);
 
-		auto displayWarning = [warningLabel](int value)
+		auto* anim = new QPropertyAnimation(warningLabel, "maximumHeight", widget);
+		anim->setDuration(150);
+		anim->setEasingCurve(QEasingCurve::OutCubic);
+
+		auto displayWarning = [warningLabel, anim](int value)
 		{
 			const bool isEnabled = value > 0;
-			warningLabel->setVisible(isEnabled);
+			int target = isEnabled ? warningLabel->sizeHint().height() : 0;
+			anim->stop();
+			anim->setStartValue(warningLabel->maximumHeight());
+			anim->setEndValue(target);
+			anim->start();
 		};
 
 		QObject::connect(slider, &QSlider::valueChanged, displayWarning);
