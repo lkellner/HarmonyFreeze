@@ -174,7 +174,6 @@ void OglControllerModule::readjustSecondary()
 
 	if (m_isPassOnToDrawings)
 	{
-		printf("is pass on to drawings!\n");
 		//Applying the change in position to the text
 		position = fieldsChangeMatrix.rotation() * position;
 		textPosition = fieldsChangeMatrix * textPosition;
