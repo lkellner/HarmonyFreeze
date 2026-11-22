@@ -1,10 +1,10 @@
 #include "dialog.h"
 #include "toggleSwitch.h"
+#include "warningLabel.h"
 
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QPropertyAnimation>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -35,6 +35,7 @@ void UIDialog::loadSettings()
 void UIDialog::initializeWidgets()
 {
 	auto* mainLayout = new QVBoxLayout(this);
+	mainLayout->setSizeConstraint(QLayout::SetFixedSize);
 
 	for (auto& setting : m_settings)
 	{
@@ -98,25 +99,10 @@ QWidget* createWidget(QWidget* parent, Setting& setting)
 
 	if (std::string_view(setting.name) == "ExperimentalMode")
 	{
-		auto* warningLabel = new QLabel(widget);
-		warningLabel->setText(u"Warning: Undo/Redo commands are NOT available in Experimental Mode!"_s);
-		warningLabel->setWordWrap(true);
-		warningLabel->setMaximumHeight(setting.value ? warningLabel->sizeHint().height() : 0);
+		auto* warningLabel = new WarningLabel(u"Warning: Undo/Redo commands are NOT available in Experimental Mode!"_s, widget);
+		warningLabel->setVisible(setting.value);
 
-		auto* anim = new QPropertyAnimation(warningLabel, "maximumHeight", widget);
-		anim->setDuration(150);
-		anim->setEasingCurve(QEasingCurve::OutCubic);
-
-		auto displayWarning = [warningLabel, anim](bool checked)
-		{
-			const int target = checked ? warningLabel->sizeHint().height() : 0;
-			anim->stop();
-			anim->setStartValue(warningLabel->maximumHeight());
-			anim->setEndValue(target);
-			anim->start();
-		};
-
-		QObject::connect(toggle, &QAbstractButton::toggled, displayWarning);
+		QObject::connect(toggle, &QAbstractButton::toggled, warningLabel, &QWidget::setVisible);
 
 		widgetVLayout->addWidget(warningLabel);
 	}
