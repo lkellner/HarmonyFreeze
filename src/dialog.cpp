@@ -1,7 +1,6 @@
 #include "dialog.h"
+#include "toggleSwitch.h"
 
-
-#include <QSlider>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -21,7 +20,6 @@ void UIDialog::storeSettings()
 	::storeSettings(m_settings);
 }
 
-
 void UIDialog::resetSettings()
 {
 	m_settings = g_defaultSettings;
@@ -38,8 +36,6 @@ void UIDialog::initializeWidgets()
 {
 	auto* mainLayout = new QVBoxLayout(this);
 
-
-
 	for (auto& setting : m_settings)
 	{
 		QWidget* w = createWidget(this, setting);
@@ -48,6 +44,8 @@ void UIDialog::initializeWidgets()
 		mainLayout->addSpacing(10);
 		w->show();
 	}
+
+	mainLayout->addStretch();
 
 	auto* buttonLayout = new QHBoxLayout();
 	mainLayout->addLayout(buttonLayout);
@@ -78,67 +76,25 @@ QWidget* createWidget(QWidget* parent, Setting& setting)
 	auto* widget = new QWidget(parent);
 	auto* widgetVLayout = new QVBoxLayout(widget);
 
-	auto* descrLabel = new QLabel(widget);
-	descrLabel->setText(QLatin1String(setting.name));
-	widgetVLayout->addWidget(descrLabel, Qt::AlignLeft);
-	widgetVLayout->addSpacing(10);
-
 	auto* widgetHLayout = new QHBoxLayout();
 	widgetVLayout->addLayout(widgetHLayout);
 
-	auto* slider = new QSlider(Qt::Horizontal, widget);
-	slider->setSingleStep(1);
-	slider->setMinimum(0);
-	slider->setMaximum(1);
-	slider->setStyleSheet(QStringLiteral(
-		"QSlider::groove:horizontal {"
-		"	border-radius: 10px;"
-		"	width: 40px;"
-		"	height: 20px;"
-		"	background: #333333;"
-		"}"
-		"QSlider::handle:horizontal {"
-		"	background: #bbb;"
-		"	border-radius: 10px;"
-		"	width: 20px;"
-		"	height: 20px;"
-		"	margin: -1px -1px;"
-		"}"
-	));
+	auto* descrLabel = new QLabel(widget);
+	descrLabel->setText(QLatin1String(setting.name));
 
-	const int position = setting.value ? 1 : 0;
+	auto* toggle = new ToggleSwitch(widget);
+	toggle->setChecked(setting.value);
+	toggle->setAccessibleName(descrLabel->text());
 
-	slider->setSliderPosition(position);
-	slider->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	auto* onLabel = new QLabel(widget);
-	onLabel->setText(u"ON"_s);
-	onLabel->setEnabled(setting.value);
-	onLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	auto* offLabel = new QLabel(widget);
-	offLabel->setText(u"OFF"_s);
-	offLabel->setEnabled(!setting.value);
-	offLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	
-
-	auto toggleLabels =	[onLabel, offLabel, &setting](int value)
+	QObject::connect(toggle, &QAbstractButton::toggled, [&setting](bool checked)
 	{
-		const bool isEnabled = value > 0;
-		onLabel->setEnabled(isEnabled);
-		offLabel->setEnabled(!isEnabled);
-		setting.value = isEnabled;
-	};
+		setting.value = checked;
+	});
 
-	QObject::connect(slider, &QSlider::valueChanged, toggleLabels);
-
-
-	widgetHLayout->addSpacing(10);
-	widgetHLayout->addWidget(offLabel);
-	widgetHLayout->addWidget(slider);
-	widgetHLayout->addWidget(onLabel);
+	widgetHLayout->addWidget(descrLabel);
 	widgetHLayout->addStretch();
+	widgetHLayout->addSpacing(20);
+	widgetHLayout->addWidget(toggle);
 
 	if (std::string_view(setting.name) == "ExperimentalMode")
 	{
@@ -151,17 +107,16 @@ QWidget* createWidget(QWidget* parent, Setting& setting)
 		anim->setDuration(150);
 		anim->setEasingCurve(QEasingCurve::OutCubic);
 
-		auto displayWarning = [warningLabel, anim](int value)
+		auto displayWarning = [warningLabel, anim](bool checked)
 		{
-			const bool isEnabled = value > 0;
-			int target = isEnabled ? warningLabel->sizeHint().height() : 0;
+			const int target = checked ? warningLabel->sizeHint().height() : 0;
 			anim->stop();
 			anim->setStartValue(warningLabel->maximumHeight());
 			anim->setEndValue(target);
 			anim->start();
 		};
 
-		QObject::connect(slider, &QSlider::valueChanged, displayWarning);
+		QObject::connect(toggle, &QAbstractButton::toggled, displayWarning);
 
 		widgetVLayout->addWidget(warningLabel);
 	}
