@@ -93,6 +93,7 @@ HEADERS += \
 	src/dialog.h\
 	src/settings.h\
 	src/toggleSwitch.h\
+	src/warningLabel.h\
 
 
 
@@ -121,6 +122,7 @@ SOURCES += src/freezeTransformation.cpp\
 	src/dialog.cpp\
 	src/settings.cpp\
 	src/toggleSwitch.cpp\
+	src/warningLabel.cpp\
 
 
 
