@@ -92,6 +92,7 @@ HEADERS += \
 	src/quadmapModule.h\
 	src/dialog.h\
 	src/settings.h\
+	src/toggleSwitch.h\
 
 
 
@@ -119,6 +120,7 @@ SOURCES += src/freezeTransformation.cpp\
 	src/quadmapModule.cpp\
 	src/dialog.cpp\
 	src/settings.cpp\
+	src/toggleSwitch.cpp\
 
 
 
