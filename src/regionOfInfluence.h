@@ -25,8 +25,10 @@ public:
 private:
 	FreezeManager* getFreezeManagerPtr() const { return m_freezeManager.get(); };
 	MO_Module* getModulePtr() const { return m_modulePtr; };
-	MO_Module* m_modulePtr;
+
 	std::shared_ptr<FreezeManager> m_freezeManager;
+
+	MO_Module* m_modulePtr;
 
 	AT_DoubleAttr* m_longitudinalRadiusAttr;
 	AT_DoubleAttr* m_longitudinalRadiusBeginAttr;
