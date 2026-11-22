@@ -26,10 +26,10 @@ isEmpty(SDK_MAJOR_VERSION_ENV) {
 }
 
 
-INCLUDEPATH += $$SDKROOT/src/SDK \
-	$$SDKROOT/src/Plugins \
-
 win32 {
+	INCLUDEPATH += $$SDKROOT/src/SDK \
+		$$SDKROOT/src/Plugins \
+
 	DEFINES += TU_WINDOWS
 
 	QMAKE_LIBDIR += $$SDKROOT/lib\
@@ -50,6 +50,8 @@ macx {
 	QMAKE_LFLAGS += '-L$$SDK_EXT_LIB'
 	QMAKE_LFLAGS_SHLIB += '-e PLUG_Init'
 	QMAKE_MACOSX_DEPLOYMENT_TARGET = 11.0
+	QMAKE_CXXFLAGS += -isystem $$shell_quote($$SDKROOT/src/SDK)
+	QMAKE_CXXFLAGS += -isystem $$shell_quote($$SDKROOT/src/Plugins)
 	QMAKE_CXXFLAGS += -Wswitch
 	QMAKE_CXXFLAGS += -Wno-deprecated-literal-operator
 
