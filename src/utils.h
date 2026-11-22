@@ -261,7 +261,7 @@ bool isQuarternionKeyframe(const T& t, double frame, Math::Angle3d& angle)
 	return isCtrlPnt;
 }
 
-template <typename T = AT_Position2DAttr>
+template <typename T = AT_Position2dAttr>
 void getPos2DValues(const T& t, double frame, Math::Point2d& pos, bool& isCtrlPnt, bool& isConstSeg)
 {
 	if constexpr (requires { t.getValue(frame, pos, &isCtrlPnt, &isConstSeg); })
