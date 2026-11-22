@@ -11,6 +11,11 @@
 
 using namespace Qt::StringLiterals;
 
+UIDialog::UIDialog(QWidget *parent, Qt::WindowFlags f)
+	: QDialog(parent, f)
+{
+}
+
 void UIDialog::storeSettings()
 {
 	::storeSettings(m_settings);

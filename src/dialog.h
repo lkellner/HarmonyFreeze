@@ -13,7 +13,7 @@
 class UIDialog : public QDialog
 {
 public:
-	UIDialog() = default;
+	explicit UIDialog(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 
 	void loadSettings();
 	void storeSettings();
