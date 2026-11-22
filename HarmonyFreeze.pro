@@ -49,6 +49,7 @@ macx {
 	QMAKE_LFLAGS += '-L$$SDK_LIB'
 	QMAKE_LFLAGS += '-L$$SDK_EXT_LIB'
 	QMAKE_LFLAGS_SHLIB += '-e PLUG_Init'
+	QMAKE_MACOSX_DEPLOYMENT_TARGET = 11.0
 	QMAKE_CXXFLAGS += -Wswitch
 	QMAKE_CXXFLAGS += -Wno-deprecated-literal-operator
 
