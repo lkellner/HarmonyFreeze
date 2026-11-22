@@ -39,7 +39,7 @@ private:
 	void updateDrawingPivotConversionStatus();
 
 	void applyChangeMatrix(const CA_CelPtr celPtr, Math::Matrix4x4 matrix) const;
-	void processBitmaps(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing,
+	void processBitmaps(const GR_CompositeVectorDrawingObj* compDrawing,
 		const Math::Matrix4x4& matrix) const;
 	void processVectorData(const CA_CelPtr celPtr, const GR_CompositeVectorDrawingObj* compDrawing,const Math::Matrix4x4& matrix) const;
 	void processVectorDrawingLayers(GR_DrawingAccess& drawingAccess, const Math::Matrix4x4& matrix, GR_LayerNode* curLayerNode) const;
