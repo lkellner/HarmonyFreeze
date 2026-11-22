@@ -108,12 +108,3 @@ void UIDialog::initializeWidgets()
 
 	buttonLayout->addWidget(resetButton);
 }
-
-
-void showDialog()
-{
-	UIDialog* dialog = new UIDialog();
-	dialog->loadSettings();
-	dialog->initializeWidgets();
-	dialog->exec();
-}

@@ -95,7 +95,10 @@ static ModuleWrappers createModuleWrappers(const std::vector<MO_Node*>& nodes, s
 
 void FreezeResponder::onActionShowSettings()
 {
-	showDialog();
+	UIDialog dialog;
+	dialog.loadSettings();
+	dialog.initializeWidgets();
+	dialog.exec();
 }
 
 void FreezeResponder::onActionFreezeTransformation()

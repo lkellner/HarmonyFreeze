@@ -24,6 +24,4 @@ private:
 	SettingsDesc m_settings;
 };
 
-void showDialog();
-
 #endif
