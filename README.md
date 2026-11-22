@@ -72,7 +72,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 # Change Log
 
-## Changes since last release
+## Changes in release 0.6
 
 + Different Element alignment settings ("Alignment Rule" and "Turn Before Alignment") are now supported by the plugin.
 
@@ -85,6 +85,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 + Bug Fix: Keyframed Curve Deformers were prevented from having their offset attributes transformed if they were set to "2D Path".
   
 + Bug Fix: When the resting parameters differed from the local animated parameters, Curve Deformers in "Curve Mode" wouldn't properly deform.
+
++ Bug Fix: Bitmap drawings are no longer being cut off when being moved outside of the canvas in Experimental Mode.
 
 + Minor code improvements.
 
