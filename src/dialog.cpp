@@ -10,6 +10,44 @@
 
 using namespace Qt::StringLiterals;
 
+static QWidget* createWidget(QWidget* parent, Setting& setting)
+{
+	auto* widget = new QWidget(parent);
+	auto* widgetVLayout = new QVBoxLayout(widget);
+
+	auto* widgetHLayout = new QHBoxLayout();
+	widgetVLayout->addLayout(widgetHLayout);
+
+	auto* descrLabel = new QLabel(widget);
+	descrLabel->setText(QLatin1String(setting.name));
+
+	auto* toggle = new ToggleSwitch(widget);
+	toggle->setChecked(setting.value);
+	toggle->setAccessibleName(descrLabel->text());
+
+	QObject::connect(toggle, &QAbstractButton::toggled, [&setting](bool checked)
+	{
+		setting.value = checked;
+	});
+
+	widgetHLayout->addWidget(descrLabel);
+	widgetHLayout->addStretch();
+	widgetHLayout->addSpacing(20);
+	widgetHLayout->addWidget(toggle);
+
+	if (std::string_view(setting.name) == "ExperimentalMode")
+	{
+		auto* warningLabel = new WarningLabel(u"Warning: Undo/Redo commands are NOT available in Experimental Mode!"_s, widget);
+		warningLabel->setVisible(setting.value);
+
+		QObject::connect(toggle, &QAbstractButton::toggled, warningLabel, &QWidget::setVisible);
+
+		widgetVLayout->addWidget(warningLabel);
+	}
+
+	return widget;
+}
+
 UIDialog::UIDialog(QWidget *parent, Qt::WindowFlags f)
 	: QDialog(parent, f)
 {
@@ -69,45 +107,6 @@ void UIDialog::initializeWidgets()
 	QObject::connect(resetButton, &QPushButton::clicked, this, &QDialog::done);
 
 	buttonLayout->addWidget(resetButton);
-}
-
-
-QWidget* createWidget(QWidget* parent, Setting& setting)
-{
-	auto* widget = new QWidget(parent);
-	auto* widgetVLayout = new QVBoxLayout(widget);
-
-	auto* widgetHLayout = new QHBoxLayout();
-	widgetVLayout->addLayout(widgetHLayout);
-
-	auto* descrLabel = new QLabel(widget);
-	descrLabel->setText(QLatin1String(setting.name));
-
-	auto* toggle = new ToggleSwitch(widget);
-	toggle->setChecked(setting.value);
-	toggle->setAccessibleName(descrLabel->text());
-
-	QObject::connect(toggle, &QAbstractButton::toggled, [&setting](bool checked)
-	{
-		setting.value = checked;
-	});
-
-	widgetHLayout->addWidget(descrLabel);
-	widgetHLayout->addStretch();
-	widgetHLayout->addSpacing(20);
-	widgetHLayout->addWidget(toggle);
-
-	if (std::string_view(setting.name) == "ExperimentalMode")
-	{
-		auto* warningLabel = new WarningLabel(u"Warning: Undo/Redo commands are NOT available in Experimental Mode!"_s, widget);
-		warningLabel->setVisible(setting.value);
-
-		QObject::connect(toggle, &QAbstractButton::toggled, warningLabel, &QWidget::setVisible);
-
-		widgetVLayout->addWidget(warningLabel);
-	}
-
-	return widget;
 }
 
 

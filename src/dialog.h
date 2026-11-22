@@ -25,6 +25,5 @@ private:
 };
 
 void showDialog();
-QWidget* createWidget(QWidget* parent, Setting& setting);
 
 #endif
