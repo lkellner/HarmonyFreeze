@@ -135,7 +135,7 @@ QWidget* createWidget(QWidget* parent, Setting& setting)
 	widgetHLayout->addWidget(onLabel);
 	widgetHLayout->addStretch();
 
-	if(setting.name == "ExperimentalMode")
+	if (std::string_view(setting.name) == "ExperimentalMode")
 	{
 		auto* warningLabel = new QLabel(widget);
 		warningLabel->setText(u"Warning: Undo/Redo commands are NOT available in Experimental Mode!"_s);
