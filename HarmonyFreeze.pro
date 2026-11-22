@@ -50,6 +50,7 @@ macx {
 	QMAKE_LFLAGS += '-L$$SDK_EXT_LIB'
 	QMAKE_LFLAGS_SHLIB += '-e PLUG_Init'
 	QMAKE_CXXFLAGS += -Wswitch
+	QMAKE_CXXFLAGS += -Wdeprecated-literal-operator
 
 
 	LIBS += \
