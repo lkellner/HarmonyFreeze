@@ -43,6 +43,7 @@ HarmonyFreeze is a Toon Boom Harmony plugin that lets you transform rigs or part
   - [2D Path Attributes in earlier Harmony versions](#using-2d-path-attributes-in-earlier-harmony-versions)
   - [Additional limitations (2D Mode off)](#additional-limitations-arising-from-switching-off-2d-mode-in-harmonyfreeze)
 - [Roadmap](#roadmap)
+- [Known Issues](#known-issues)
 - [Acknowledgements](#acknowledgements)
 - [License](#license)
 
@@ -524,6 +525,9 @@ The next steps in this project are to add support for
 + Transformation-Limit nodes.
 
 
+# Known Issues
+
++ Nodes whose matrix inport is connected to an image outport are not being detected.
 
 
  
