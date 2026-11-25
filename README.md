@@ -92,7 +92,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   
 + Bug Fix: When the resting parameters differed from the local animated parameters, Curve Deformers in "Curve Mode" wouldn't properly deform.
 
-+ Bug Fix: Bitmap drawings are no longer being cut off when being moved outside of the canvas in Experimental Mode.
++ Bug Fix: Bitmap drawings are no longer cut off when being moved outside of the canvas in Experimental Mode.
 
 + Minor code improvements.
 
