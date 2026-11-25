@@ -741,15 +741,12 @@ static void getAllChildren_internal(const MO_Node* node, std::vector<MO_Node*>& 
 
 	for (auto& port : outPorts)
 	{
-		if (!port->isMatrixPort())
-			continue;
-
 		std::vector<MO_Port*> dstPorts;
 		port->realDstPorts(dstPorts);
 
 		for (auto& dstPort : dstPorts)
 		{
-			if (!dstPort->node() || !dstPort->node()->toModule())
+			if (!dstPort->node() || !dstPort->isMatrixPort() || !dstPort->node()->toModule())
 				continue;
 
 			//Adding nodes reached through an auxiliary port to their own vector first
