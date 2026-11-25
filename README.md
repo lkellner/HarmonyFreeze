@@ -10,7 +10,7 @@ HarmonyFreeze is a Toon Boom Harmony plugin that lets you transform rigs or part
 - [Disclaimer](#disclaimer)
 - [Change Log](#change-log)
   - [Changes since last release](#changes-since-last-release)
-  - [Changes in release 0.6](#changes-in-release-0.6)
+  - [Changes in release 0.6](#changes-in-release-06)
 - [Installation](#installation)
   - [Windows](#windows)
   - [Mac](#mac)
